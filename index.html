@@ -1,86 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <style>
-        :root { --grid-gap: 4px; }
-        
-        .ig-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: var(--grid-gap);
-            max-width: 600px;
-            margin: auto;
-        }
-
-        .ig-item {
-            position: relative;
-            aspect-ratio: 1 / 1;
-            overflow: hidden;
-            background: #efefef;
-            cursor: pointer;
-        }
-
-        .ig-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: filter 0.3s ease;
-        }
-
-        .ig-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            padding: 10px;
-            font-size: 0.8rem;
-            text-align: center;
-        }
-
-        .ig-item:hover .ig-overlay { opacity: 1; }
-        .ig-item:hover img { filter: brightness(0.8); }
-    </style>
+  <style>
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; max-width: 600px; margin: auto; }
+    .post img { width: 100%; aspect-ratio: 1/1; object-fit: cover; cursor: pointer; }
+    /* Full Size Overlay */
+    #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 999; justify-content: center; align-items: center; }
+    #lightbox img { max-width: 90%; max-height: 90%; }
+  </style>
 </head>
 <body>
+  <div class="grid" id="grid"></div>
+  <div id="lightbox" onclick="this.style.display='none'"><img id="full-img"></div>
 
-<div class="ig-grid" id="notion-grid">
-    </div>
-
-<script>
-    async function fetchNotionData() {
-        // REPLACE THIS URL with your worker/backend endpoint
-        const PROXY_URL = 'https://notion-ig-grid-widget.dinazramadan2005.workers.dev/';
-        
-        try {
-            const response = await fetch(PROXY_URL);
-            const data = await response.json();
-            renderGrid(data);
-        } catch (err) {
-            console.error("Error fetching Notion data:", err);
-        }
+  <script>
+    async function loadGrid() {
+      const res = await fetch('https://notion-ig-grid-widget.dinazramadan2005.workers.dev/');
+      const data = await res.json();
+      const container = document.getElementById('grid');
+      container.innerHTML = data.map(item => `
+        <div class="post">
+          <img src="${item.imageUrl}" onclick="showFull('${item.imageUrl}')">
+        </div>
+      `).join('');
     }
-
-    function renderGrid(items) {
-        const container = document.getElementById('notion-grid');
-        container.innerHTML = items.map(item => `
-            <div class="ig-item">
-                <img src="${item.imageUrl}" alt="${item.name}">
-                <div class="ig-overlay">
-                    <p>${item.caption}</p>
-                </div>
-            </div>
-        `).join('');
+    function showFull(url) {
+      document.getElementById('full-img').src = url;
+      document.getElementById('lightbox').style.display = 'flex';
     }
-
-    // Refresh data every 5 minutes to keep it "live"
-    fetchNotionData();
-    setInterval(fetchNotionData, 300000);
-</script>
-
+    loadGrid();
+  </script>
 </body>
 </html>
