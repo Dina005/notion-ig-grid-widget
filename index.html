@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v4</title>
+    <title>Pro Planner v5</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -26,7 +26,12 @@
         /* --- Header & Exact Slider Icon --- */
         .top-bar { max-width: 935px; margin: 40px auto 15px; padding: 0 20px; display: flex; align-items: center; gap: 12px; }
         .refresh-btn { background: #2c2c2e; color: white; border: none; padding: 11px 22px; border-radius: 12px; font-weight: 500; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .filter-btn { background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        .filter-btn { 
+            background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; transition: background 0.2s;
+        }
+        .filter-btn:hover { background: #e5e5ea; }
 
         /* --- Filter Area --- */
         .filter-area { max-width: 935px; margin: 0 auto 20px; padding: 0 20px; display: none; gap: 12px; }
@@ -38,13 +43,13 @@
         .dropdown-menu { position: absolute; top: 52px; left: 0; width: 250px; background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.08); display: none; z-index: 1000; padding: 8px; border: 1px solid #ededf0; }
         .dropdown-menu.open { display: block; }
 
-        .row { display: flex; align-items: center; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 14px; }
+        .row { display: flex; align-items: center; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 14px; transition: background 0.1s; }
         .row:hover { background: var(--surface); }
 
-        /* --- UI Indicators (Perfectly Centered) --- */
+        /* --- UI Indicators (Locked Centering) --- */
         .indicator { 
             width: 20px; height: 20px; border: 2px solid #d1d1d6; margin-right: 14px; 
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0; 
         }
         .is-circle { border-radius: 50%; }
         .is-square { border-radius: 5px; }
@@ -58,7 +63,7 @@
 
         .val { margin-left: auto; color: var(--secondary); font-size: 12px; }
 
-        /* --- Grid & NEW HOVER OVERLAY --- */
+        /* --- Grid & Overlay --- */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto; padding: 0 20px; }
         .item { aspect-ratio: 1/1; background: #f9f9fb; overflow: hidden; position: relative; cursor: pointer; }
         .item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
@@ -66,17 +71,17 @@
 
         .overlay {
             position: absolute; bottom: 0; left: 0; right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.85));
-            color: white; padding: 20px 15px 15px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            color: white; padding: 25px 15px 15px;
             transform: translateY(100%);
-            transition: transform 0.3s ease-out;
-            display: flex; flex-direction: column; gap: 4px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; flex-direction: column; gap: 2px;
         }
         .item:hover .overlay { transform: translateY(0); }
 
-        .ov-title { font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .ov-pillar { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 0.5px; }
-        .ov-date { font-size: 10px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+        .ov-pillar { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+        .ov-title { font-size: 13px; font-weight: 600; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .ov-date { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 4px; font-weight: 400; }
 
         .null-txt { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #d1d1d6; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; }
     </style>
@@ -90,10 +95,12 @@
         </button>
         <button class="filter-btn" onclick="toggleArea()">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round">
-                <line x1="6" y1="4" x2="6" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line><line x1="18" y1="4" x2="18" y2="20"></line>
-                <rect x="4" y="12" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"></rect>
-                <rect x="10" y="7" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"></rect>
-                <rect x="16" y="14" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"></rect>
+                <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
+                <line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
+                <rect x="2" y="10" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"></rect>
+                <rect x="10" y="8" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"></rect>
+                <rect x="18" y="12" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"></rect>
             </svg>
         </button>
     </div>
@@ -169,11 +176,13 @@
             const list = filtered.length > 0 ? filtered : Array(9).fill(null);
             list.forEach(i => {
                 if (i && i.imageUrl) {
+                    // Check for .name first, then fall back to .title
+                    const displayTitle = i.name || i.title || 'Untitled';
                     h += `<div class="item">
                         <img src="${i.imageUrl}">
                         <div class="overlay">
-                            <span class="ov-pillar">${i.pillar || 'Uncategorized'}</span>
-                            <span class="ov-title">${i.title || 'Untitled Post'}</span>
+                            <span class="ov-pillar">${i.pillar || 'Content Pillar'}</span>
+                            <span class="ov-title">${displayTitle}</span>
                             <span class="ov-date">${i.date || ''}</span>
                         </div>
                     </div>`;
