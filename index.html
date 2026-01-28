@@ -180,21 +180,28 @@
         let gridData = [], currentPlat = 'all', activeStats = [];
         let brandColors = ["#f8bbd0", "#b3e5fc"]; // Default colors
 
-        function toggleSettings(e) { e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
-        function toggleMenu(id, e) { e.stopPropagation(); document.querySelectorAll('.dropdown-menu').forEach(m => m.id !== id && m.classList.remove('show')); document.getElementById(id).classList.toggle('show'); }
+        // MODIFIED: Only toggles when button is clicked, doesn't close on background click
+        function toggleSettings(e) { 
+            e.stopPropagation(); 
+            document.getElementById('setMenu').classList.toggle('open'); 
+        }
+
+        function toggleMenu(id, e) { 
+            e.stopPropagation(); 
+            document.querySelectorAll('.dropdown-menu').forEach(m => m.id !== id && m.classList.remove('show')); 
+            document.getElementById(id).classList.toggle('show'); 
+        }
         
         function updateUI() { 
             document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none'; 
             document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none'; 
             
-            // Show/Hide Color Manager based on Map Toggle
             const isMap = document.getElementById('mapT').checked;
             document.getElementById('colorManagerUI').style.display = isMap ? 'block' : 'none';
             
             doRender(); 
         }
 
-        // Brand Color Manager Functions
         function renderColorControls() {
             const container = document.getElementById('colorList');
             container.innerHTML = brandColors.map((color, idx) => `
@@ -205,6 +212,7 @@
                 </div>
             `).join('');
         }
+
         function addColor() { brandColors.push("#e0e0e0"); renderColorControls(); doRender(); }
         function removeColor(idx) { brandColors.splice(idx, 1); renderColorControls(); doRender(); }
         function updateColor(idx, val) { brandColors[idx] = val; doRender(); }
@@ -294,9 +302,9 @@
             grid.innerHTML = html;
         }
 
+        // MODIFIED: Removed the "close all" click event for the settings menu
         window.onclick = () => {
             document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
-            document.getElementById('setMenu').classList.remove('open');
         };
         init();
     </script>
