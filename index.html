@@ -3,104 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Content Planner</title>
+    <title>Pro Planner</title>
     <style>
         :root {
             --bg: #ffffff;
-            --pill-grey: #f5f5f7;
-            --dark-accent: #2c2c2e;
-            --text-main: #1d1d1f;
-            --text-sub: #86868b;
+            --pill-grey: #f1f1f3;
+            --dark-btn: #2c2c2e;
+            --text: #1d1d1f;
         }
 
-        body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text-main); }
+        body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); }
 
-        /* --- Header Controls --- */
-        .header-main { max-width: 935px; margin: 20px auto 0; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
-        
+        /* --- Header --- */
+        .header { max-width: 935px; margin: 30px auto 10px; padding: 0 20px; display: flex; align-items: center; gap: 12px; }
+
         .refresh-btn { 
-            background: var(--dark-accent); color: white; border: none; padding: 10px 20px; 
-            border-radius: 10px; display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer; 
+            background: var(--dark-btn); color: white; border: none; padding: 10px 18px; 
+            border-radius: 12px; display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer; 
         }
 
-        .toggle-filter-btn { 
-            background: var(--pill-grey); border: none; width: 42px; height: 42px; 
-            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; 
+        /* The WiFi/Mixer Style Filter Button */
+        .filter-toggle { 
+            background: var(--pill-grey); border: none; width: 44px; height: 44px; 
+            border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; 
         }
-        .toggle-filter-btn.active { background: #e2e2e7; }
+        .filter-toggle.active { background: #e5e5ea; }
 
-        /* --- Sliding Filter Bar --- */
-        .filter-drawer { 
-            max-width: 935px; margin: 10px auto; padding: 0 20px; 
-            display: none; /* Hidden by default */
-            gap: 15px; animation: slideDown 0.2s ease-out;
+        /* --- Sliding Filter Bar (Hidden by default) --- */
+        .filter-bar { 
+            max-width: 935px; margin: 0 auto; padding: 0 20px; 
+            display: none; /* Initially hidden */
+            gap: 12px; height: 0; opacity: 0; transition: all 0.3s ease;
         }
-        .filter-drawer.show { display: flex; }
+        .filter-bar.show { display: flex; height: auto; opacity: 1; margin-top: 15px; margin-bottom: 20px; }
 
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- Custom Multi-Select Dropdowns --- */
-        .custom-select { position: relative; width: 180px; }
-        
-        .select-trigger { 
-            background: var(--pill-grey); padding: 10px 15px; border-radius: 10px; 
-            font-size: 14px; font-weight: 500; display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+        /* --- Dropdowns --- */
+        .custom-select { position: relative; }
+        .trigger { 
+            background: var(--pill-grey); padding: 10px 18px; border-radius: 14px; 
+            font-size: 14px; font-weight: 500; display: flex; justify-content: space-between; align-items: center; 
+            cursor: pointer; min-width: 140px; 
         }
 
-        .options-pane { 
-            position: absolute; top: 45px; left: 0; width: 220px; background: white; 
-            border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: none; z-index: 100; padding: 10px;
+        .pane { 
+            position: absolute; top: 50px; left: 0; width: 230px; background: white; 
+            border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.12); display: none; z-index: 1000; padding: 12px; 
         }
-        .options-pane.open { display: block; }
+        .pane.open { display: block; }
 
-        .option-item { 
-            display: flex; align-items: center; justify-content: space-between; 
-            padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 14px;
+        .item { display: flex; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 14px; }
+        .item:hover { background: #f5f5f7; }
+        .item input { 
+            appearance: none; width: 18px; height: 18px; border: 2px solid #d1d1d6; 
+            border-radius: 50%; margin-right: 12px; position: relative; cursor: pointer; 
         }
-        .option-item:hover { background: var(--pill-grey); }
-        .option-item input { margin-right: 10px; cursor: pointer; }
-        .count-tag { color: var(--text-sub); font-size: 12px; }
+        .item input:checked { background: #ff4500; border-color: #ff4500; } /* Matches the orange-red in your image */
+        .item input:checked::after { content: ''; position: absolute; width: 6px; height: 6px; background: white; border-radius: 50%; top: 4px; left: 4px; }
+        .count { margin-left: auto; color: #8e8e93; font-size: 12px; }
 
-        /* --- Grid --- */
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 20px auto; padding: 0 20px; }
-        .post { position: relative; aspect-ratio: 1/1; background: #eee; overflow: hidden; }
+        /* --- Feed Grid --- */
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto; padding: 0 20px; }
+        .post { aspect-ratio: 1/1; background: #f2f2f2; overflow: hidden; position: relative; }
         .post img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .overlay { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); 
-            opacity: 0; transition: 0.3s; display: flex; flex-direction: column; justify-content: center; padding: 20px; color: white; pointer-events: none;
-        }
-        .post:hover .overlay { opacity: 1; }
+        .post .label { position: absolute; color: #ccc; font-size: 10px; font-weight: 800; }
     </style>
 </head>
 <body>
 
-    <div class="header-main">
+    <div class="header">
         <button class="refresh-btn" onclick="location.reload()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
             Refresh
         </button>
-        <button class="toggle-filter-btn" onclick="toggleFilterDrawer()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+
+        <button class="filter-toggle" id="toggleBtn" onclick="toggleFilters()">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
+                <line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
+                <path d="M2 14h4M10 12h4M18 16h4"></path>
+            </svg>
         </button>
     </div>
 
-    <div class="filter-drawer" id="filterDrawer">
+    <div class="filter-bar" id="filterBar">
         <div class="custom-select">
-            <div class="select-trigger" onclick="togglePane('platformPane')">All Platforms <small>▾</small></div>
-            <div class="options-pane" id="platformPane">
-                <div class="option-item"><label><input type="checkbox" checked onchange="filterChange()"> All Platforms</label> <span class="count-tag">(18)</span></div>
-                <div class="option-item"><label><input type="checkbox" value="instagram" onchange="filterChange()"> Instagram</label> <span class="count-tag">(3)</span></div>
-                <div class="option-item"><label><input type="checkbox" value="tiktok" onchange="filterChange()"> Tiktok</label> <span class="count-tag">(3)</span></div>
+            <div class="trigger" onclick="togglePane('platPane')">All Platforms <small>∨</small></div>
+            <div class="pane" id="platPane">
+                <div class="item"><input type="checkbox" checked> All Platforms <span class="count">(18)</span></div>
+                <div class="item"><input type="checkbox"> Instagram <span class="count">(3)</span></div>
+                <div class="item"><input type="checkbox"> Pinterest <span class="count">(3)</span></div>
+                <div class="item"><input type="checkbox"> Tiktok <span class="count">(3)</span></div>
             </div>
         </div>
 
         <div class="custom-select">
-            <div class="select-trigger" onclick="togglePane('statusPane')">All Status <small>▾</small></div>
-            <div class="options-pane" id="statusPane">
-                <div class="option-item"><label><input type="checkbox" checked onchange="filterChange()"> All Status</label> <span class="count-tag">(18)</span></div>
-                <div class="option-item"><label><input type="checkbox" value="In progress" onchange="filterChange()"> In progress</label> <span class="count-tag">(5)</span></div>
-                <div class="option-item"><label><input type="checkbox" value="Not started" onchange="filterChange()"> Not started</label> <span class="count-tag">(3)</span></div>
+            <div class="trigger" onclick="togglePane('statPane')">All Status <small>∨</small></div>
+            <div class="pane" id="statPane">
+                <div class="item"><input type="checkbox" checked> All Status <span class="count">(18)</span></div>
+                <div class="item"><input type="checkbox"> Not started <span class="count">(3)</span></div>
+                <div class="item"><input type="checkbox"> In progress <span class="count">(5)</span></div>
+                <div class="item"><input type="checkbox"> Done <span class="count">(10)</span></div>
             </div>
         </div>
     </div>
@@ -109,69 +112,55 @@
 
     <script>
         const WORKER_URL = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
-        let rawData = [];
+        let posts = [];
 
-        async function loadData() {
-            const container = document.getElementById('grid');
-            container.innerHTML = "<p style='text-align:center; color:#888;'>Loading Feed...</p>";
-            try {
-                const res = await fetch(WORKER_URL);
-                rawData = await res.json();
-                if (rawData.length === 0) container.innerHTML = "<p>No data returned from Worker. Check Notion sharing.</p>";
-                renderGrid();
-            } catch (e) {
-                container.innerHTML = `<p>Error: ${e.message}</p>`;
-            }
-        }
-
-        function toggleFilterDrawer() {
-            const drawer = document.getElementById('filterDrawer');
-            drawer.classList.toggle('show');
+        function toggleFilters() {
+            const bar = document.getElementById('filterBar');
+            const btn = document.getElementById('toggleBtn');
+            const isShowing = bar.classList.toggle('show');
+            btn.classList.toggle('active');
+            if(!isShowing) closeAllPanes();
         }
 
         function togglePane(id) {
-            document.querySelectorAll('.options-pane').forEach(p => { if(p.id !== id) p.classList.remove('open'); });
-            document.getElementById(id).classList.toggle('open');
+            const pane = document.getElementById(id);
+            const isOpen = pane.classList.contains('open');
+            closeAllPanes();
+            if(!isOpen) pane.classList.add('open');
         }
 
-        function filterChange() {
-            // Placeholder for checkbox logic - re-triggers render
-            renderGrid();
+        function closeAllPanes() {
+            document.querySelectorAll('.pane').forEach(p => p.classList.remove('open'));
         }
 
-        function renderGrid() {
-            const container = document.getElementById('grid');
-            let html = '';
-            
-            // Logic to handle empty or filtered data
-            const displayData = rawData.length > 0 ? rawData : Array(12).fill(null);
-
-            displayData.forEach(p => {
-                if (p && p.imageUrl) {
-                    html += `<div class="post">
-                                <img src="${p.imageUrl}">
-                                <div class="overlay">
-                                    <strong>${p.name}</strong>
-                                    <small>${p.status}</small>
-                                </div>
-                             </div>`;
-                } else {
-                    html += `<div class="post" style="background:#f9f9f9; display:flex; align-items:center; justify-content:center;">
-                                <span style="color:#ccc; font-size:10px; font-weight:bold; letter-spacing:1px;">NO CONTENT</span>
-                             </div>`;
-                }
-            });
-            container.innerHTML = html;
-        }
-
-        // Close dropdowns if clicking outside
-        window.onclick = function(event) {
-            if (!event.target.closest('.custom-select')) {
-                document.querySelectorAll('.options-pane').forEach(p => p.classList.remove('open'));
+        async function load() {
+            const grid = document.getElementById('grid');
+            try {
+                const res = await fetch(WORKER_URL);
+                posts = await res.json();
+                render();
+            } catch (e) {
+                render(); // Render placeholders if fetch fails
             }
         }
 
-        loadData();
+        function render() {
+            const grid = document.getElementById('grid');
+            let html = '';
+            const data = posts.length > 0 ? posts : Array(12).fill(null);
+
+            data.forEach(p => {
+                if(p && p.imageUrl) {
+                    html += `<div class="post"><img src="${p.imageUrl}"></div>`;
+                } else {
+                    html += `<div class="post" style="display:flex;align-items:center;justify-content:center;"><span class="label">NO CONTENT</span></div>`;
+                }
+            });
+            grid.innerHTML = html;
+        }
+
+        window.onclick = (e) => { if(!e.target.closest('.custom-select')) closeAllPanes(); };
+        load();
     </script>
 </body>
 </html>
