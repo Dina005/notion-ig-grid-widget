@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v20</title>
+    <title>Pro Planner v21</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; --accent: #000000; }
+        :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; --accent: #000; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 
         /* Bio & Highlights */
@@ -15,42 +15,41 @@
         #highRow { max-width: 935px; margin: 0 auto 30px; padding: 0 20px; display: none; justify-content: center; gap: 20px; overflow-x: auto; scrollbar-width: none; }
         .h-circle { width: 77px; height: 77px; border-radius: 50%; border: 1px solid #dbdbdb; background: #fafafa; padding: 3px; display: flex; align-items: center; justify-content: center; }
 
-        /* Top Bar */
+        /* Navigation Bar */
         .top-bar { max-width: 935px; margin: 20px auto 15px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
         .refresh-btn { background: #000; color: white; border: none; padding: 11px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; }
-        .icon-btn { background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        
-        /* Filters */
+        .icon-btn { background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .icon-btn:hover { background: #eaeaef; }
+
+        /* Filter System */
         .filter-area { max-width: 935px; margin: 0 auto 20px; padding: 0 20px; display: none; gap: 12px; }
         .filter-area.active { display: flex; }
-        .dropdown { position: relative; background: var(--surface); padding: 11px 18px; border-radius: 12px; font-size: 14px; font-weight: 500; cursor: pointer; min-width: 140px; }
+        .dropdown { position: relative; background: var(--surface); padding: 11px 18px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; min-width: 140px; }
         .drop-menu { position: absolute; top: 52px; left: 0; width: 220px; background: white; border: 1px solid #ededf0; border-radius: 16px; display: none; z-index: 1000; padding: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .drop-menu.open { display: block; }
-        .filter-row { display: flex; align-items: center; padding: 10px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
-        .filter-row:hover { background: var(--surface); }
-        .check-box { width: 18px; height: 18px; border: 2px solid #d1d1d6; border-radius: 4px; margin-right: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        input[type="checkbox"]:checked + .check-box { background: #000; border-color: #000; }
-        input[type="checkbox"]:checked + .check-box::after { content: '✓'; color: white; font-size: 12px; font-weight: 800; }
+        .f-row { display: flex; align-items: center; padding: 10px; border-radius: 8px; cursor: pointer; transition: 0.15s; }
+        .f-row:hover { background: var(--surface); }
+        .box { width: 18px; height: 18px; border: 2px solid #d1d1d6; border-radius: 5px; margin-right: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        input:checked + .box { background: #000; border-color: #000; }
+        input:checked + .box::after { content: '✓'; color: white; font-size: 11px; font-weight: 900; }
         input[type="checkbox"], input[type="radio"] { display: none; }
 
-        /* Grid & Media */
+        /* Grid & Content Mode */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
         .item { aspect-ratio: 1/1; background: #f9f9fb; overflow: hidden; position: relative; }
         .carousel-track { display: flex; width: 100%; height: 100%; overflow-x: scroll; scroll-snap-type: x mandatory; scrollbar-width: none; }
         .slide { min-width: 100%; height: 100%; scroll-snap-align: start; position: relative; }
         .slide img, .slide video { width: 100%; height: 100%; object-fit: cover; }
-        
-        /* Content Mode */
         .content-mode .slide img, .content-mode .slide video, .content-mode .indicator-icon { display: none !important; }
-        .content-label { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-weight: 700; text-align: center; width: 85%; z-index: 10; font-size: 14px; line-height: 1.4; }
+        .content-label { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-weight: 700; text-align: center; width: 85%; z-index: 10; font-size: 14px; }
         .content-mode .content-label { display: block; }
 
-        /* Settings */
+        /* Settings & Palette */
         .settings-menu { position: absolute; top: 55px; right: 0; width: 280px; background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: none; z-index: 2000; padding: 20px; border: 1px solid #ededf0; }
         .settings-menu.open { display: block; }
         .color-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
         .color-item { width: 34px; height: 34px; border-radius: 50%; position: relative; cursor: pointer; border: 2px solid #fff; box-shadow: 0 0 0 1px #ddd; }
-        .remove-col { position: absolute; top: -5px; right: -5px; background: #000; color: #fff; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; border: none; cursor: pointer; }
+        .remove-btn { position: absolute; top: -5px; right: -5px; background: #000; color: #fff; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; border: none; cursor: pointer; }
         
         .switch { position: relative; width: 40px; height: 22px; display: inline-block; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e5ea; transition: .3s; border-radius: 20px; }
@@ -76,7 +75,9 @@
 
     <div class="top-bar">
         <button class="refresh-btn" onclick="location.reload()">Refresh</button>
-        <button class="icon-btn" onclick="document.getElementById('filterArea').classList.toggle('active')">⚙</button>
+        <button class="icon-btn" onclick="document.getElementById('filterArea').classList.toggle('active')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><rect x="2" y="10" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="10" y="8" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="18" y="12" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/></svg>
+        </button>
         <div style="margin-left:auto; position:relative;">
             <button class="icon-btn" onclick="document.getElementById('setMenu').classList.toggle('open')">•••</button>
             <div class="settings-menu" id="setMenu">
@@ -95,15 +96,15 @@
     <div class="filter-area" id="filterArea">
         <div class="dropdown" onclick="toggleDrop('pDrop', event)">Platform ▾ 
             <div class="drop-menu" id="pDrop">
-                <label class="filter-row"><input type="radio" name="plat" value="all" checked onchange="doRender()"><div class="check-box" style="border-radius:50%"></div> All Channels</label>
-                <label class="filter-row"><input type="radio" name="plat" value="instagram" onchange="doRender()"><div class="check-box" style="border-radius:50%"></div> Instagram</label>
-                <label class="filter-row"><input type="radio" name="plat" value="tiktok" onchange="doRender()"><div class="check-box" style="border-radius:50%"></div> Tiktok</label>
+                <label class="f-row"><input type="radio" name="plat" value="all" checked onchange="doRender()"><div class="box" style="border-radius:50%"></div> All Channels</label>
+                <label class="f-row"><input type="radio" name="plat" value="instagram" onchange="doRender()"><div class="box" style="border-radius:50%"></div> Instagram</label>
+                <label class="f-row"><input type="radio" name="plat" value="tiktok" onchange="doRender()"><div class="box" style="border-radius:50%"></div> Tiktok</label>
             </div>
         </div>
         <div class="dropdown" onclick="toggleDrop('sDrop', event)">Status ▾ 
             <div class="drop-menu" id="sDrop">
-                <label class="filter-row"><input type="checkbox" id="allStat" checked onchange="toggleAllStat()"><div class="check-box"></div> All Status</label>
-                <label class="filter-row"><input type="checkbox" class="stat-check" value="Done" onchange="doRender()"><div class="check-box"></div> Published</label>
+                <label class="f-row"><input type="checkbox" id="allStat" checked onchange="toggleAllStat()"><div class="box"></div> All Status</label>
+                <div id="statusCheckboxes"></div>
             </div>
         </div>
     </div>
@@ -114,26 +115,14 @@
         const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
         let gridData = [], palette = ['#b4b4a5', '#a5a596'];
 
-        function toggleDrop(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('open'); }
+        function toggleDrop(id, e) { e.stopPropagation(); document.querySelectorAll('.drop-menu').forEach(m => m.id !== id && m.classList.remove('open')); document.getElementById(id).classList.toggle('open'); }
         function applyMap() { document.getElementById('grid').classList.toggle('content-mode', document.getElementById('mapT').checked); }
-        function updateView() {
-            document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none';
-            document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none';
-        }
-
-        function toggleAllStat() {
-            const isChecked = document.getElementById('allStat').checked;
-            document.querySelectorAll('.stat-check').forEach(c => c.checked = isChecked);
-            doRender();
-        }
+        function updateView() { document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none'; document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none'; }
+        function toggleAllStat() { const isChecked = document.getElementById('allStat').checked; document.querySelectorAll('.stat-check').forEach(c => c.checked = isChecked); doRender(); }
 
         function renderPalette() {
             const g = document.getElementById('paletteGrid');
-            g.innerHTML = palette.map((c, i) => `
-                <div class="color-item" style="background:${c}">
-                    <input type="color" style="position:absolute; opacity:0; inset:0; cursor:pointer;" value="${c}" onchange="updCol(${i}, this.value)">
-                    <button class="remove-col" onclick="remCol(${i}, event)">×</button>
-                </div>`).join('');
+            g.innerHTML = palette.map((c, i) => `<div class="color-item" style="background:${c}"><input type="color" style="position:absolute; opacity:0; inset:0; cursor:pointer;" value="${c}" onchange="updCol(${i}, this.value)"><button class="remove-btn" onclick="remCol(${i}, event)">×</button></div>`).join('');
             doRender();
         }
         function addCol() { palette.push('#cccccc'); renderPalette(); }
@@ -152,20 +141,20 @@
                 document.getElementById('bioLink').href = res.bio.linkUrl;
                 document.getElementById('bioPfp').src = res.bio.pfp;
 
+                // Build Dynamic Status Checkboxes
+                const stats = [...new Set(gridData.map(i => i.status))];
+                document.getElementById('statusCheckboxes').innerHTML = stats.map(s => `
+                    <label class="f-row"><input type="checkbox" class="stat-check" value="${s}" checked onchange="doRender()"><div class="box"></div> ${s}</label>
+                `).join('');
+
                 document.getElementById('highRow').innerHTML = (res.highlights || []).map(h => `
-                    <div style="text-align:center; min-width:85px;">
-                        <div class="h-circle"><img src="${h.image}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;"></div>
-                        <span style="font-size:12px; font-weight:600;">${h.name}</span>
-                    </div>`).join('');
+                    <div style="text-align:center; min-width:85px;"><div class="h-circle"><img src="${h.image}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;"></div><span style="font-size:12px; font-weight:600;">${h.name}</span></div>
+                `).join('');
                 doRender();
             } catch(e) { console.error(e); }
         }
 
-        function togglePlay(vid, e) { 
-            e.stopPropagation();
-            const btn = vid.nextElementSibling;
-            if(vid.paused) { vid.play(); btn.style.display='none'; } else { vid.pause(); btn.style.display='flex'; }
-        }
+        function togglePlay(vid, e) { e.stopPropagation(); const btn = vid.nextElementSibling; if(vid.paused) { vid.play(); btn.style.display='none'; } else { vid.pause(); btn.style.display='flex'; } }
 
         function doRender() {
             const grid = document.getElementById('grid');
@@ -178,20 +167,8 @@
             grid.innerHTML = (filtered.length ? filtered : Array(9).fill(null)).map((item, idx) => {
                 const bg = palette[idx % palette.length];
                 if(!item) return `<div class="item" style="background:${bg}; display:flex; align-items:center; justify-content:center; color:#ccc; font-weight:800; font-size:10px;">EMPTY</div>`;
-                
-                const files = item.files || [];
-                const slides = files.map(f => `
-                    <div class="slide">
-                        ${f.isVideo ? `<video src="${f.url}" loop playsinline onclick="togglePlay(this, event)"></video><div class="video-btn" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:white; font-size:24px; pointer-events:none;">▶</div>` : `<img src="${f.url}">`}
-                        <div class="content-label">${item.name}</div>
-                    </div>`).join('');
-
-                return `
-                    <div class="item" style="background:${bg}">
-                        ${files.length > 1 ? `<div class="indicator-icon">▢▢</div>` : ''}
-                        <div class="carousel-track">${slides}</div>
-                        <div class="overlay">${item.name}</div>
-                    </div>`;
+                const slides = item.files.map(f => `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline onclick="togglePlay(this, event)"></video><div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:white; font-size:24px; pointer-events:none;">▶</div>` : `<img src="${f.url}">`}<div class="content-label">${item.name}</div></div>`).join('');
+                return `<div class="item" style="background:${bg}">${item.files.length > 1 ? `<div class="indicator-icon">▢▢</div>` : ''}<div class="carousel-track">${slides}</div><div class="overlay">${item.name}</div></div>`;
             }).join('');
         }
 
