@@ -242,17 +242,13 @@
    const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [];
 let brandColors = ["#FFD1DC", "#AEEEEE", "#FFECB3", "#D1FFD7", "#E0BBE4"]; 
-let shuffledIndices = []; // Stores the random color assignments
+let shuffledIndices = [];
 
-// --- SETTINGS & UI CONTROLS ---
-
-// Keeps the 3-dot menu open until you click the dots again
 function toggleSettings(e) { 
     e.stopPropagation(); 
     document.getElementById('setMenu').classList.toggle('open'); 
 }
 
-// Controls the Status/Platform dropdowns (closes when clicking away)
 function toggleMenu(id, e) { 
     e.stopPropagation(); 
     document.querySelectorAll('.dropdown-menu').forEach(m => m.id !== id && m.classList.remove('show')); 
@@ -262,24 +258,11 @@ function toggleMenu(id, e) {
 function updateUI() { 
     document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none'; 
     document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none'; 
-    
-    const isMap = document.getElementById('mapT').checked;
-    const colorUI = document.getElementById('colorManagerUI');
-    
-    if (isMap) {
-        colorUI.style.display = 'block';
-        if (shuffledIndices.length === 0) shuffleColors();
-    } else {
-        colorUI.style.display = 'none';
-    }
-    
+    document.getElementById('colorManagerUI').style.display = document.getElementById('mapT').checked ? 'block' : 'none';
     doRender(); 
 }
 
-// --- COLOR RANDOMIZATION ENGINE ---
-
 function shuffleColors() {
-    // Generate a long list of random color picks to ensure the grid looks organic
     shuffledIndices = Array.from({ length: 100 }, () => Math.floor(Math.random() * brandColors.length));
     doRender();
 }
@@ -296,7 +279,6 @@ function renderColorControls() {
         </div>
     `).join('');
     
-    // Add a Shuffle Button at the bottom of the list if it doesn't exist
     if (!document.getElementById('shuffleBtn')) {
         const btn = document.createElement('button');
         btn.id = 'shuffleBtn';
@@ -310,31 +292,18 @@ function renderColorControls() {
     }
 }
 
-function addColor() { 
-    brandColors.push("#e0e0e0"); 
-    shuffleColors(); 
-    renderColorControls(); 
-}
-
-function removeColor(idx) { 
-    brandColors.splice(idx, 1); 
-    shuffleColors(); 
-    renderColorControls(); 
-}
-
-function updateColor(idx, val) { 
-    brandColors[idx] = val; 
-    doRender(); 
-}
-
-// --- DATA FETCHING ---
+function addColor() { brandColors.push("#e0e0e0"); shuffleColors(); renderColorControls(); }
+function removeColor(idx) { brandColors.splice(idx, 1); shuffleColors(); renderColorControls(); }
+function updateColor(idx, val) { brandColors[idx] = val; doRender(); }
 
 async function init() {
+    // Set Canva Preview to ON by default on refresh
+    document.getElementById('canvaT').checked = true;
+
     try {
         const r = await fetch(API); const res = await r.json();
         gridData = res.grid;
         
-        // Bio Population
         document.getElementById('pfpImg').src = res.bio.profilePicture || "";
         document.getElementById('bioUser').innerText = "@" + (res.bio.username || "username");
         document.getElementById('bioDisplay').innerText = res.bio.displayName || "";
@@ -342,7 +311,6 @@ async function init() {
         document.getElementById('bioLink').innerText = res.bio.linkDisplay || "";
         document.getElementById('bioLink').href = res.bio.linkUrl || "#";
 
-        // Highlights Population
         const hData = res.highlights && res.highlights.length > 0 ? res.highlights : Array(4).fill(null);
         document.getElementById('highRow').innerHTML = hData.map(h => `
             <div style="text-align:center; min-width:75px;">
@@ -351,7 +319,6 @@ async function init() {
             </div>
         `).join('');
 
-        // Filter Setup
         const stats = [...new Set(gridData.map(i => i.status))];
         activeStats = [...stats];
         renderStatusOptions(stats);
@@ -359,10 +326,8 @@ async function init() {
         renderColorControls();
         shuffleColors();
         doRender();
-    } catch(e) { console.error("Error loading grid:", e); }
+    } catch(e) { console.error(e); }
 }
-
-// --- FILTERS & COUNTING ---
 
 function renderStatusOptions(stats) {
     document.getElementById('statusOptions').innerHTML = stats.map(s => {
@@ -397,8 +362,6 @@ function toggleStat(s) {
     doRender();
 }
 
-// --- CORE RENDERING ---
-
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
@@ -414,16 +377,21 @@ function doRender() {
                 html += `<div class="item" style="background:${color}; transition: background 0.4s ease;"><span class="map-mode-label">${item.status}</span></div>`;
             } else {
                 const slides = item.files.map(f => {
-                    // IMPROVED CANVA DETECTION
+                    // Optimized Canva Link Formatting
                     if (canvaEnabled && f.url.includes('canva.com/design/')) {
-                        // This clean-up ensures the link is embed-friendly
-                        let embedUrl = f.url.split('?')[0]; // Remove existing queries
-                        if (!embedUrl.endsWith('/view')) {
-                            embedUrl = embedUrl.replace(/\/watch$/, '') + '/view';
+                        let base = f.url.split('?')[0];
+                        if (!base.endsWith('/view')) {
+                            base = base.replace(/\/watch$/, '') + '/view';
                         }
-                        embedUrl += '?embed'; // Add the necessary embed parameter
+                        const embedUrl = base + '?embed';
                         
-                        return `<div class="slide"><iframe src="${embedUrl}" style="width:100%; height:100%; border:none;" allow="fullscreen"></iframe></div>`;
+                        // We use object-fit: cover logic via a wrapper for iframes
+                        return `<div class="slide" style="position:relative; width:100%; height:100%;">
+                                    <iframe src="${embedUrl}" 
+                                            style="position:absolute; top:0; left:0; width:100%; height:100%; border:none; pointer-events:none;" 
+                                            allow="fullscreen">
+                                    </iframe>
+                                </div>`;
                     }
                     
                     return `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline onclick="this.paused?this.play():this.pause()"></video>` : `<img src="${f.url}">`}</div>`;
@@ -438,7 +406,6 @@ function doRender() {
     grid.innerHTML = html;
 }
 
-// Closes filters when clicking background, but NOT the settings menu
 window.onclick = () => {
     document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
 };
