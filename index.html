@@ -1,127 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v11</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; --secondary: #8e8e93; }
+<style>
+    /* Profile Centering */
+    #bioSection {
+        display: none;
+        flex-direction: column;
+        align-items: center; /* Centers the profile content */
+        text-align: center;
+        max-width: 935px;
+        margin: 40px auto;
+    }
 
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+    .profile-pic {
+        width: 77px;
+        height: 77px;
+        border-radius: 50%;
+        object-fit: cover; /* Ensures image doesn't stretch */
+        border: 1px solid #dbdbdb;
+        margin-bottom: 15px;
+    }
 
-        /* --- BIO SECTION (NOTION CALLOUT) --- */
-        #bioSection { max-width: 935px; margin: 40px auto 20px; padding: 0 20px; display: none; flex-direction: column; align-items: flex-start; }
-        .username { font-size: 28px; font-weight: 700; margin: 0; }
-        .display-name { font-size: 16px; font-weight: 600; margin: 8px 0 4px; }
-        .bio-link-text { color: #1a1a1a; text-decoration: none; font-size: 15px; line-height: 1.5; white-space: pre-wrap; display: block; }
+    /* Highlights Centering */
+    #highlightsSection {
+        display: none;
+        justify-content: center; /* Centers the highlights row */
+        gap: 15px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
 
-        /* --- HIGHLIGHTS SECTION (NOTION DATABASE) --- */
-        #highlightsSection { max-width: 935px; margin: 0 auto 30px; padding: 0 20px; display: none; gap: 18px; overflow-x: auto; scrollbar-width: none; }
-        .highlight-item { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 80px; }
-        .highlight-circle { width: 77px; height: 77px; border-radius: 50%; background: #fafafa; border: 1px solid #dbdbdb; display: grid; place-items: center; overflow: hidden; }
-        .highlight-img { width: 100%; height: 100%; object-fit: cover; }
-        .no-content-text { font-size: 8px; font-weight: 800; color: #d1d1d6; text-align: center; }
-        .highlight-label { font-size: 12px; font-weight: 500; color: #262626; }
+    /* NO CONTENT placeholder for Highlights */
+    .highlight-circle {
+        width: 77px;
+        height: 77px;
+        border-radius: 50%;
+        background: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 1px solid #dbdbdb;
+    }
 
-        /* --- SETTINGS MENU --- */
-        .top-nav { max-width: 935px; margin: 20px auto; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
-        .refresh-btn { background: #000; color: #fff; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 600; cursor: pointer; }
-        .menu-wrapper { position: relative; margin-left: auto; }
-        .icon-btn { background: var(--surface); border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: grid; place-items: center; }
-        .settings-menu { position: absolute; top: 50px; right: 0; width: 250px; background: white; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: none; z-index: 2000; padding: 15px; border: 1px solid #eee; }
-        .settings-menu.open { display: block; }
-        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; font-size: 14px; font-weight: 600; }
+    .no-content-placeholder {
+        font-size: 8px;
+        color: #8e8e93;
+        font-weight: 700;
+        text-transform: uppercase;
+        text-align: center;
+    }
+</style>
 
-        /* Black Toggle Switch */
-        .switch { position: relative; width: 38px; height: 20px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e5ea; transition: .3s; border-radius: 20px; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
-        input:checked + .slider { background-color: #000; }
-        input:checked + .slider:before { transform: translateX(18px); }
+<script>
+    // Updating the frontend render to handle the new data structure
+    function updateProfile(bioData) {
+        document.querySelector('.username').innerText = bioData.username;
+        document.querySelector('.display-name').innerText = bioData.displayName;
+        const link = document.getElementById('bioLink');
+        link.innerText = bioData.text;
+        link.href = bioData.url;
+        
+        if (bioData.icon) {
+            document.getElementById('profilePic').src = bioData.icon;
+        }
+    }
 
-        /* --- GRID --- */
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto; padding: 0 20px; }
-        .item { aspect-ratio: 1/1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #f9f9fb; }
-        .item img { width: 100%; height: 100%; object-fit: cover; }
-        .map-mode .item img { display: none; }
-        .map-label { display: none; color: white; font-weight: 600; font-size: 13px; text-align: center; padding: 15px; }
-        .map-mode .map-label { display: block; }
-    </style>
-</head>
-<body>
-
-    <div id="bioSection">
-        <h1 class="username">@your_username</h1>
-        <p class="display-name">Your Display Name</p>
-        <a href="#" id="bioLink" class="bio-link-text">Loading bio...</a>
-    </div>
-
-    <div id="highlightsSection"></div>
-
-    <div class="top-nav">
-        <button class="refresh-btn" onclick="location.reload()">Refresh</button>
-        <div class="menu-wrapper">
-            <button class="icon-btn" onclick="document.getElementById('setMenu').classList.toggle('open')">•••</button>
-            <div class="settings-menu" id="setMenu">
-                <div class="setting-row">Show Bio <label class="switch"><input type="checkbox" id="t-bio" checked onchange="refreshUI()"><span class="slider"></span></label></div>
-                <div class="setting-row">Show Highlights <label class="switch"><input type="checkbox" id="t-high" checked onchange="refreshUI()"><span class="slider"></span></label></div>
-                <div class="setting-row">Content Map <label class="switch"><input type="checkbox" id="t-map" onchange="refreshUI()"><span class="slider"></span></label></div>
+    function renderHighlights(highlights) {
+        const container = document.getElementById('highlightsSection');
+        container.innerHTML = highlights.map(h => `
+            <div class="highlight-item">
+                <div class="highlight-circle">
+                    ${h.image ? `<img src="${h.image}" class="highlight-img">` : `<span class="no-content-placeholder">No Content</span>`}
+                </div>
+                <span class="highlight-label">${h.name}</span>
             </div>
-        </div>
-    </div>
-
-    <div id="grid" class="grid"></div>
-
-    <script>
-        const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
-        let state = { posts: [], highlights: [], bio: {} };
-        let palette = ['#b4b4a5', '#a5a596'];
-
-        function refreshUI() {
-            document.getElementById('bioSection').style.display = document.getElementById('t-bio').checked ? 'flex' : 'none';
-            document.getElementById('highlightsSection').style.display = document.getElementById('t-high').checked ? 'flex' : 'none';
-            document.getElementById('grid').classList.toggle('map-mode', document.getElementById('t-map').checked);
-            render();
-        }
-
-        async function init() {
-            try {
-                const r = await fetch(API);
-                state = await r.json();
-                
-                // Set Bio Link
-                const link = document.getElementById('bioLink');
-                link.innerText = state.bio.text || "No bio text set";
-                link.href = state.bio.url || "#";
-
-                // Set Highlights
-                const highBox = document.getElementById('highlightsSection');
-                highBox.innerHTML = state.highlights.map(h => `
-                    <div class="highlight-item">
-                        <div class="highlight-circle">
-                            ${h.image ? `<img src="${h.image}" class="highlight-img">` : `<span class="no-content-text">NO CONTENT</span>`}
-                        </div>
-                        <span class="highlight-label">${h.name}</span>
-                    </div>
-                `).join('');
-                
-                refreshUI();
-            } catch(e) { render(); }
-        }
-
-        function render() {
-            const grid = document.getElementById('grid');
-            let items = state.posts.length > 0 ? state.posts : Array(6).fill(null);
-            grid.innerHTML = items.map((i, idx) => {
-                const bg = palette[idx % palette.length];
-                if(i) return `<div class="item" style="background-color:${bg}"><img src="${i.imageUrl}"><div class="map-label">${i.name}</div></div>`;
-                return `<div class="item" style="background-color:${bg}"><span class="no-content-text">EMPTY</span></div>`;
-            }).join('');
-        }
-
-        init();
-    </script>
-</body>
-</html>
+        `).join('');
+    }
+</script>
