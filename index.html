@@ -3,64 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v22 - Final Left</title>
+    <title>Pro Planner v22 - Final Grid</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 
         /* Bio Section - Left Aligned */
-        #bioSection { 
-            max-width: 935px; 
-            margin: 40px auto 10px; 
-            padding: 0 20px; 
-            display: none; 
-            flex-direction: column; 
-            align-items: flex-start; 
-            text-align: left; 
-        }
-        
-        .pfp-circle { width: 85px; height: 85px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 1px solid #efefef; background: #eee; }
+        #bioSection { max-width: 935px; margin: 40px auto 10px; padding: 0 20px; display: none; flex-direction: column; align-items: flex-start; text-align: left; }
+        .pfp-circle { width: 85px; height: 85px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 1px solid #efefef; background: #f0f0f0; }
 
-        /* Highlights - Smaller sizing */
-        #highRow { 
-            max-width: 935px; 
-            margin: 0 auto 30px; 
-            padding: 0 20px; 
-            display: none; 
-            gap: 15px; 
-            overflow-x: auto; 
-            scrollbar-width: none; 
-            justify-content: flex-start; 
-        }
-        #highRow::-webkit-scrollbar { display: none; }
-        
+        /* Highlights - Smaller size */
+        #highRow { max-width: 935px; margin: 0 auto 30px; padding: 0 20px; display: none; gap: 15px; overflow-x: auto; scrollbar-width: none; justify-content: flex-start; }
         .h-circle { width: 64px; height: 64px; border-radius: 50%; border: 1px solid #dbdbdb; padding: 3px; display: flex; align-items: center; justify-content: center; background: #fff; }
-        .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #fafafa; }
+        .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #eeeeee; } /* Grey background for empty images */
 
-        /* Top Bar */
+        /* Controls */
         .top-bar { max-width: 935px; margin: 20px auto 15px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
         .refresh-btn { background: #000; color: white; border: none; padding: 11px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; }
         .icon-btn { background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        /* Dropdowns */
+        /* Filter Menus */
         .filter-area { max-width: 935px; margin: 0 auto 20px; padding: 0 20px; display: none; gap: 12px; }
         .filter-area.active { display: flex; }
         .dropdown { position: relative; background: var(--surface); padding: 11px 18px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; min-width: 140px; }
         .drop-menu { position: absolute; top: 52px; left: 0; width: 220px; background: white; border: 1px solid #ededf0; border-radius: 16px; display: none; z-index: 1000; padding: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .drop-menu.open { display: block; }
-        .f-row { display: flex; align-items: center; padding: 10px; border-radius: 8px; cursor: pointer; }
-        .f-row:hover { background: var(--surface); }
-        .box { width: 18px; height: 18px; border: 2px solid #d1d1d6; border-radius: 5px; margin-right: 12px; position: relative; flex-shrink: 0; }
-        input:checked + .box { background: #000; border-color: #000; }
-        input:checked + .box::after { content: '✓'; color: white; position: absolute; left: 3px; top: -1px; font-size: 11px; font-weight: 900; }
-        input[type="checkbox"], input[type="radio"] { display: none; }
 
-        /* Grid - Empty Content Fix */
+        /* Grid - Placeholders */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
         .item { aspect-ratio: 1/1; background: #f9f9fb; overflow: hidden; position: relative; }
         .carousel-track { display: flex; width: 100%; height: 100%; overflow-x: scroll; scroll-snap-type: x mandatory; scrollbar-width: none; }
-        .slide { min-width: 100%; height: 100%; scroll-snap-align: start; position: relative; }
+        .slide { min-width: 100%; height: 100%; scroll-snap-align: start; }
         .slide img, .slide video { width: 100%; height: 100%; object-fit: cover; }
         
         /* Settings */
@@ -72,9 +46,6 @@
         .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
         input:checked + .slider { background-color: #000; }
         input:checked + .slider:before { transform: translateX(18px); }
-        .indicator-icon { position: absolute; top: 12px; right: 12px; color: white; z-index: 5; pointer-events: none; text-shadow: 0 0 4px rgba(0,0,0,0.5); }
-        .overlay { position: absolute; bottom: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.7)); color: white; padding: 12px; font-size: 12px; transform: translateY(100%); transition: 0.2s; pointer-events: none; }
-        .item:hover .overlay { transform: translateY(0); }
     </style>
 </head>
 <body>
@@ -110,14 +81,14 @@
     <div class="filter-area" id="filterArea">
         <div class="dropdown" onclick="toggleDrop('pDrop', event)">Platform ▾ 
             <div class="drop-menu" id="pDrop">
-                <label class="f-row"><input type="radio" name="plat" value="all" checked onchange="doRender()"><div class="box" style="border-radius:50%"></div> All Channels</label>
-                <label class="f-row"><input type="radio" name="plat" value="instagram" onchange="doRender()"><div class="box" style="border-radius:50%"></div> Instagram</label>
-                <label class="f-row"><input type="radio" name="plat" value="tiktok" onchange="doRender()"><div class="box" style="border-radius:50%"></div> Tiktok</label>
+                <label style="display:flex; padding:8px;"><input type="radio" name="plat" value="all" checked onchange="doRender()"> All Channels</label>
+                <label style="display:flex; padding:8px;"><input type="radio" name="plat" value="instagram" onchange="doRender()"> Instagram</label>
+                <label style="display:flex; padding:8px;"><input type="radio" name="plat" value="tiktok" onchange="doRender()"> Tiktok</label>
             </div>
         </div>
         <div class="dropdown" onclick="toggleDrop('sDrop', event)">Status ▾ 
             <div class="drop-menu" id="sDrop">
-                <label class="f-row"><input type="checkbox" id="allStat" checked onchange="toggleAllStat()"><div class="box"></div> All Status</label>
+                <label style="display:flex; padding:8px;"><input type="checkbox" id="allStat" checked onchange="toggleAllStat()"> All Status</label>
                 <div id="statusCheckboxes"></div>
             </div>
         </div>
@@ -134,7 +105,7 @@
             document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none'; 
             document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none'; 
         }
-        
+
         function toggleAllStat() { 
             const isChecked = document.getElementById('allStat').checked; 
             document.querySelectorAll('.stat-check').forEach(c => c.checked = isChecked); 
@@ -143,7 +114,7 @@
 
         function renderPalette() {
             const g = document.getElementById('paletteGrid');
-            g.innerHTML = palette.map((c, i) => `<div class="color-item" style="background:${c}"><input type="color" style="position:absolute; opacity:0; inset:0; cursor:pointer;" value="${c}" onchange="palette[${i}]=this.value; renderPalette()"><button onclick="palette.splice(${i},1); renderPalette()" style="position:absolute; top:-5px; right:-5px; background:#000; color:#fff; border-radius:50%; width:16px; height:16px; font-size:10px; border:none; cursor:pointer;">×</button></div>`).join('');
+            g.innerHTML = palette.map((c, i) => `<div class="color-item" style="background:${c}"><input type="color" style="position:absolute; opacity:0; inset:0;" value="${c}" onchange="palette[${i}]=this.value; renderPalette()"><button onclick="palette.splice(${i},1); renderPalette()" style="position:absolute; top:-5px; right:-5px; background:#000; color:#fff; border-radius:50%; width:16px; height:16px; font-size:10px; border:none; cursor:pointer;">×</button></div>`).join('');
             doRender();
         }
         function addCol() { palette.push('#cccccc'); renderPalette(); }
@@ -162,25 +133,18 @@
 
                 const uniqueStats = [...new Set(gridData.map(i => i.status))];
                 document.getElementById('statusCheckboxes').innerHTML = uniqueStats.map(s => `
-                    <label class="f-row"><input type="checkbox" class="stat-check" value="${s}" checked onchange="updateAllStatCheck()"><div class="box"></div> ${s}</label>
+                    <label style="display:flex; padding:8px;"><input type="checkbox" class="stat-check" value="${s}" checked onchange="doRender()"> ${s}</label>
                 `).join('');
 
-                // Highlights Fallback for missing images
+                /* Highlights - Handle missing images with grey fallback */
                 document.getElementById('highRow').innerHTML = (res.highlights || []).map(h => `
                     <div style="text-align:center; min-width:75px; display:flex; flex-direction:column; align-items:center;">
-                        <div class="h-circle">${h.image ? `<img src="${h.image}" class="h-img">` : `<div class="h-img" style="background:#eee"></div>`}</div>
+                        <div class="h-circle">${h.image ? `<img src="${h.image}" class="h-img">` : `<div class="h-img"></div>`}</div>
                         <span style="font-size:11px; font-weight:600; margin-top:6px;">${h.name}</span>
                     </div>
                 `).join('');
                 doRender();
             } catch(e) { console.error(e); }
-        }
-
-        function updateAllStatCheck() {
-            const all = document.querySelectorAll('.stat-check');
-            const checked = document.querySelectorAll('.stat-check:checked');
-            document.getElementById('allStat').checked = (all.length === checked.length);
-            doRender();
         }
 
         function doRender() {
@@ -194,12 +158,15 @@
                 return platMatch && statMatch;
             });
             
-            // Empty view fallback: uses palette colors instead of white pages
-            grid.innerHTML = (filtered.length ? filtered : Array(9).fill(null)).map((item, idx) => {
+            /* Grid Logic: Show real content OR 9 placeholder squares */
+            const displayCount = filtered.length > 0 ? filtered.length : 9;
+            grid.innerHTML = Array.from({length: displayCount}).map((_, idx) => {
+                const item = filtered[idx];
                 const bg = palette[idx % palette.length];
                 if(!item) return `<div class="item" style="background:${bg}"></div>`;
+                
                 const slides = item.files.map(f => `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline onclick="this.paused ? this.play() : this.pause()"></video>` : `<img src="${f.url}">`}</div>`).join('');
-                return `<div class="item" style="background:${bg}">${item.files.length > 1 ? `<div class="indicator-icon">▢▢</div>` : ''}<div class="carousel-track">${slides}</div><div class="overlay">${item.name}</div></div>`;
+                return `<div class="item" style="background:${bg}">${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; text-shadow:0 0 4px rgba(0,0,0,0.5);">▢▢</div>` : ''}<div class="carousel-track">${slides}</div></div>`;
             }).join('');
         }
 
