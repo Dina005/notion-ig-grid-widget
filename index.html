@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v15</title>
+    <title>Pro Planner v16</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -38,11 +38,7 @@
             width: 77px; height: 77px; border-radius: 50%; border: 1px solid #dbdbdb; 
             background: #fafafa; padding: 3px; display: flex; align-items: center; justify-content: center; 
         }
-        .h-img { 
-            width: 100%; height: 100%; border-radius: 50%; 
-            object-fit: cover; /* Centers image content */
-            object-position: center; 
-        }
+        .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; object-position: center; }
         .h-label { font-size: 12px; font-weight: 600; margin-top: 8px; color: #262626; }
 
         /* --- Navigation Bar --- */
@@ -70,7 +66,7 @@
         input:checked + .indicator::after { content: ''; width: 6px; height: 6px; background: white; border-radius: 50%; }
         input:checked + .is-square::after { content: '✓'; color: white; font-size: 11px; font-weight: 800; }
 
-        /* --- Settings Menu & Toggle --- */
+        /* --- Settings Menu & Toggles --- */
         .menu-wrapper { position: relative; }
         .settings-menu { position: absolute; top: 55px; right: 0; width: 260px; background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: none; z-index: 2000; padding: 20px; border: 1px solid #ededf0; }
         .settings-menu.open { display: block; }
@@ -92,12 +88,14 @@
         .remove-btn { position: absolute; top: -4px; right: -4px; background: #000; color: #fff; border: none; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; cursor: pointer; }
         .add-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px dashed #ccc; background: none; cursor: pointer; font-size: 20px; color: #999; display: flex; align-items: center; justify-content: center; }
 
-        /* --- Grid & Overlay --- */
+        /* --- Grid & Media Rendering --- */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
         .item { aspect-ratio: 1/1; background: #f9f9fb; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
-        .item img { width: 100%; height: 100%; object-fit: cover; transition: 0.4s; }
+        .item img, .item video { width: 100%; height: 100%; object-fit: cover; transition: 0.4s; }
         
-        .map-mode .item img { display: none; }
+        .video-icon { position: absolute; top: 10px; right: 10px; color: white; filter: drop-shadow(0 0 2px rgba(0,0,0,0.5)); z-index: 5; pointer-events: none; }
+
+        .map-mode .item img, .map-mode .item video, .map-mode .video-icon { display: none !important; }
         .map-label { display: none; color: white; font-weight: 600; font-size: 14px; text-align: center; padding: 15px; line-height: 1.4; z-index: 5; }
         .map-mode .map-label { display: block; }
 
@@ -203,7 +201,7 @@
                 bioData = res.bio; 
                 gridData = res.grid; 
 
-                // Populate Bio Section
+                // Bio Rendering
                 document.getElementById('bioUser').innerText = bioData.username || "@username";
                 document.getElementById('bioDisplay').innerText = bioData.displayName || "Name";
                 document.getElementById('bioDesc').innerText = bioData.bioText || "";
@@ -215,7 +213,7 @@
                     pImg.style.display = 'block';
                 }
 
-                // Populate Highlights
+                // Highlights Rendering
                 const hContainer = document.getElementById('highRow');
                 hContainer.innerHTML = (res.highlights || []).map(h => `
                     <div class="h-item">
@@ -243,8 +241,15 @@
             grid.innerHTML = items.map((i, idx) => {
                 const bg = palette[idx % palette.length];
                 if (i && i.imageUrl) {
+                    // Autoplay logic: play on hover, pause when out
+                    const mediaHtml = i.isVideo 
+                        ? `<video src="${i.imageUrl}" muted loop playsinline onmouseover="this.play()" onmouseout="this.pause()"></video>
+                           <div class="video-icon">▶</div>` 
+                        : `<img src="${i.imageUrl}">`;
+
                     return `<div class="item" style="background-color:${bg}">
-                        <img src="${i.imageUrl}"><div class="map-label">${i.name || 'Untitled'}</div>
+                        ${mediaHtml}
+                        <div class="map-label">${i.name || 'Untitled'}</div>
                         <div class="overlay"><p class="ov-title">${i.name || 'Untitled'}</p></div>
                     </div>`;
                 }
