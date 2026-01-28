@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner</title>
+    <title>Pro Planner v4</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
         :root {
             --bg: #ffffff;
@@ -24,133 +24,61 @@
         }
 
         /* --- Header & Exact Slider Icon --- */
-        .top-bar { 
-            max-width: 935px; 
-            margin: 40px auto 15px; 
-            padding: 0 20px; 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-        }
+        .top-bar { max-width: 935px; margin: 40px auto 15px; padding: 0 20px; display: flex; align-items: center; gap: 12px; }
+        .refresh-btn { background: #2c2c2e; color: white; border: none; padding: 11px 22px; border-radius: 12px; font-weight: 500; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .filter-btn { background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        .refresh-btn { 
-            background: #2c2c2e; 
-            color: white; 
-            border: none; 
-            padding: 11px 22px; 
-            border-radius: 12px; 
-            font-weight: 500; 
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .filter-btn { 
-            background: var(--surface); 
-            border: none; 
-            width: 44px; 
-            height: 44px; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-        }
-
-        /* --- Filter Drawer --- */
-        .filter-area { 
-            max-width: 935px; 
-            margin: 0 auto 20px; 
-            padding: 0 20px; 
-            display: none; 
-            gap: 12px; 
-        }
+        /* --- Filter Area --- */
+        .filter-area { max-width: 935px; margin: 0 auto 20px; padding: 0 20px; display: none; gap: 12px; }
         .filter-area.active { display: flex; }
 
         /* --- Dropdown UI --- */
         .dropdown { position: relative; }
-        .dropdown-head { 
-            background: var(--surface); 
-            padding: 11px 18px; 
-            border-radius: 12px; 
-            font-size: 14px; 
-            font-weight: 500; 
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            min-width: 160px;
-        }
-
-        .dropdown-menu { 
-            position: absolute; 
-            top: 52px; 
-            left: 0; 
-            width: 250px; 
-            background: white; 
-            border-radius: 16px; 
-            box-shadow: 0 15px 40px rgba(0,0,0,0.08); 
-            display: none; 
-            z-index: 1000; 
-            padding: 8px;
-            border: 1px solid #ededf0;
-        }
+        .dropdown-head { background: var(--surface); padding: 11px 18px; border-radius: 12px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; justify-content: space-between; align-items: center; min-width: 160px; }
+        .dropdown-menu { position: absolute; top: 52px; left: 0; width: 250px; background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.08); display: none; z-index: 1000; padding: 8px; border: 1px solid #ededf0; }
         .dropdown-menu.open { display: block; }
 
-        .row { 
-            display: flex; 
-            align-items: center; 
-            padding: 12px; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            font-size: 14px;
-        }
+        .row { display: flex; align-items: center; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 14px; }
         .row:hover { background: var(--surface); }
 
-        /* --- PERFECT CENTERING FOR UI ELEMENTS --- */
+        /* --- UI Indicators (Perfectly Centered) --- */
         .indicator { 
-            width: 20px; 
-            height: 20px; 
-            border: 2px solid #d1d1d6; 
-            margin-right: 14px; 
-            display: grid; /* Grid is best for absolute center */
-            place-items: center; 
-            flex-shrink: 0;
-            box-sizing: border-box;
+            width: 20px; height: 20px; border: 2px solid #d1d1d6; margin-right: 14px; 
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative;
         }
         .is-circle { border-radius: 50%; }
         .is-square { border-radius: 5px; }
-
         input { display: none; }
 
-        /* Radio / Circle Centering */
         input:checked + .is-circle { border-color: var(--accent); background: var(--accent); }
-        input:checked + .is-circle::after { 
-            content: ''; width: 7px; height: 7px; background: white; border-radius: 50%; 
-        }
+        input:checked + .is-circle::after { content: ''; width: 6px; height: 6px; background: white; border-radius: 50%; }
 
-        /* Checkbox / Square Centering */
         input:checked + .is-square { border-color: var(--accent); background: var(--accent); }
-        input:checked + .is-square::after { 
-            content: '✓'; color: white; font-size: 12px; font-weight: 700;
-        }
+        input:checked + .is-square::after { content: '✓'; color: white; font-size: 11px; font-weight: 800; line-height: 1; }
 
         .val { margin-left: auto; color: var(--secondary); font-size: 12px; }
 
-        /* --- Grid Layout --- */
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 4px; 
-            max-width: 935px; 
-            margin: 0 auto; 
-            padding: 0 20px; 
+        /* --- Grid & NEW HOVER OVERLAY --- */
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto; padding: 0 20px; }
+        .item { aspect-ratio: 1/1; background: #f9f9fb; overflow: hidden; position: relative; cursor: pointer; }
+        .item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+        .item:hover img { transform: scale(1.05); }
+
+        .overlay {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.85));
+            color: white; padding: 20px 15px 15px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+            display: flex; flex-direction: column; gap: 4px;
         }
-        .item { aspect-ratio: 1/1; background: #f9f9fb; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .item img { width: 100%; height: 100%; object-fit: cover; }
-        .null-txt { color: #d1d1d6; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; }
+        .item:hover .overlay { transform: translateY(0); }
+
+        .ov-title { font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ov-pillar { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 0.5px; }
+        .ov-date { font-size: 10px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+
+        .null-txt { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #d1d1d6; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; }
     </style>
 </head>
 <body>
@@ -160,12 +88,9 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
             Refresh
         </button>
-
         <button class="filter-btn" onclick="toggleArea()">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round">
-                <line x1="6" y1="4" x2="6" y2="20"></line>
-                <line x1="12" y1="4" x2="12" y2="20"></line>
-                <line x1="18" y1="4" x2="18" y2="20"></line>
+                <line x1="6" y1="4" x2="6" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line><line x1="18" y1="4" x2="18" y2="20"></line>
                 <rect x="4" y="12" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"></rect>
                 <rect x="10" y="7" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"></rect>
                 <rect x="16" y="14" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"></rect>
@@ -182,7 +107,6 @@
                 <label class="row"><input type="radio" name="p" value="tiktok" onchange="doRender()"><div class="indicator is-circle"></div> Tiktok <span class="val" id="v-tk">0</span></label>
             </div>
         </div>
-
         <div class="dropdown">
             <div class="dropdown-head" onclick="toggleMenu('sMenu')">Status <span>▾</span></div>
             <div class="dropdown-menu" id="sMenu">
@@ -202,22 +126,13 @@
 
         function toggleArea() { document.getElementById('filterArea').classList.toggle('active'); close(); }
         function toggleMenu(id) {
-            const m = document.getElementById(id);
-            const wasOpen = m.classList.contains('open');
-            close();
-            if(!wasOpen) m.classList.add('open');
+            const m = document.getElementById(id); const wasOpen = m.classList.contains('open');
+            close(); if(!wasOpen) m.classList.add('open');
         }
         function close() { document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open')); }
 
-        function allStats() {
-            const val = document.getElementById('mS').checked;
-            document.querySelectorAll('.sc').forEach(c => c.checked = val);
-            doRender();
-        }
-        function sync() {
-            document.getElementById('mS').checked = Array.from(document.querySelectorAll('.sc')).every(c => c.checked);
-            doRender();
-        }
+        function allStats() { document.querySelectorAll('.sc').forEach(c => c.checked = document.getElementById('mS').checked); doRender(); }
+        function sync() { document.getElementById('mS').checked = Array.from(document.querySelectorAll('.sc')).every(c => c.checked); doRender(); }
 
         async function init() {
             try {
@@ -253,7 +168,18 @@
             let h = '';
             const list = filtered.length > 0 ? filtered : Array(9).fill(null);
             list.forEach(i => {
-                h += `<div class="item">${i && i.imageUrl ? `<img src="${i.imageUrl}">` : `<span class="null-txt">NO CONTENT</span>`}</div>`;
+                if (i && i.imageUrl) {
+                    h += `<div class="item">
+                        <img src="${i.imageUrl}">
+                        <div class="overlay">
+                            <span class="ov-pillar">${i.pillar || 'Uncategorized'}</span>
+                            <span class="ov-title">${i.title || 'Untitled Post'}</span>
+                            <span class="ov-date">${i.date || ''}</span>
+                        </div>
+                    </div>`;
+                } else {
+                    h += `<div class="item"><span class="null-txt">NO CONTENT</span></div>`;
+                }
             });
             grid.innerHTML = h;
         }
