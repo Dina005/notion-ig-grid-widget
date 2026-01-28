@@ -16,8 +16,8 @@
             padding: 0 20px; 
             display: none; 
             flex-direction: column; 
-            align-items: flex-start; /* Aligns items to the left */
-            text-align: left; /* Aligns text to the left */
+            align-items: flex-start;
+            text-align: left;
         }
         
         .pfp-container { 
@@ -28,7 +28,7 @@
             background: var(--grey-empty); 
             flex-shrink: 0; 
             border: 1px solid var(--border); 
-            margin-bottom: 25px; /* Spacing between pic and username */
+            margin-bottom: 25px;
         }
         .pfp-img { width: 100%; height: 100%; object-fit: cover; }
 
@@ -63,7 +63,6 @@
         }
         .dropdown-menu.show { display: block; }
 
-        /* Checkbox & Item Alignment */
         .dropdown-item { 
             padding: 10px 12px; border-radius: 8px; display: flex; 
             align-items: center; justify-content: space-between; 
@@ -85,7 +84,7 @@
         input[type="checkbox"] { display: none; }
         .count-pill { font-size: 11px; background: #eee; padding: 2px 8px; border-radius: 20px; color: #888; font-weight: 700; }
 
-        /* Settings Toggle Switch */
+        /* Settings Menu Customization */
         .settings-menu { position: absolute; top: 55px; right: 20px; width: 280px; background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: none; z-index: 2000; padding: 20px; border: 1px solid #ededf0; }
         .settings-menu.open { display: block; }
         .switch { position: relative; width: 40px; height: 22px; display: inline-block; }
@@ -94,9 +93,19 @@
         input:checked + .slider { background-color: #000; }
         input:checked + .slider:before { transform: translateX(18px); }
 
-        /* Grid */
+        /* NEW: Brand Color Manager UI */
+        .brand-color-section { margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; }
+        .color-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .color-picker { width: 30px; height: 30px; border: none; padding: 0; background: none; cursor: pointer; border-radius: 50%; overflow: hidden; }
+        .color-picker::-webkit-color-swatch { border: none; border-radius: 50%; }
+        .remove-btn { color: #ff4d4d; border: none; background: none; font-weight: 800; cursor: pointer; font-size: 16px; }
+        .add-btn { width: 100%; padding: 8px; background: var(--surface); border: 1px dashed #ccc; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
+
+        /* Grid & Map Item Styles */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
         .item { aspect-ratio: 1/1; background: var(--grey-empty); overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
+        .map-mode-label { color: #fff; font-weight: 800; font-size: 14px; text-transform: uppercase; text-align: center; padding: 15px; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        
         .no-content-label { color: #aaaaaa; font-size: 13px; font-weight: 500; text-transform: lowercase; }
         .carousel-track { display: flex; width: 100%; height: 100%; overflow-x: auto; scrollbar-width: none; }
         .slide { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
@@ -106,7 +115,6 @@
 <body>
     <div id="bioSection">
         <div class="pfp-container"><img id="pfpImg" class="pfp-img" src=""></div>
-        
         <h1 id="bioUser"></h1>
         <p id="bioDisplay" style="font-weight:600; margin-bottom: 5px;"></p>
         <p id="bioDesc" style="font-size:14px; color:#1a1a1a; max-width:600px; line-height:1.4; margin-bottom:10px; white-space: pre-wrap;"></p>
@@ -126,8 +134,17 @@
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
                     Show Bio <label class="switch"><input type="checkbox" id="bioT" onchange="updateUI()"><span class="slider"></span></label>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; font-weight:600;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
                     Show Highlights <label class="switch"><input type="checkbox" id="highT" onchange="updateUI()"><span class="slider"></span></label>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-weight:600;">
+                    Content Map <label class="switch"><input type="checkbox" id="mapT" onchange="updateUI()"><span class="slider"></span></label>
+                </div>
+                
+                <div class="brand-color-section" id="colorManagerUI" style="display:none;">
+                    <div style="font-size: 11px; font-weight: 800; color: #888; margin-bottom: 10px; text-transform: uppercase;">Brand Palette</div>
+                    <div id="colorList"></div>
+                    <button class="add-btn" onclick="addColor()">+ Add Color</button>
                 </div>
             </div>
         </div>
@@ -158,10 +175,10 @@
     </div>
 
     <div id="grid" class="grid"></div>
-
     <script>
         const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
         let gridData = [], currentPlat = 'all', activeStats = [];
+        let brandColors = ["#f8bbd0", "#b3e5fc"]; // Default colors
 
         function toggleSettings(e) { e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
         function toggleMenu(id, e) { e.stopPropagation(); document.querySelectorAll('.dropdown-menu').forEach(m => m.id !== id && m.classList.remove('show')); document.getElementById(id).classList.toggle('show'); }
@@ -169,16 +186,35 @@
         function updateUI() { 
             document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none'; 
             document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none'; 
+            
+            // Show/Hide Color Manager based on Map Toggle
+            const isMap = document.getElementById('mapT').checked;
+            document.getElementById('colorManagerUI').style.display = isMap ? 'block' : 'none';
+            
+            doRender(); 
         }
+
+        // Brand Color Manager Functions
+        function renderColorControls() {
+            const container = document.getElementById('colorList');
+            container.innerHTML = brandColors.map((color, idx) => `
+                <div class="color-row">
+                    <input type="color" class="color-picker" value="${color}" onchange="updateColor(${idx}, this.value)">
+                    <span style="font-size:12px; font-weight:600; flex:1;">Color ${idx+1}</span>
+                    ${brandColors.length > 2 ? `<button class="remove-btn" onclick="removeColor(${idx})">×</button>` : ''}
+                </div>
+            `).join('');
+        }
+        function addColor() { brandColors.push("#e0e0e0"); renderColorControls(); doRender(); }
+        function removeColor(idx) { brandColors.splice(idx, 1); renderColorControls(); doRender(); }
+        function updateColor(idx, val) { brandColors[idx] = val; doRender(); }
 
         async function init() {
             try {
                 const r = await fetch(API); const res = await r.json();
                 gridData = res.grid;
                 
-                // RESTORED PFP LOGIC
                 document.getElementById('pfpImg').src = res.bio.profilePicture || "";
-                
                 document.getElementById('bioUser').innerText = "@" + (res.bio.username || "username");
                 document.getElementById('bioDisplay').innerText = res.bio.displayName || "";
                 document.getElementById('bioDesc').innerText = res.bio.bioText || "";
@@ -197,6 +233,7 @@
                 activeStats = [...stats];
                 renderStatusOptions(stats);
                 updateCounts();
+                renderColorControls();
                 doRender();
             } catch(e) { console.error(e); }
         }
@@ -236,13 +273,20 @@
 
         function doRender() {
             const grid = document.getElementById('grid');
+            const isMap = document.getElementById('mapT').checked;
             const filtered = gridData.filter(i => (currentPlat === 'all' || i.platforms.includes(currentPlat)) && activeStats.includes(i.status));
+            
             let html = "";
             for (let i = 0; i < Math.max(9, filtered.length); i++) {
                 const item = filtered[i];
                 if (item) {
-                    const slides = item.files.map(f => `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline onclick="this.paused?this.play():this.pause()"></video>` : `<img src="${f.url}">`}</div>`).join('');
-                    html += `<div class="item">${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; font-weight:bold; text-shadow: 0 0 4px rgba(0,0,0,0.5);">▢▢</div>` : ''}<div class="carousel-track">${slides}</div></div>`;
+                    if (isMap) {
+                        const color = brandColors[i % brandColors.length];
+                        html += `<div class="item" style="background:${color}"><span class="map-mode-label">${item.status}</span></div>`;
+                    } else {
+                        const slides = item.files.map(f => `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline onclick="this.paused?this.play():this.pause()"></video>` : `<img src="${f.url}">`}</div>`).join('');
+                        html += `<div class="item">${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; font-weight:bold; text-shadow: 0 0 4px rgba(0,0,0,0.5);">▢▢</div>` : ''}<div class="carousel-track">${slides}</div></div>`;
+                    }
                 } else {
                     html += `<div class="item"><span class="no-content-label">no content</span></div>`;
                 }
