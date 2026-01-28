@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v22 - Profile Restored</title>
+    <title>Pro Planner v22 - Centered Header</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; --grey-empty: #efefef; --border: #e0e0e6; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-        /* Bio Section with Profile Pic Restored */
-        #bioSection { max-width: 935px; margin: 40px auto 10px; padding: 0 20px; display: none; align-items: center; gap: 40px; }
-        .pfp-container { width: 150px; height: 150px; border-radius: 50%; overflow: hidden; background: var(--grey-empty); flex-shrink: 0; border: 1px solid var(--border); }
+        /* Bio Section - Stacked & Centered */
+        #bioSection { max-width: 935px; margin: 40px auto 20px; padding: 0 20px; display: none; flex-direction: column; align-items: center; text-align: center; }
+        .pfp-container { width: 150px; height: 150px; border-radius: 50%; overflow: hidden; background: var(--grey-empty); flex-shrink: 0; border: 1px solid var(--border); margin-bottom: 20px; }
         .pfp-img { width: 100%; height: 100%; object-fit: cover; }
         
-        .bio-content { display: flex; flex-direction: column; align-items: flex-start; }
-        #bioUser { font-size: 28px; font-weight: 300; margin: 0 0 15px 0; }
+        .bio-content { display: flex; flex-direction: column; align-items: center; }
+        #bioUser { font-size: 28px; font-weight: 300; margin: 0 0 10px 0; }
 
         /* Highlights */
         #highRow { max-width: 935px; margin: 0 auto 30px; padding: 0 20px; display: none; gap: 25px; overflow-x: auto; scrollbar-width: none; justify-content: flex-start; }
@@ -43,7 +43,7 @@
         }
         .dropdown-menu.show { display: block; }
 
-        /* Checkbox Alignment */
+        /* Checkbox & Dropdown Items */
         .dropdown-item { padding: 10px 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; color: #444; line-height: 1; }
         .dropdown-item:hover { background: var(--surface); color: #000; }
         .item-left { display: flex; align-items: center; gap: 12px; }
