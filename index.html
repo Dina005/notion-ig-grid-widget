@@ -230,139 +230,200 @@
 
     <div id="grid" class="grid"></div>
    <script>
-    const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
-    let gridData = [], currentPlat = 'all', activeStats = [];
-    let brandColors = ["#FFD1DC", "#AEEEEE", "#FFECB3"]; // Starting brand palette
+   const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
+let gridData = [], currentPlat = 'all', activeStats = [];
+let brandColors = ["#FFD1DC", "#AEEEEE", "#FFECB3", "#D1FFD7", "#E0BBE4"]; 
+let shuffledIndices = []; // Stores the random color assignments
 
-    function toggleSettings(e) { 
-        e.stopPropagation(); 
-        document.getElementById('setMenu').classList.toggle('open'); 
-    }
+// --- SETTINGS & UI CONTROLS ---
 
-    function toggleMenu(id, e) { 
-        e.stopPropagation(); 
-        document.querySelectorAll('.dropdown-menu').forEach(m => m.id !== id && m.classList.remove('show')); 
-        document.getElementById(id).classList.toggle('show'); 
+// Keeps the 3-dot menu open until you click the dots again
+function toggleSettings(e) { 
+    e.stopPropagation(); 
+    document.getElementById('setMenu').classList.toggle('open'); 
+}
+
+// Controls the Status/Platform dropdowns (closes when clicking away)
+function toggleMenu(id, e) { 
+    e.stopPropagation(); 
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.id !== id && m.classList.remove('show')); 
+    document.getElementById(id).classList.toggle('show'); 
+}
+
+function updateUI() { 
+    document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none'; 
+    document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none'; 
+    
+    const isMap = document.getElementById('mapT').checked;
+    const colorUI = document.getElementById('colorManagerUI');
+    
+    if (isMap) {
+        colorUI.style.display = 'block';
+        if (shuffledIndices.length === 0) shuffleColors();
+    } else {
+        colorUI.style.display = 'none';
     }
     
-    function updateUI() { 
-        document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none'; 
-        document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none'; 
-        const isMap = document.getElementById('mapT').checked;
-        document.getElementById('colorManagerUI').style.display = isMap ? 'block' : 'none';
-        doRender(); 
-    }
+    doRender(); 
+}
 
-    // Render the Editable Circles
-    function renderColorControls() {
-        const container = document.getElementById('colorList');
-        container.innerHTML = brandColors.map((color, idx) => `
-            <div class="color-row">
-                <div class="color-picker-wrapper">
-                    <input type="color" class="color-picker" value="${color}" onchange="updateColor(${idx}, this.value)">
-                </div>
-                <span style="font-size:12px; font-weight:700; flex:1; color:#555;">Color ${idx+1}</span>
-                ${brandColors.length > 2 ? `<button class="remove-btn" onclick="removeColor(${idx})">×</button>` : ''}
+// --- COLOR RANDOMIZATION ENGINE ---
+
+function shuffleColors() {
+    // Generate a long list of random color picks to ensure the grid looks organic
+    shuffledIndices = Array.from({ length: 100 }, () => Math.floor(Math.random() * brandColors.length));
+    doRender();
+}
+
+function renderColorControls() {
+    const container = document.getElementById('colorList');
+    container.innerHTML = brandColors.map((color, idx) => `
+        <div class="color-row">
+            <div class="color-picker-wrapper">
+                <input type="color" class="color-picker" value="${color}" onchange="updateColor(${idx}, this.value)">
+            </div>
+            <span style="font-size:12px; font-weight:700; flex:1; color:#555;">Color ${idx+1}</span>
+            ${brandColors.length > 2 ? `<button class="remove-btn" onclick="removeColor(${idx})">×</button>` : ''}
+        </div>
+    `).join('');
+    
+    // Add a Shuffle Button at the bottom of the list if it doesn't exist
+    if (!document.getElementById('shuffleBtn')) {
+        const btn = document.createElement('button');
+        btn.id = 'shuffleBtn';
+        btn.className = 'add-btn';
+        btn.style.marginTop = '8px';
+        btn.style.background = '#000';
+        btn.style.color = '#fff';
+        btn.innerText = '🎲 Re-Shuffle Layout';
+        btn.onclick = shuffleColors;
+        container.after(btn);
+    }
+}
+
+function addColor() { 
+    brandColors.push("#e0e0e0"); 
+    shuffleColors(); 
+    renderColorControls(); 
+}
+
+function removeColor(idx) { 
+    brandColors.splice(idx, 1); 
+    shuffleColors(); 
+    renderColorControls(); 
+}
+
+function updateColor(idx, val) { 
+    brandColors[idx] = val; 
+    doRender(); 
+}
+
+// --- DATA FETCHING ---
+
+async function init() {
+    try {
+        const r = await fetch(API); const res = await r.json();
+        gridData = res.grid;
+        
+        // Bio Population
+        document.getElementById('pfpImg').src = res.bio.profilePicture || "";
+        document.getElementById('bioUser').innerText = "@" + (res.bio.username || "username");
+        document.getElementById('bioDisplay').innerText = res.bio.displayName || "";
+        document.getElementById('bioDesc').innerText = res.bio.bioText || "";
+        document.getElementById('bioLink').innerText = res.bio.linkDisplay || "";
+        document.getElementById('bioLink').href = res.bio.linkUrl || "#";
+
+        // Highlights Population
+        const hData = res.highlights && res.highlights.length > 0 ? res.highlights : Array(4).fill(null);
+        document.getElementById('highRow').innerHTML = hData.map(h => `
+            <div style="text-align:center; min-width:75px;">
+                <div class="h-circle">${h && h.image ? `<img src="${h.image}" class="h-img">` : `<div class="h-img">no content</div>`}</div>
+                <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h ? h.name : 'Highlight'}</span>
             </div>
         `).join('');
-    }
 
-    function addColor() { brandColors.push("#e0e0e0"); renderColorControls(); doRender(); }
-    function removeColor(idx) { brandColors.splice(idx, 1); renderColorControls(); doRender(); }
-    function updateColor(idx, val) { brandColors[idx] = val; doRender(); }
-
-    async function init() {
-        try {
-            const r = await fetch(API); const res = await r.json();
-            gridData = res.grid;
-            
-            // Populate Bio
-            document.getElementById('pfpImg').src = res.bio.profilePicture || "";
-            document.getElementById('bioUser').innerText = "@" + (res.bio.username || "username");
-            document.getElementById('bioDisplay').innerText = res.bio.displayName || "";
-            document.getElementById('bioDesc').innerText = res.bio.bioText || "";
-            document.getElementById('bioLink').innerText = res.bio.linkDisplay || "";
-            document.getElementById('bioLink').href = res.bio.linkUrl || "#";
-
-            const hData = res.highlights && res.highlights.length > 0 ? res.highlights : Array(4).fill(null);
-            document.getElementById('highRow').innerHTML = hData.map(h => `
-                <div style="text-align:center; min-width:75px;">
-                    <div class="h-circle">${h && h.image ? `<img src="${h.image}" class="h-img">` : `<div class="h-img">no content</div>`}</div>
-                    <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h ? h.name : 'Highlight'}</span>
-                </div>
-            `).join('');
-
-            const stats = [...new Set(gridData.map(i => i.status))];
-            activeStats = [...stats];
-            renderStatusOptions(stats);
-            updateCounts();
-            renderColorControls();
-            doRender();
-        } catch(e) { console.error(e); }
-    }
-
-    function renderStatusOptions(stats) {
-        document.getElementById('statusOptions').innerHTML = stats.map(s => {
-            const count = gridData.filter(i => i.status === s).length;
-            return `
-            <label class="dropdown-item" onclick="event.stopPropagation()">
-                <div class="item-left">
-                    <input type="checkbox" checked value="${s}" onchange="toggleStat('${s}')">
-                    <div class="check-box"></div>
-                    <span style="margin-top: 1px;">${s}</span>
-                </div>
-                <span class="count-pill">${count}</span>
-            </label>`;
-        }).join('');
-    }
-
-    function updateCounts() {
-        document.getElementById('cnt-all').innerText = gridData.length;
-        document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
-        document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
-    }
-
-    function setPlat(p) { 
-        currentPlat = p; 
-        document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
-        doRender(); 
-    }
-
-    function toggleStat(s) {
-        if (activeStats.includes(s)) activeStats = activeStats.filter(x => x !== s);
-        else activeStats.push(s);
+        // Filter Setup
+        const stats = [...new Set(gridData.map(i => i.status))];
+        activeStats = [...stats];
+        renderStatusOptions(stats);
+        updateCounts();
+        renderColorControls();
+        shuffleColors();
         doRender();
-    }
+    } catch(e) { console.error("Error loading grid:", e); }
+}
 
-    function doRender() {
-        const grid = document.getElementById('grid');
-        const isMap = document.getElementById('mapT').checked;
-        const filtered = gridData.filter(i => (currentPlat === 'all' || i.platforms.includes(currentPlat)) && activeStats.includes(i.status));
-        
-        let html = "";
-        for (let i = 0; i < Math.max(9, filtered.length); i++) {
-            const item = filtered[i];
-            if (item) {
-                if (isMap) {
-                    // RANDOMIZER: Uses a simple hash of the status + index to pick a color
-                    const colorIndex = (item.status.length + i) % brandColors.length;
-                    const color = brandColors[colorIndex];
-                    html += `<div class="item" style="background:${color}"><span class="map-mode-label">${item.status}</span></div>`;
-                } else {
-                    const slides = item.files.map(f => `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline onclick="this.paused?this.play():this.pause()"></video>` : `<img src="${f.url}">`}</div>`).join('');
-                    html += `<div class="item">${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; font-weight:bold; text-shadow: 0 0 4px rgba(0,0,0,0.5);">▢▢</div>` : ''}<div class="carousel-track">${slides}</div></div>`;
-                }
+// --- FILTERS & COUNTING ---
+
+function renderStatusOptions(stats) {
+    document.getElementById('statusOptions').innerHTML = stats.map(s => {
+        const count = gridData.filter(i => i.status === s).length;
+        return `
+        <label class="dropdown-item" onclick="event.stopPropagation()">
+            <div class="item-left">
+                <input type="checkbox" checked value="${s}" onchange="toggleStat('${s}')">
+                <div class="check-box"></div>
+                <span style="margin-top: 1px;">${s}</span>
+            </div>
+            <span class="count-pill">${count}</span>
+        </label>`;
+    }).join('');
+}
+
+function updateCounts() {
+    document.getElementById('cnt-all').innerText = gridData.length;
+    document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
+    document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
+}
+
+function setPlat(p) { 
+    currentPlat = p; 
+    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
+    doRender(); 
+}
+
+function toggleStat(s) {
+    if (activeStats.includes(s)) activeStats = activeStats.filter(x => x !== s);
+    else activeStats.push(s);
+    doRender();
+}
+
+// --- CORE RENDERING ---
+
+function doRender() {
+    const grid = document.getElementById('grid');
+    const isMap = document.getElementById('mapT').checked;
+    const filtered = gridData.filter(i => (currentPlat === 'all' || i.platforms.includes(currentPlat)) && activeStats.includes(i.status));
+    
+    let html = "";
+    for (let i = 0; i < Math.max(9, filtered.length); i++) {
+        const item = filtered[i];
+        if (item) {
+            if (isMap) {
+                // Pick the pre-randomized color for this slot
+                const color = brandColors[shuffledIndices[i % shuffledIndices.length]];
+                html += `
+                <div class="item" style="background:${color}; transition: background 0.4s ease;">
+                    <span class="map-mode-label">${item.status}</span>
+                </div>`;
             } else {
-                html += `<div class="item"><span class="no-content-label">no content</span></div>`;
+                const slides = item.files.map(f => `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline onclick="this.paused?this.play():this.pause()"></video>` : `<img src="${f.url}">`}</div>`).join('');
+                html += `<div class="item">${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; font-weight:bold; text-shadow: 0 0 4px rgba(0,0,0,0.5);">▢▢</div>` : ''}<div class="carousel-track">${slides}</div></div>`;
             }
+        } else {
+            // Placeholder for empty slots
+            html += `<div class="item"><span class="no-content-label">no content</span></div>`;
         }
-        grid.innerHTML = html;
     }
+    grid.innerHTML = html;
+}
 
-    window.onclick = () => {
-        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
-    };
-    init();
+// Closes filters when clicking background, but NOT the settings menu
+window.onclick = () => {
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+};
+
+init();
 </script>
 </body>
 </html>
