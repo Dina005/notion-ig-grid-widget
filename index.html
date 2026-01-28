@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v8</title>
+    <title>Pro Planner v13</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
         :root {
             --bg: #ffffff;
@@ -17,8 +17,19 @@
 
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 
+        /* --- Bio Section --- */
+        #bioSection { 
+            max-width: 935px; margin: 40px auto 10px; padding: 0 20px; 
+            display: none; flex-direction: column; align-items: center; text-align: center; 
+        }
+        .pfp-circle { width: 85px; height: 85px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 1px solid #efefef; }
+        .u-name { font-size: 28px; font-weight: 800; margin: 0; letter-spacing: -0.5px; }
+        .d-name { font-size: 16px; font-weight: 600; margin: 8px 0 5px; }
+        .b-text { font-size: 14px; color: #262626; max-width: 450px; margin: 0 0 10px; line-height: 1.4; white-space: pre-wrap; }
+        .b-link { color: #00376b; font-weight: 700; text-decoration: none; font-size: 15px; }
+
         /* --- Navigation Bar --- */
-        .top-bar { max-width: 935px; margin: 40px auto 15px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
+        .top-bar { max-width: 935px; margin: 20px auto 15px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
         .refresh-btn { background: #000; color: white; border: none; padding: 11px 20px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; }
         .icon-btn { background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         .icon-btn:hover { background: #e5e5ea; }
@@ -34,7 +45,6 @@
         .row { display: flex; align-items: center; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 14px; }
         .row:hover { background: var(--surface); }
 
-        /* Centered Indicators */
         .indicator { width: 20px; height: 20px; border: 2px solid #d1d1d6; margin-right: 14px; display: grid; place-items: center; flex-shrink: 0; }
         .is-circle { border-radius: 50%; }
         .is-square { border-radius: 5px; }
@@ -49,7 +59,6 @@
         .settings-menu.open { display: block; }
         .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; font-size: 14px; font-weight: 600; }
 
-        /* Black Toggle Switch */
         .switch { position: relative; width: 40px; height: 22px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e5ea; transition: .3s; border-radius: 20px; }
@@ -57,7 +66,6 @@
         input:checked + .slider { background-color: #000; }
         input:checked + .slider:before { transform: translateX(18px); }
 
-        /* Color Palette UI */
         .palette-section { margin-top: 15px; border-top: 1px solid #f0f0f0; padding-top: 15px; }
         .color-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start; margin-top: 10px; }
         .color-item { position: relative; display: grid; place-items: center; }
@@ -67,7 +75,7 @@
         .remove-btn { position: absolute; top: -4px; right: -4px; background: #000; color: #fff; border: none; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; cursor: pointer; }
         .add-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px dashed #ccc; background: none; cursor: pointer; font-size: 20px; color: #999; display: flex; align-items: center; justify-content: center; }
 
-        /* --- Grid --- */
+        /* --- Grid & Overlay --- */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
         .item { aspect-ratio: 1/1; background: #f9f9fb; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
         .item img { width: 100%; height: 100%; object-fit: cover; transition: 0.4s; }
@@ -84,6 +92,14 @@
 </head>
 <body>
 
+    <div id="bioSection">
+        <img id="bioPfp" class="pfp-circle" src="" style="display:none;">
+        <h1 class="u-name" id="bioUser"></h1>
+        <p class="d-name" id="bioDisplay"></p>
+        <p class="b-text" id="bioDesc"></p>
+        <a href="#" class="b-link" id="bioLink"></a>
+    </div>
+
     <div class="top-bar">
         <button class="refresh-btn" onclick="location.reload()">Refresh</button>
         <button class="icon-btn" onclick="toggleFilters()">
@@ -92,6 +108,7 @@
         <div class="menu-wrapper" style="margin-left: auto;">
             <button class="icon-btn" onclick="toggleSettings()">•••</button>
             <div class="settings-menu" id="setMenu">
+                <div class="setting-row">Show Bio <label class="switch"><input type="checkbox" id="bioT" checked onchange="updateView()"><span class="slider"></span></label></div>
                 <div class="setting-row">Content Map Mode <label class="switch"><input type="checkbox" id="mapT" onchange="applyMode()"><span class="slider"></span></label></div>
                 <div class="palette-section">
                     <span style="font-size: 10px; font-weight: 800; color: #8e8e93; letter-spacing: 1px;">BRAND PALETTE</span>
@@ -123,7 +140,8 @@
 
     <script>
         const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
-        let data = [];
+        let gridData = [];
+        let bioData = {};
         let palette = ['#b4b4a5', '#a5a596'];
 
         function toggleFilters() { document.getElementById('filterArea').classList.toggle('active'); closeAll(); }
@@ -132,6 +150,7 @@
         function closeAll() { document.querySelectorAll('.dropdown-menu, .settings-menu').forEach(m => m.classList.remove('open')); }
 
         function applyMode() { document.getElementById('grid').classList.toggle('map-mode', document.getElementById('mapT').checked); doRender(); }
+        function updateView() { document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none'; }
 
         function renderColors() {
             const container = document.getElementById('colorContainer');
@@ -154,7 +173,25 @@
             const saved = localStorage.getItem('userPalette');
             if(saved) palette = JSON.parse(saved);
             renderColors();
-            try { const r = await fetch(API); data = await r.json(); } catch(e) {}
+            try { 
+                const r = await fetch(API); 
+                const res = await r.json(); 
+                bioData = res.bio; 
+                gridData = res.grid; 
+
+                // Populate Bio Section
+                document.getElementById('bioUser').innerText = bioData.username || "@username";
+                document.getElementById('bioDisplay').innerText = bioData.displayName || "Name";
+                document.getElementById('bioDesc').innerText = bioData.bioText || "";
+                document.getElementById('bioLink').innerText = bioData.linkDisplay || "link.com";
+                document.getElementById('bioLink').href = bioData.linkUrl || "#";
+                if(bioData.pfp) {
+                    const pImg = document.getElementById('bioPfp');
+                    pImg.src = bioData.pfp;
+                    pImg.style.display = 'block';
+                }
+            } catch(e) { console.error("Load Failed", e); }
+            updateView();
             doRender();
         }
 
@@ -164,7 +201,7 @@
             const s = Array.from(document.querySelectorAll('.sc:checked')).map(c => c.value);
             const m = document.getElementById('mS').checked;
 
-            const filtered = data.filter(i => (p === 'all' || i.platforms.includes(p)) && (m || s.includes(i.status)));
+            const filtered = gridData.filter(i => (p === 'all' || i.platforms.includes(p)) && (m || s.includes(i.status)));
             let items = filtered.length > 0 ? filtered : Array(9).fill(null);
 
             grid.innerHTML = items.map((i, idx) => {
@@ -175,7 +212,7 @@
                         <div class="overlay"><p class="ov-title">${i.name || 'Untitled'}</p></div>
                     </div>`;
                 }
-                return `<div class="item"><span class="empty-tag">EMPTY</span></div>`;
+                return `<div class="item" style="background-color:${bg}"><span class="empty-tag">EMPTY</span></div>`;
             }).join('');
         }
 
