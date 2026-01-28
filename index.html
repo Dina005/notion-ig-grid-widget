@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v22 - Centered Checkbox</title>
+    <title>Pro Planner v22 - Precision Centering</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; --grey-empty: #efefef; --border: #e0e0e6; }
@@ -38,38 +38,51 @@
             z-index: 3000; min-width: 220px; display: none; padding: 8px;
         }
         .dropdown-menu.show { display: block; }
-        .dropdown-item { padding: 10px 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; color: #444; }
-        .dropdown-item:hover { background: var(--surface); color: #000; }
-        .count-pill { font-size: 11px; background: #eee; padding: 2px 8px; border-radius: 20px; color: #888; }
 
-        /* FIXED CENTERED CHECKBOX */
+        /* ITEM ALIGNMENT FIX */
+        .dropdown-item { 
+            padding: 10px 12px; 
+            border-radius: 8px; 
+            display: flex; 
+            align-items: center; /* Centers checkbox and text vertically */
+            justify-content: space-between; 
+            cursor: pointer; 
+            color: #444; 
+            line-height: 1; /* Normalizes text height */
+        }
+        .dropdown-item:hover { background: var(--surface); color: #000; }
+        
+        .item-left { display: flex; align-items: center; gap: 12px; }
+
+        /* CHECKBOX PRECISION CENTERED */
         .check-box { 
             width: 18px; 
             height: 18px; 
             border: 1.5px solid #ccc; 
             border-radius: 5px; 
             position: relative; 
-            flex-shrink: 0; /* Prevents squishing */
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-shrink: 0; 
+            background: #fff;
+            box-sizing: border-box;
+            display: inline-block; /* Essential for flex-centering */
         }
         input[type="checkbox"]:checked + .check-box { background: #000; border-color: #000; }
         input[type="checkbox"]:checked + .check-box::after {
-            content: ""; position: absolute; left: 5px; top: 2px; width: 4px; height: 8px;
+            content: ""; position: absolute; left: 5px; top: 1px; width: 4px; height: 8px;
             border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg);
         }
         input[type="checkbox"] { display: none; }
 
-        /* Grid Slots */
+        .count-pill { font-size: 11px; background: #eee; padding: 2px 8px; border-radius: 20px; color: #888; font-weight: 700; }
+
+        /* Grid */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
         .item { aspect-ratio: 1/1; background: var(--grey-empty); overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
         .no-content-label { color: #aaaaaa; font-size: 13px; font-weight: 500; text-transform: lowercase; }
-        .carousel-track { display: flex; width: 100%; height: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
-        .slide { min-width: 100%; height: 100%; scroll-snap-align: start; display: flex; align-items: center; justify-content: center; }
-        .slide img, .slide video { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .carousel-track { display: flex; width: 100%; height: 100%; overflow-x: auto; scrollbar-width: none; }
+        .slide { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .slide img, .slide video { width: 100%; height: 100%; object-fit: cover; }
         
-        /* Settings */
         .settings-menu { position: absolute; top: 55px; right: 20px; width: 280px; background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: none; z-index: 2000; padding: 20px; border: 1px solid #ededf0; }
         .settings-menu.open { display: block; }
     </style>
@@ -164,10 +177,10 @@
                 const count = gridData.filter(i => i.status === s).length;
                 return `
                 <label class="dropdown-item" onclick="event.stopPropagation()">
-                    <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="item-left">
                         <input type="checkbox" checked value="${s}" onchange="toggleStat('${s}')">
                         <div class="check-box"></div>
-                        <span>${s}</span>
+                        <span style="margin-top: 1px;">${s}</span>
                     </div>
                     <span class="count-pill">${count}</span>
                 </label>`;
