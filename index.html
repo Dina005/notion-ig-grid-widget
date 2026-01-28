@@ -245,9 +245,8 @@
    <script>
 const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [];
-let brandColors = ["#FFD1DC", "#AEEEEE", "#FFECB3", "#D1FFD7", "#E0BBE4"]; 
+let brandColors = ["#FFD1DC", "#AEEEEE", "#FFECB3"]; 
 let shuffledIndices = [];
-
 function toggleSettings(e) { 
     e.stopPropagation(); 
     document.getElementById('setMenu').classList.toggle('open'); 
@@ -266,20 +265,28 @@ function updateUI() {
     doRender(); 
 }
 
-// Lightbox Preview Logic
+// AUTO-ON & INITIALIZATION
+async function init() {
+    document.getElementById('canvaT').checked = true; // Sets Canva preview to active by default
+    try {
+        const r = await fetch(API); const res = await r.json();
+        gridData = res.grid;
+        initUI(res);
+    } catch(e) { console.error("Load error:", e); }
+}
+
+// UNIVERSAL PREVIEW LOGIC
 function openPreview(index) {
     const item = gridData[index];
     if (!item) return;
 
     const content = document.getElementById('lightboxContent');
     const lightbox = document.getElementById('previewLightbox');
-    const canvaEnabled = document.getElementById('canvaT').checked;
+    const primaryFile = item.files[0];
     
     let html = "";
-    const primaryFile = item.files[0];
-
-    // Lightbox uses the full embed view for high quality
-    if (canvaEnabled && primaryFile.url.includes('canva.com')) {
+    if (primaryFile.url.includes('canva.com')) {
+        // Forces the embed format to bypass the 403 error
         let embedUrl = primaryFile.url.split('?')[0].replace(/\/watch$/, '') + '/view?embed';
         html = `<iframe src="${embedUrl}" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>`;
     } else if (primaryFile.isVideo) {
@@ -289,16 +296,7 @@ function openPreview(index) {
     }
 
     content.innerHTML = html;
-    lightbox.style.display = 'flex';
-}
-async function init() {
-    document.getElementById('canvaT').checked = true; // Auto-on Canva
-    try {
-        const r = await fetch(API); const res = await r.json();
-        gridData = res.grid;
-        // ... (Bio and Highlights code remains same as previous version)
-        initUI(res);
-    } catch(e) { console.error(e); }
+    lightbox.style.display = 'flex'; // Opens the overlay for all post types
 }
 
 function initUI(res) {
@@ -326,47 +324,31 @@ function initUI(res) {
 
 function doRender() {
     const grid = document.getElementById('grid');
-    const isMap = document.getElementById('mapT').checked;
     const canvaEnabled = document.getElementById('canvaT').checked;
     const filtered = gridData.filter(i => (currentPlat === 'all' || i.platforms.includes(currentPlat)) && activeStats.includes(i.status));
     
     let html = "";
-    for (let i = 0; i < Math.max(9, filtered.length); i++) {
-        const item = filtered[i];
+    filtered.forEach((item, i) => {
         const dataIndex = gridData.indexOf(item);
-        
-        if (item) {
-            if (isMap) {
-                const color = brandColors[shuffledIndices[i % shuffledIndices.length]];
-                html += `<div class="item" onclick="openPreview(${dataIndex})" style="background:${color}; cursor:pointer;"><span class="map-mode-label">${item.status}</span></div>`;
-            } else {
-                const slides = item.files.map(f => {
-                    if (canvaEnabled && f.url.includes('canva.com')) {
-                        let base = f.url.split('?')[0].replace(/\/watch$/, '') + '/view?embed';
-                        // Scale (1.4) and Translation (-15%) to crop out Canva's black bars in the grid
-                        return `<div class="slide" style="width:100%; height:100%; overflow:hidden;">
-                                    <iframe src="${base}" style="width:140%; height:140%; border:none; transform: translate(-15%, -15%) scale(1.1); pointer-events:none;"></iframe>
-                                </div>`;
-                    }
-                    return `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline muted></video>` : `<img src="${f.url}">`}</div>`;
-                }).join('');
-                
-                html += `<div class="item" onclick="openPreview(${dataIndex})" style="cursor:pointer;">
-                            ${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; font-weight:bold;">▢▢</div>` : ''}
-                            <div class="carousel-track">${slides}</div>
-                         </div>`;
+        const slides = item.files.map(f => {
+            if (canvaEnabled && f.url.includes('canva.com')) {
+                let base = f.url.split('?')[0].replace(/\/watch$/, '') + '/view?embed';
+                // Zooms in to hide black bars
+                return `<div class="slide" style="width:100%; height:100%; overflow:hidden;">
+                            <iframe src="${base}" style="width:140%; height:140%; border:none; transform: translate(-15%, -15%) scale(1.1); pointer-events:none;"></iframe>
+                        </div>`;
             }
-        } else {
-            html += `<div class="item"><span class="no-content-label">no content</span></div>`;
-        }
-    }
+            return `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline muted></video>` : `<img src="${f.url}">`}</div>`;
+        }).join('');
+        
+        html += `<div class="item" onclick="openPreview(${dataIndex})" style="cursor:pointer;">
+                    ${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; font-weight:bold;">▢▢</div>` : ''}
+                    <div class="carousel-track">${slides}</div>
+                 </div>`;
+    });
     grid.innerHTML = html;
 }
-
-window.onclick = () => {
-    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
-};
-
+// (Other support functions like toggleSettings, renderColorControls remain the same)
 init();
 </script>
    
