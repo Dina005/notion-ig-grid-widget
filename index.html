@@ -3,284 +3,288 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aesthetic Content Planner</title>
+    <title>Premium Content Feed</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
         :root {
             --bg: #ffffff;
-            --surface: #f8f8f9;
-            --text-main: #1a1a1a;
-            --text-sub: #8e8e93;
-            --accent: #000000; /* Switched from orange to classic black for luxury feel */
-            --border-radius: 14px;
-            --shadow: 0 10px 30px rgba(0,0,0,0.06);
+            --pill: #f2f2f7;
+            --pill-hover: #e5e5ea;
+            --text: #1c1c1e;
+            --text-secondary: #8e8e93;
+            --accent: #000000;
+            --radius: 12px;
         }
 
         body { 
             margin: 0; 
             font-family: 'Inter', -apple-system, sans-serif; 
             background: var(--bg); 
-            color: var(--text-main); 
-            -webkit-font-smoothing: antialiased;
+            color: var(--text); 
+            letter-spacing: -0.01em;
         }
 
-        /* --- Refined Header --- */
-        .header { 
-            max-width: 1000px; 
-            margin: 40px auto 20px; 
-            padding: 0 25px; 
+        /* --- Header Section --- */
+        .controls-row { 
+            max-width: 935px; 
+            margin: 30px auto 10px; 
+            padding: 0 20px; 
             display: flex; 
             align-items: center; 
-            gap: 15px; 
+            gap: 10px; 
         }
 
-        .btn-refresh { 
-            background: var(--accent); 
+        .btn-main { 
+            background: #2c2c2e; 
             color: white; 
             border: none; 
-            padding: 12px 24px; 
-            border-radius: var(--border-radius); 
+            padding: 10px 20px; 
+            border-radius: 10px; 
             font-weight: 500; 
             font-size: 14px;
-            cursor: pointer; 
+            cursor: pointer;
             display: flex;
             align-items: center;
             gap: 8px;
-            transition: opacity 0.2s;
         }
-        .btn-refresh:hover { opacity: 0.85; }
 
-        .btn-filter { 
-            background: var(--surface); 
+        .btn-icon { 
+            background: var(--pill); 
             border: none; 
-            width: 48px; 
-            height: 48px; 
-            border-radius: var(--border-radius); 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            transition: background 0.2s;
-        }
-        .btn-filter.active { background: #eeeeef; }
-
-        /* --- Drawer Layout --- */
-        .filter-drawer { 
-            max-width: 1000px; 
-            margin: 0 auto; 
-            padding: 0 25px; 
-            display: none; 
-            gap: 15px; 
-            margin-bottom: 30px;
-            animation: fadeIn 0.3s ease;
-        }
-        .filter-drawer.show { display: flex; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- Elegant Dropdowns --- */
-        .dropdown { position: relative; }
-        .dropdown-trigger { 
-            background: var(--surface); 
-            padding: 12px 20px; 
-            border-radius: var(--border-radius); 
-            font-size: 14px; 
-            font-weight: 500; 
-            color: var(--text-main);
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            cursor: pointer; 
-            min-width: 180px;
-            border: 1px solid transparent;
-            transition: border 0.2s;
-        }
-        .dropdown-trigger:hover { border-color: #e5e5e7; }
-
-        .dropdown-pane { 
-            position: absolute; 
-            top: 55px; 
-            left: 0; 
-            width: 260px; 
-            background: white; 
-            border-radius: 18px; 
-            box-shadow: var(--shadow); 
-            display: none; 
-            z-index: 100; 
-            padding: 10px;
-            border: 1px solid #f0f0f2;
-        }
-        .dropdown-pane.open { display: block; }
-
-        .filter-item { 
-            display: flex; 
-            align-items: center; 
-            padding: 12px 14px; 
+            width: 42px; 
+            height: 42px; 
             border-radius: 10px; 
             cursor: pointer; 
-            font-size: 14px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+        }
+
+        /* --- Filter Area --- */
+        .filter-section { 
+            max-width: 935px; 
+            margin: 0 auto; 
+            padding: 0 20px; 
+            display: none; /* Controlled by JS */
+            gap: 10px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+        .filter-section.visible { display: flex; }
+
+        /* --- Custom Dropdowns --- */
+        .select-wrapper { position: relative; }
+        
+        .select-header { 
+            background: var(--pill); 
+            padding: 10px 16px; 
+            border-radius: 10px; 
+            font-size: 14px; 
+            font-weight: 500; 
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-width: 150px;
             transition: background 0.2s;
         }
-        .filter-item:hover { background: var(--surface); }
+        .select-header:hover { background: var(--pill-hover); }
 
-        /* --- Custom Radio & Checkbox Styling (Black/Silver) --- */
-        .ui-radio { width: 18px; height: 18px; border: 2px solid #d1d1d6; border-radius: 50%; margin-right: 15px; position: relative; flex-shrink: 0; }
-        input[type="radio"]:checked + .ui-radio { border-color: var(--accent); background: var(--accent); }
-        input[type="radio"]:checked + .ui-radio::after { content: ''; position: absolute; width: 6px; height: 6px; background: white; border-radius: 50%; top: 4px; left: 4px; }
-
-        .ui-check { width: 18px; height: 18px; border: 2px solid #d1d1d6; border-radius: 6px; margin-right: 15px; position: relative; flex-shrink: 0; background: white; }
-        input[type="checkbox"]:checked + .ui-check { border-color: var(--accent); background: var(--accent); }
-        input[type="checkbox"]:checked + .ui-check::after { 
-            content: ''; position: absolute; left: 5px; top: 1px; width: 4px; height: 8px; 
-            border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); 
+        .select-menu { 
+            position: absolute; 
+            top: 48px; 
+            left: 0; 
+            width: 240px; 
+            background: white; 
+            border-radius: 14px; 
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1); 
+            display: none; 
+            z-index: 999; 
+            padding: 8px;
+            border: 1px solid #f0f0f2;
         }
+        .select-menu.open { display: block; }
 
-        input { display: none; }
-        .count-badge { margin-left: auto; color: var(--text-sub); font-size: 12px; font-weight: 400; }
-
-        /* --- The Feed Grid --- */
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 10px; /* Increased gap for cleaner look */
-            max-width: 1000px; 
-            margin: 0 auto 50px; 
-            padding: 0 25px; 
+        .option { 
+            display: flex; 
+            align-items: center; 
+            padding: 10px 12px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 14px;
+            transition: background 0.15s;
         }
-        .post-card { 
-            aspect-ratio: 1/1; 
-            background: var(--surface); 
-            border-radius: var(--border-radius);
-            overflow: hidden; 
-            position: relative; 
+        .option:hover { background: var(--pill); }
+
+        /* --- Fixed Centering for Circles/Checks --- */
+        .box { 
+            width: 18px; 
+            height: 18px; 
+            border: 1.5px solid #d1d1d6; 
+            margin-right: 12px; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
+            flex-shrink: 0;
+            transition: all 0.2s;
         }
-        .post-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
-        .post-card:hover img { transform: scale(1.03); }
-        .no-data-text { color: var(--text-sub); font-size: 11px; font-weight: 600; letter-spacing: 1.5px; }
+        .circle { border-radius: 50%; }
+        .square { border-radius: 4px; }
+
+        input { display: none; }
+
+        /* Platform Radio logic */
+        input:checked + .circle { background: var(--accent); border-color: var(--accent); }
+        input:checked + .circle::after { 
+            content: ''; width: 6px; height: 6px; background: white; border-radius: 50%; 
+        }
+
+        /* Status Checkbox logic */
+        input:checked + .square { background: var(--accent); border-color: var(--accent); }
+        input:checked + .square::after { 
+            content: '✓'; color: white; font-size: 11px; font-weight: bold;
+        }
+
+        .count-num { margin-left: auto; color: var(--text-secondary); font-size: 12px; }
+
+        /* --- Grid --- */
+        .feed-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 4px; 
+            max-width: 935px; 
+            margin: 0 auto 40px; 
+            padding: 0 20px; 
+        }
+        .post-box { 
+            aspect-ratio: 1/1; 
+            background: #fafafa; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            overflow: hidden;
+        }
+        .post-box img { width: 100%; height: 100%; object-fit: cover; }
+        .empty-tag { color: #d1d1d6; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <button class="btn-refresh" onclick="location.reload()">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+    <div class="controls-row">
+        <button class="btn-main" onclick="location.reload()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M23 4v6h-6M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
             Refresh
         </button>
 
-        <button class="btn-filter" id="filterBtn" onclick="toggleDrawer()">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round">
-                <line x1="4" y1="21" x2="4" y2="14"></line>
-                <line x1="4" y1="10" x2="4" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12" y2="3"></line>
-                <line x1="20" y1="21" x2="20" y2="16"></line>
-                <line x1="20" y1="12" x2="20" y2="3"></line>
-                <rect x="2" y="10" width="4" height="4" rx="1" fill="white"></rect>
-                <rect x="10" y="8" width="4" height="4" rx="1" fill="white"></rect>
-                <rect x="18" y="12" width="4" height="4" rx="1" fill="white"></rect>
+        <button class="btn-icon" onclick="toggleFilterBar()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
+                <line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
+                <line x1="2" y1="14" x2="6" y2="14"></line><line x1="10" y1="12" x2="14" y2="12"></line><line x1="18" y1="16" x2="22" y2="16"></line>
             </svg>
         </button>
     </div>
 
-    <div class="filter-drawer" id="drawer">
-        <div class="dropdown">
-            <div class="dropdown-trigger" onclick="togglePane('pPane')">Platform <small>▾</small></div>
-            <div class="dropdown-pane" id="pPane">
-                <label class="filter-item"><input type="radio" name="plat" value="all" checked onchange="updateGrid()"><div class="ui-radio"></div> All Channels <span class="count-badge" id="n-allP">0</span></label>
-                <label class="filter-item"><input type="radio" name="plat" value="instagram" onchange="updateGrid()"><div class="ui-radio"></div> Instagram <span class="count-badge" id="n-ig">0</span></label>
-                <label class="filter-item"><input type="radio" name="plat" value="tiktok" onchange="updateGrid()"><div class="ui-radio"></div> Tiktok <span class="count-badge" id="n-tk">0</span></label>
+    <div class="filter-section" id="filterBar">
+        <div class="select-wrapper">
+            <div class="select-header" onclick="toggleMenu('platMenu')">All Platforms <span>▾</span></div>
+            <div class="select-menu" id="platMenu">
+                <label class="option"><input type="radio" name="p" value="all" checked onchange="renderGrid()"><div class="box circle"></div> All Platforms <span class="count-num" id="cnt-all-p">(0)</span></label>
+                <label class="option"><input type="radio" name="p" value="instagram" onchange="renderGrid()"><div class="box circle"></div> Instagram <span class="count-num" id="cnt-ig">(0)</span></label>
+                <label class="option"><input type="radio" name="p" value="tiktok" onchange="renderGrid()"><div class="box circle"></div> Tiktok <span class="count-num" id="cnt-tk">(0)</span></label>
             </div>
         </div>
 
-        <div class="dropdown">
-            <div class="dropdown-trigger" onclick="togglePane('sPane')">Status <small>▾</small></div>
-            <div class="dropdown-pane" id="sPane">
-                <label class="filter-item"><input type="checkbox" id="masterS" checked onchange="toggleAllStats()"><div class="ui-check"></div> All Status <span class="count-badge" id="n-allS">0</span></label>
-                <label class="filter-item"><input type="checkbox" class="sCheck" value="Not started" onchange="syncMaster()"><div class="ui-check"></div> Not started <span class="count-badge" id="n-ns">0</span></label>
-                <label class="filter-item"><input type="checkbox" class="sCheck" value="In progress" onchange="syncMaster()"><div class="ui-check"></div> In progress <span class="count-badge" id="n-ip">0</span></label>
-                <label class="filter-item"><input type="checkbox" class="sCheck" value="Done" onchange="syncMaster()"><div class="ui-check"></div> Done <span class="count-badge" id="n-dn">0</span></label>
+        <div class="select-wrapper">
+            <div class="select-header" onclick="toggleMenu('statMenu')">All Status <span>▾</span></div>
+            <div class="select-menu" id="statMenu">
+                <label class="option"><input type="checkbox" id="masterS" checked onchange="handleAllStatus()"><div class="box square"></div> All Status <span class="count-num" id="cnt-all-s">(0)</span></label>
+                <label class="option"><input type="checkbox" class="s-check" value="Not started" onchange="syncMaster()"><div class="box square"></div> Not started <span class="count-num" id="cnt-ns">(0)</span></label>
+                <label class="option"><input type="checkbox" class="s-check" value="In progress" onchange="syncMaster()"><div class="box square"></div> In progress <span class="count-num" id="cnt-ip">(0)</span></label>
+                <label class="option"><input type="checkbox" class="s-check" value="Done" onchange="syncMaster()"><div class="box square"></div> Done <span class="count-num" id="cnt-dn">(0)</span></label>
             </div>
         </div>
     </div>
 
-    <div id="grid" class="grid"></div>
+    <div id="grid" class="feed-grid"></div>
 
     <script>
-        const API_URL = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
-        let db = [];
+        const WORKER_URL = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
+        let dataStore = [];
 
-        function toggleDrawer() { 
-            const d = document.getElementById('drawer');
-            d.classList.toggle('show');
-            document.getElementById('filterBtn').classList.toggle('active');
+        function toggleFilterBar() {
+            const bar = document.getElementById('filterBar');
+            bar.classList.toggle('visible');
+            if(!bar.classList.contains('visible')) closeAllMenus();
         }
 
-        function togglePane(id) {
-            const current = document.getElementById(id);
-            const isOpen = current.classList.contains('open');
-            document.querySelectorAll('.dropdown-pane').forEach(p => p.classList.remove('open'));
-            if(!isOpen) current.classList.add('open');
+        function toggleMenu(id) {
+            const menu = document.getElementById(id);
+            const isOpen = menu.classList.contains('open');
+            closeAllMenus();
+            if(!isOpen) menu.classList.add('open');
         }
 
-        function toggleAllStats() {
-            const state = document.getElementById('masterS').checked;
-            document.querySelectorAll('.sCheck').forEach(c => c.checked = state);
-            updateGrid();
+        function closeAllMenus() {
+            document.querySelectorAll('.select-menu').forEach(m => m.classList.remove('open'));
+        }
+
+        function handleAllStatus() {
+            const val = document.getElementById('masterS').checked;
+            document.querySelectorAll('.s-check').forEach(c => c.checked = val);
+            renderGrid();
         }
 
         function syncMaster() {
-            const group = document.querySelectorAll('.sCheck');
-            document.getElementById('masterS').checked = Array.from(group).every(c => c.checked);
-            updateGrid();
+            const checks = document.querySelectorAll('.s-check');
+            document.getElementById('masterS').checked = Array.from(checks).every(c => c.checked);
+            renderGrid();
         }
 
-        async function load() {
+        async function init() {
             try {
-                const r = await fetch(API_URL);
-                db = await r.json();
-                counts();
-                updateGrid();
-            } catch(e) { updateGrid(); }
+                const res = await fetch(WORKER_URL);
+                dataStore = await res.json();
+                updateUIStats();
+                renderGrid();
+            } catch(e) { renderGrid(); }
         }
 
-        function counts() {
-            document.getElementById('n-allP').innerText = db.length;
-            document.getElementById('n-ig').innerText = db.filter(p => p.platforms.includes('instagram')).length;
-            document.getElementById('n-tk').innerText = db.filter(p => p.platforms.includes('tiktok')).length;
-            document.getElementById('n-allS').innerText = db.length;
-            document.getElementById('n-ns').innerText = db.filter(p => p.status === 'Not started').length;
-            document.getElementById('n-ip').innerText = db.filter(p => p.status === 'In progress').length;
-            document.getElementById('n-dn').innerText = db.filter(p => p.status === 'Done').length;
+        function updateUIStats() {
+            document.getElementById('cnt-all-p').innerText = `(${dataStore.length})`;
+            document.getElementById('cnt-ig').innerText = `(${dataStore.filter(p => p.platforms.includes('instagram')).length})`;
+            document.getElementById('cnt-tk').innerText = `(${dataStore.filter(p => p.platforms.includes('tiktok')).length})`;
+            document.getElementById('cnt-all-s').innerText = `(${dataStore.length})`;
+            document.getElementById('cnt-ns').innerText = `(${dataStore.filter(p => p.status === 'Not started').length})`;
+            document.getElementById('cnt-ip').innerText = `(${dataStore.filter(p => p.status === 'In progress').length})`;
+            document.getElementById('cnt-dn').innerText = `(${dataStore.filter(p => p.status === 'Done').length})`;
         }
 
-        function updateGrid() {
+        function renderGrid() {
             const grid = document.getElementById('grid');
-            const plat = document.querySelector('input[name="plat"]:checked').value;
-            const stats = Array.from(document.querySelectorAll('.sCheck:checked')).map(c => c.value);
-            const master = document.getElementById('masterS').checked;
+            const selPlat = document.querySelector('input[name="p"]:checked').value;
+            const selStat = Array.from(document.querySelectorAll('.s-check:checked')).map(c => c.value);
+            const allS = document.getElementById('masterS').checked;
 
-            const filtered = db.filter(p => {
-                const pM = plat === 'all' || p.platforms.includes(plat);
-                const sM = master || stats.includes(p.status);
-                return pM && sM;
+            const filtered = dataStore.filter(p => {
+                const pOk = selPlat === 'all' || p.platforms.includes(selPlat);
+                const sOk = allS || selStat.includes(p.status);
+                return pOk && sOk;
             });
 
             let html = '';
-            const list = filtered.length > 0 ? filtered : Array(9).fill(null);
-            list.forEach(item => {
-                html += `<div class="post-card">
-                    ${item && item.imageUrl ? `<img src="${item.imageUrl}">` : `<span class="no-data-text">NO CONTENT</span>`}
-                </div>`;
+            const items = filtered.length > 0 ? filtered : Array(12).fill(null);
+            items.forEach(item => {
+                html += `<div class="post-box">${item && item.imageUrl ? `<img src="${item.imageUrl}">` : `<span class="empty-tag">NO CONTENT</span>`}</div>`;
             });
             grid.innerHTML = html;
         }
 
-        window.onclick = (e) => { if(!e.target.closest('.dropdown')) document.querySelectorAll('.dropdown-pane').forEach(p => p.classList.remove('open')); };
-        load();
+        // Close dropdown if clicking away
+        window.onclick = (e) => { if(!e.target.closest('.select-wrapper')) closeAllMenus(); };
+        init();
     </script>
 </body>
 </html>
