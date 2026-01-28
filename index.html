@@ -3,69 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v24</title>
+    <title>Pro Planner v25</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-        /* Profile Layout: PFP Left, Content Right */
+        /* Instagram Header Layout */
         .profile-container { 
             max-width: 935px; 
-            margin: 40px auto 20px; 
+            margin: 40px auto 44px; 
             padding: 0 20px; 
-            display: none; /* Controlled by JS toggle */
+            display: none; 
+            flex-direction: row; /* PFP on left, Content on right */
             gap: 40px; 
-            align-items: flex-start;
         }
 
+        /* Profile Picture */
         .pfp-side { flex: 0 0 150px; display: flex; justify-content: center; }
         .pfp-circle { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 1px solid #efefef; }
 
-        .content-side { flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+        /* Content Stack: Bio + Highlights */
+        .content-side { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 
-        #bioSection { display: none; flex-direction: column; gap: 5px; }
-        #bioUser { margin: 0; font-size: 28px; font-weight: 300; }
-        #bioDisplay { font-weight: 600; margin: 0; font-size: 16px; }
-        #bioDesc { font-size: 14px; color: #262626; line-height: 1.4; margin: 0; white-space: pre-wrap; }
+        #bioSection { display: none; flex-direction: column; margin-bottom: 20px; }
+        #bioUser { margin: 0 0 12px 0; font-size: 28px; font-weight: 300; }
+        #bioDisplay { font-weight: 600; margin-bottom: 4px; font-size: 16px; }
+        #bioDesc { font-size: 14px; color: #262626; line-height: 1.4; margin-bottom: 4px; white-space: pre-wrap; }
         #bioLink { font-weight: 600; color: #00376b; text-decoration: none; font-size: 14px; }
 
+        /* Highlights row directly under Bio */
         #highRow { 
             display: none; 
-            gap: 15px; 
+            gap: 18px; 
             overflow-x: auto; 
-            padding-bottom: 10px;
+            padding: 10px 0;
             scrollbar-width: none; 
         }
         #highRow::-webkit-scrollbar { display: none; }
         .h-item { flex: 0 0 85px; display: flex; flex-direction: column; align-items: center; text-align: center; }
-        .h-circle { width: 77px; height: 77px; border-radius: 50%; border: 1px solid #dbdbdb; padding: 3px; display: flex; align-items: center; justify-content: center; background: #fff; }
-        .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-        .h-label { font-size: 12px; font-weight: 600; margin-top: 8px; width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .h-circle { width: 77px; height: 77px; border-radius: 50%; border: 1px solid #dbdbdb; padding: 3px; display: flex; align-items: center; justify-content: center; background: #fff; margin-bottom: 8px; }
+        .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #fafafa; }
+        .h-label { font-size: 12px; font-weight: 600; width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        /* Navigation & Grid */
+        /* Navigation Bar */
         .top-bar { max-width: 935px; margin: 0 auto 15px; padding: 15px 20px; display: flex; align-items: center; gap: 10px; border-top: 1px solid #efefef; }
         .refresh-btn { background: #000; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-        .icon-btn { background: var(--surface); border: none; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .icon-btn { background: var(--surface); border: none; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .icon-btn:hover { background: #eaeaef; }
 
-        .filter-area { max-width: 935px; margin: 0 auto 15px; padding: 0 20px; display: none; gap: 10px; }
-        .filter-area.active { display: flex; }
-        .dropdown { position: relative; background: var(--surface); padding: 10px 15px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
-        .drop-menu { position: absolute; top: 45px; left: 0; width: 200px; background: white; border: 1px solid #ededf0; border-radius: 12px; display: none; z-index: 1000; padding: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .drop-menu.open { display: block; }
-        .f-row { display: flex; align-items: center; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 13px; }
-        .f-row:hover { background: var(--surface); }
-        .box { width: 16px; height: 16px; border: 2px solid #d1d1d6; border-radius: 4px; margin-right: 10px; position: relative; }
-        input:checked + .box { background: #000; border-color: #000; }
-        input:checked + .box::after { content: '✓'; color: white; position: absolute; left: 2px; top: -2px; font-size: 10px; }
-        input[type="checkbox"], input[type="radio"] { display: none; }
-
+        /* Grid */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
-        .item { aspect-ratio: 1/1; position: relative; background: #fafafa; overflow: hidden; }
+        .item { aspect-ratio: 1/1; position: relative; background: #f9f9fb; overflow: hidden; }
         .carousel-track { display: flex; width: 100%; height: 100%; overflow-x: scroll; scroll-snap-type: x mandatory; scrollbar-width: none; }
-        .slide { min-width: 100%; height: 100%; scroll-snap-align: start; position: relative; }
+        .slide { min-width: 100%; height: 100%; scroll-snap-align: start; }
         .slide img, .slide video { width: 100%; height: 100%; object-fit: cover; }
         
+        /* Map/Content Mode */
         .content-mode .slide img, .content-mode .slide video, .content-mode .indicator-icon { display: none !important; }
         .content-label { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-weight: 700; text-align: center; width: 85%; z-index: 10; font-size: 14px; }
         .content-mode .content-label { display: block; }
@@ -78,15 +72,15 @@
         input:checked + .slider { background-color: #000; }
         input:checked + .slider:before { transform: translateX(16px); }
 
-        .indicator-icon { position: absolute; top: 10px; right: 10px; color: white; z-index: 5; text-shadow: 0 0 4px rgba(0,0,0,0.5); }
         .overlay { position: absolute; bottom: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.7)); color: white; padding: 10px; font-size: 11px; transform: translateY(100%); transition: 0.2s; pointer-events: none; }
         .item:hover .overlay { transform: translateY(0); }
 
         @media (max-width: 735px) {
-            .profile-container { gap: 20px; margin: 20px auto; }
-            .pfp-side { flex: 0 0 80px; }
-            .pfp-circle { width: 80px; height: 80px; }
-            #bioUser { font-size: 20px; }
+            .profile-container { flex-direction: column; align-items: center; gap: 20px; margin: 20px auto; text-align: center; }
+            .pfp-side { flex: 0 0 auto; }
+            .pfp-circle { width: 77px; height: 77px; }
+            .content-side { align-items: center; width: 100%; }
+            #bioSection { align-items: center; }
         }
     </style>
 </head>
@@ -119,7 +113,7 @@
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-size:14px;">Show Highlights <label class="switch"><input type="checkbox" id="highT" onchange="updateView()"><span class="slider"></span></label></div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-size:14px;">Content Mode <label class="switch"><input type="checkbox" id="mapT" onchange="applyMap()"><span class="slider"></span></label></div>
                 <div style="border-top:1px solid #eee; padding-top:12px;">
-                    <span style="font-size:10px; font-weight:800; color:#999; letter-spacing:1px;">PALETTE</span>
+                    <span style="font-size:10px; font-weight:800; color:#999;">PALETTE</span>
                     <div id="paletteGrid" style="display:flex; flex-wrap:wrap; gap:8px; margin:10px 0;"></div>
                     <button onclick="addCol()" style="background:none; border:none; font-weight:700; cursor:pointer; font-size:12px; padding:0;">+ Add Color</button>
                 </div>
@@ -127,16 +121,16 @@
         </div>
     </div>
 
-    <div class="filter-area" id="filterArea">
-        <div class="dropdown" onclick="toggleDrop('pDrop', event)">Platform ▾ 
-            <div class="drop-menu" id="pDrop">
-                <label class="f-row"><input type="radio" name="plat" value="all" checked onchange="doRender()"><div class="box" style="border-radius:50%"></div> All Channels</label>
+    <div class="filter-area" id="filterArea" style="max-width:935px; margin:0 auto 15px; padding:0 20px; display:none; gap:10px;">
+        <div class="dropdown" style="background:#f3f3f7; padding:8px 12px; border-radius:8px; font-size:13px; cursor:pointer;" onclick="toggleDrop('pDrop', event)">Platform ▾
+            <div id="pDrop" class="drop-menu">
+                <label class="f-row"><input type="radio" name="plat" value="all" checked onchange="doRender()"><div class="box" style="border-radius:50%"></div> All</label>
                 <label class="f-row"><input type="radio" name="plat" value="instagram" onchange="doRender()"><div class="box" style="border-radius:50%"></div> Instagram</label>
                 <label class="f-row"><input type="radio" name="plat" value="tiktok" onchange="doRender()"><div class="box" style="border-radius:50%"></div> Tiktok</label>
             </div>
         </div>
-        <div class="dropdown" onclick="toggleDrop('sDrop', event)">Status ▾ 
-            <div class="drop-menu" id="sDrop">
+        <div class="dropdown" style="background:#f3f3f7; padding:8px 12px; border-radius:8px; font-size:13px; cursor:pointer;" onclick="toggleDrop('sDrop', event)">Status ▾
+            <div id="sDrop" class="drop-menu">
                 <label class="f-row"><input type="checkbox" id="allStat" checked onchange="toggleAllStat()"><div class="box"></div> All Status</label>
                 <div id="statusCheckboxes"></div>
             </div>
@@ -185,6 +179,7 @@
                 document.getElementById('bioLink').href = res.bio.linkUrl;
                 document.getElementById('bioPfp').src = res.bio.pfp;
 
+                // Create checkboxes for each status found in Notion
                 const uniqueStats = [...new Set(gridData.map(i => i.status))];
                 document.getElementById('statusCheckboxes').innerHTML = uniqueStats.map(s => `
                     <label class="f-row"><input type="checkbox" class="stat-check" value="${s}" checked onchange="doRender()"><div class="box"></div> ${s}</label>
@@ -209,7 +204,7 @@
             
             grid.innerHTML = (filtered.length ? filtered : Array(9).fill(null)).map((item, idx) => {
                 const bg = palette[idx % palette.length];
-                if(!item) return `<div class="item" style="background:${bg}"></div>`;
+                if(!item) return `<div class="item" style="background:${bg}; display:flex; align-items:center; justify-content:center; color:#ccc; font-weight:800; font-size:10px;">EMPTY</div>`;
                 const slides = item.files.map(f => `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline onclick="this.paused?this.play():this.pause()"></video>` : `<img src="${f.url}">`}<div class="content-label">${item.name}</div></div>`).join('');
                 return `<div class="item" style="background:${bg}">${item.files.length > 1 ? `<div class="indicator-icon">▢▢</div>` : ''}<div class="carousel-track">${slides}</div><div class="overlay">${item.name}</div></div>`;
             }).join('');
