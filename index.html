@@ -11,40 +11,44 @@
             --dark-btn: #2c2c2e;
             --accent: #ff4500;
             --text: #1d1d1f;
+            --border: #d1d1d6;
         }
 
-        body { margin: 0; font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
 
-        /* --- Header & Filter Bar --- */
+        /* --- Header & Toggle --- */
         .header { max-width: 935px; margin: 30px auto 10px; padding: 0 20px; display: flex; align-items: center; gap: 12px; }
-        .refresh-btn { background: var(--dark-btn); color: white; border: none; padding: 10px 18px; border-radius: 12px; display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer; }
+        .refresh-btn { background: var(--dark-btn); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 500; cursor: pointer; }
         .filter-toggle { background: var(--pill-grey); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .filter-toggle.active { background: #e5e5ea; }
 
         .filter-bar { max-width: 935px; margin: 0 auto; padding: 0 20px; display: none; gap: 12px; }
         .filter-bar.show { display: flex; margin-top: 15px; margin-bottom: 20px; }
 
-        /* --- Dropdown UI --- */
+        /* --- Dropdowns --- */
         .custom-select { position: relative; }
-        .trigger { background: var(--pill-grey); padding: 10px 18px; border-radius: 14px; font-size: 14px; font-weight: 500; display: flex; justify-content: space-between; align-items: center; cursor: pointer; min-width: 160px; }
-        .pane { position: absolute; top: 50px; left: 0; width: 240px; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.12); display: none; z-index: 1000; padding: 12px; }
+        .trigger { background: var(--pill-grey); padding: 10px 18px; border-radius: 14px; font-size: 14px; font-weight: 500; display: flex; justify-content: space-between; align-items: center; cursor: pointer; min-width: 170px; }
+        .pane { position: absolute; top: 50px; left: 0; width: 250px; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.12); display: none; z-index: 1000; padding: 10px; }
         .pane.open { display: block; }
-        .item { display: flex; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 14px; }
+        .item { display: flex; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 14px; transition: 0.2s; }
         .item:hover { background: #f5f5f7; }
 
-        /* --- Platform (Single Select / Radio) --- */
-        .radio-box { width: 18px; height: 18px; border: 2px solid #d1d1d6; border-radius: 50%; margin-right: 12px; position: relative; }
+        /* --- Platform (Radio/Single Select Styling) --- */
+        .radio-dot { width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 50%; margin-right: 12px; position: relative; flex-shrink: 0; }
         input[type="radio"] { display: none; }
-        input[type="radio"]:checked + .radio-box { border-color: var(--accent); background: var(--accent); }
-        input[type="radio"]:checked + .radio-box::after { content: ''; position: absolute; width: 6px; height: 6px; background: white; border-radius: 50%; top: 4px; left: 4px; }
+        input[type="radio"]:checked + .radio-dot { border-color: var(--accent); background: var(--accent); }
+        input[type="radio"]:checked + .radio-dot::after { content: ''; position: absolute; width: 6px; height: 6px; background: white; border-radius: 50%; top: 4px; left: 4px; }
 
-        /* --- Status (Multi-Select / Checkbox) --- */
-        .check-box { width: 18px; height: 18px; border: 2px solid #d1d1d6; border-radius: 5px; margin-right: 12px; position: relative; }
+        /* --- Status (Checkbox/Multi-Select Styling) --- */
+        .check-square { width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 4px; margin-right: 12px; position: relative; flex-shrink: 0; background: white; }
         input[type="checkbox"] { display: none; }
-        input[type="checkbox"]:checked + .check-box { border-color: var(--accent); background: var(--accent); }
-        input[type="checkbox"]:checked + .check-box::after { content: '✓'; position: absolute; color: white; font-size: 12px; top: -1px; left: 3px; }
+        input[type="checkbox"]:checked + .check-square { border-color: var(--accent); background: var(--accent); }
+        input[type="checkbox"]:checked + .check-square::after { 
+            content: ''; position: absolute; left: 5px; top: 1px; width: 4px; height: 8px; 
+            border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); 
+        }
 
-        .count { margin-left: auto; color: #8e8e93; font-size: 12px; }
+        .count { margin-left: auto; color: #8e8e93; font-size: 12px; font-weight: 500; }
 
         /* --- Grid --- */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto; padding: 0 20px; }
@@ -64,21 +68,21 @@
 
     <div class="filter-bar" id="filterBar">
         <div class="custom-select">
-            <div class="trigger" onclick="togglePane('platPane')">Platform <small>∨</small></div>
+            <div class="trigger" onclick="togglePane('platPane')">Platform <small>▾</small></div>
             <div class="pane" id="platPane">
-                <label class="item"><input type="radio" name="plat" value="all" checked onchange="render()"><div class="radio-box"></div> All Platforms <span class="count" id="c-allP">(0)</span></label>
-                <label class="item"><input type="radio" name="plat" value="instagram" onchange="render()"><div class="radio-box"></div> Instagram <span class="count" id="c-ig">(0)</span></label>
-                <label class="item"><input type="radio" name="plat" value="tiktok" onchange="render()"><div class="radio-box"></div> Tiktok <span class="count" id="c-tk">(0)</span></label>
+                <label class="item"><input type="radio" name="plat" value="all" checked onchange="render()"><div class="radio-dot"></div> All Platforms <span class="count" id="c-allP">0</span></label>
+                <label class="item"><input type="radio" name="plat" value="instagram" onchange="render()"><div class="radio-dot"></div> Instagram <span class="count" id="c-ig">0</span></label>
+                <label class="item"><input type="radio" name="plat" value="tiktok" onchange="render()"><div class="radio-dot"></div> Tiktok <span class="count" id="c-tk">0</span></label>
             </div>
         </div>
 
         <div class="custom-select">
-            <div class="trigger" onclick="togglePane('statPane')">Status <small>∨</small></div>
+            <div class="trigger" onclick="togglePane('statPane')">Status <small>▾</small></div>
             <div class="pane" id="statPane">
-                <label class="item"><input type="checkbox" id="allS" checked onchange="handleMasterStat()"><div class="check-box"></div> All Status <span class="count" id="c-allS">(0)</span></label>
-                <label class="item"><input type="checkbox" class="sGrp" value="Not started" onchange="syncStat()"><div class="check-box"></div> Not started <span class="count" id="c-ns">(0)</span></label>
-                <label class="item"><input type="checkbox" class="sGrp" value="In progress" onchange="syncStat()"><div class="check-box"></div> In progress <span class="count" id="c-ip">(0)</span></label>
-                <label class="item"><input type="checkbox" class="sGrp" value="Done" onchange="syncStat()"><div class="check-box"></div> Done <span class="count" id="c-dn">(0)</span></label>
+                <label class="item"><input type="checkbox" id="allS" checked onchange="handleMasterStat()"><div class="check-square"></div> All Status <span class="count" id="c-allS">0</span></label>
+                <label class="item"><input type="checkbox" class="sGrp" value="Not started" onchange="syncStat()"><div class="check-square"></div> Not started <span class="count" id="c-ns">0</span></label>
+                <label class="item"><input type="checkbox" class="sGrp" value="In progress" onchange="syncStat()"><div class="check-square"></div> In progress <span class="count" id="c-ip">0</span></label>
+                <label class="item"><input type="checkbox" class="sGrp" value="Done" onchange="syncStat()"><div class="check-square"></div> Done <span class="count" id="c-dn">0</span></label>
             </div>
         </div>
     </div>
@@ -90,7 +94,7 @@
         let posts = [];
 
         function toggleFilters() { document.getElementById('filterBar').classList.toggle('show'); }
-        function togglePane(id) { 
+        function togglePane(id) {
             const p = document.getElementById(id); const open = p.classList.contains('open');
             document.querySelectorAll('.pane').forEach(el => el.classList.remove('open'));
             if(!open) p.classList.add('open');
@@ -118,13 +122,13 @@
         }
 
         function updateCounts() {
-            document.getElementById('c-allP').innerText = `(${posts.length})`;
-            document.getElementById('c-ig').innerText = `(${posts.filter(p => p.platforms.includes('instagram')).length})`;
-            document.getElementById('c-tk').innerText = `(${posts.filter(p => p.platforms.includes('tiktok')).length})`;
-            document.getElementById('c-allS').innerText = `(${posts.length})`;
-            document.getElementById('c-ns').innerText = `(${posts.filter(p => p.status === 'Not started').length})`;
-            document.getElementById('c-ip').innerText = `(${posts.filter(p => p.status === 'In progress').length})`;
-            document.getElementById('c-dn').innerText = `(${posts.filter(p => p.status === 'Done').length})`;
+            document.getElementById('c-allP').innerText = posts.length;
+            document.getElementById('c-ig').innerText = posts.filter(p => p.platforms.includes('instagram')).length;
+            document.getElementById('c-tk').innerText = posts.filter(p => p.platforms.includes('tiktok')).length;
+            document.getElementById('c-allS').innerText = posts.length;
+            document.getElementById('c-ns').innerText = posts.filter(p => p.status === 'Not started').length;
+            document.getElementById('c-ip').innerText = posts.filter(p => p.status === 'In progress').length;
+            document.getElementById('c-dn').innerText = posts.filter(p => p.status === 'Done').length;
         }
 
         function render() {
