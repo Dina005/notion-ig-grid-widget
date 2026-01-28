@@ -3,45 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v22 - Restored Design</title>
+    <title>Pro Planner v22 - Final Design</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; --grey-empty: #efefef; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-        /* Left Aligned Bio Section */
+        /* Bio & Highlights snaped left */
         #bioSection { max-width: 935px; margin: 40px auto 10px; padding: 0 20px; display: none; flex-direction: column; align-items: flex-start; text-align: left; }
         #bioUser { font-size: 32px; font-weight: 800; margin-bottom: 10px; }
-        .pfp-circle { width: 85px; height: 85px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 1px solid #efefef; background: var(--grey-empty); }
 
-        /* Highlights */
         #highRow { max-width: 935px; margin: 0 auto 30px; padding: 0 20px; display: none; gap: 15px; overflow-x: auto; scrollbar-width: none; justify-content: flex-start; }
         .h-circle { width: 64px; height: 64px; border-radius: 50%; border: 1px solid #dbdbdb; padding: 3px; display: flex; align-items: center; justify-content: center; background: #fff; }
         .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: var(--grey-empty); display: flex; align-items: center; justify-content: center; font-size: 8px; color: #999; font-weight: 600; text-transform: lowercase; }
 
-        /* Top Bar & Filters */
+        /* Navigation & Controls */
         .top-bar { max-width: 935px; margin: 20px auto 10px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
-        .refresh-btn { background: #000; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; }
+        .refresh-btn { background: #000; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
         .icon-btn { background: var(--surface); border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        .filter-row { display: none; padding: 0 20px; gap: 15px; max-width: 935px; margin: 0 auto 20px; align-items: center; }
+        /* Filter Row */
+        .filter-row { display: none; padding: 0 20px; gap: 20px; max-width: 935px; margin: 0 auto 20px; align-items: center; border-top: 1px solid #efefef; padding-top: 20px; }
         .filter-row.active { display: flex; }
-        select { padding: 8px 12px; border-radius: 10px; border: 1.5px solid #000; font-family: inherit; font-weight: 600; background: white; cursor: pointer; outline: none; }
-        .stat-label { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+        select { padding: 10px 15px; border-radius: 12px; border: 1.5px solid #000; font-family: inherit; font-weight: 600; background: white; cursor: pointer; outline: none; font-size: 14px; }
+        .stat-group { display: flex; gap: 15px; }
+        .stat-label { font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; border-radius: 4px; border: 1.5px solid #000; }
 
-        /* Grid Map */
+        /* Grid */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
         .item { aspect-ratio: 1/1; background: var(--grey-empty); overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
         .no-content-label { color: #aaaaaa; font-size: 13px; font-weight: 500; text-transform: lowercase; }
         
-        .carousel-track { display: flex; width: 100%; height: 100%; overflow-x: scroll; scroll-snap-type: x mandatory; scrollbar-width: none; }
-        .slide { min-width: 100%; height: 100%; scroll-snap-align: start; }
-        .slide img, .slide video { width: 100%; height: 100%; object-fit: cover; }
-        
-        /* Settings Menu */
+        /* Settings */
         .settings-menu { position: absolute; top: 55px; right: 20px; width: 280px; background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: none; z-index: 2000; padding: 20px; border: 1px solid #ededf0; }
         .settings-menu.open { display: block; }
-        .color-item { width: 34px; height: 34px; border-radius: 50%; position: relative; cursor: pointer; border: 2px solid #fff; box-shadow: 0 0 0 1px #ddd; }
         .switch { position: relative; width: 40px; height: 22px; display: inline-block; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e5ea; transition: .3s; border-radius: 20px; }
         .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
@@ -52,7 +48,7 @@
 <body>
     <div id="bioSection">
         <h1 id="bioUser"></h1>
-        <p id="bioDisplay" style="font-weight:600; margin:0 0 5px;"></p>
+        <p id="bioDisplay" style="font-weight:600; margin-bottom: 5px;"></p>
         <p id="bioDesc" style="font-size:14px; color:#1a1a1a; max-width:600px; line-height:1.4; margin-bottom:10px; white-space: pre-wrap;"></p>
         <a id="bioLink" style="font-weight:700; color:#00376b; text-decoration:none;" target="_blank"></a>
     </div>
@@ -62,35 +58,31 @@
     <div class="top-bar">
         <button class="refresh-btn" onclick="location.reload()">Refresh</button>
         <button class="icon-btn" onclick="document.getElementById('filterArea').classList.toggle('active')">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><rect x="2" y="10" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="10" y="8" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="18" y="12" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><rect x="2" y="10" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="10" y="8" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="18" y="12" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/></svg>
         </button>
         <div style="margin-left:auto; position:relative;">
             <button class="icon-btn" onclick="toggleSettings(event)">•••</button>
             <div class="settings-menu" id="setMenu">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">Show Bio <label class="switch"><input type="checkbox" id="bioT" onchange="updateUI()"><span class="slider"></span></label></div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">Show Highlights <label class="switch"><input type="checkbox" id="highT" onchange="updateUI()"><span class="slider"></span></label></div>
-                <div style="border-top:1px solid #eee; padding-top:15px;">
-                    <span style="font-size:10px; font-weight:800; color:#999;">PALETTE</span>
-                    <div id="paletteGrid" style="display:flex; flex-wrap:wrap; gap:10px; margin:10px 0;"></div>
-                    <button onclick="addCol()" style="background:none; border:none; font-weight:700; cursor:pointer; padding:0;">+ Add Color</button>
-                </div>
             </div>
         </div>
     </div>
 
     <div class="filter-row" id="filterArea">
         <select id="platSelect" onchange="doRender()">
-            <option value="all">Instagram</option>
+            <option value="all">All Platforms</option>
+            <option value="instagram">Instagram</option>
             <option value="tiktok">TikTok</option>
         </select>
-        <div id="statFilters" style="display: flex; gap: 15px;"></div>
+        <div id="statFilters" class="stat-group"></div>
     </div>
 
     <div id="grid" class="grid"></div>
 
     <script>
         const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
-        let gridData = [], palette = ['#b4b4a5', '#a5a596'];
+        let gridData = [];
 
         function toggleSettings(e) { e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
         
@@ -99,15 +91,7 @@
             document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none'; 
         }
 
-        function renderPalette() {
-            const g = document.getElementById('paletteGrid');
-            g.innerHTML = palette.map((c, i) => `<div class="color-item" style="background:${c}"><input type="color" style="position:absolute; opacity:0; inset:0; cursor:pointer;" value="${c}" onchange="palette[${i}]=this.value; renderPalette(); doRender();"><button onclick="palette.splice(${i},1); renderPalette(); doRender();" style="position:absolute; top:-5px; right:-5px; background:#000; color:#fff; border-radius:50%; width:16px; height:16px; font-size:10px; border:none; cursor:pointer;">×</button></div>`).join('');
-        }
-
-        function addCol() { palette.push('#cccccc'); renderPalette(); doRender(); }
-
         async function init() {
-            renderPalette();
             try {
                 const r = await fetch(API); const res = await r.json();
                 gridData = res.grid;
@@ -120,9 +104,9 @@
 
                 const hData = res.highlights && res.highlights.length > 0 ? res.highlights : Array(4).fill(null);
                 document.getElementById('highRow').innerHTML = hData.map(h => `
-                    <div style="text-align:center; min-width:75px; display:flex; flex-direction:column; align-items:center;">
+                    <div style="text-align:center; min-width:75px;">
                         <div class="h-circle">${h && h.image ? `<img src="${h.image}" class="h-img">` : `<div class="h-img">no content</div>`}</div>
-                        <span style="font-size:11px; font-weight:600; margin-top:6px;">${h ? h.name : 'Highlight'}</span>
+                        <span style="font-size:11px; font-weight:600; margin-top:6px; display:block;">${h ? h.name : 'Highlight'}</span>
                     </div>
                 `).join('');
 
@@ -150,12 +134,11 @@
             const totalSlots = Math.max(9, filtered.length);
             for (let i = 0; i < totalSlots; i++) {
                 const item = filtered[i];
-                const bg = palette[i % palette.length];
                 if (item) {
                     const slides = item.files.map(f => `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline onclick="this.paused?this.play():this.pause()"></video>` : `<img src="${f.url}">`}</div>`).join('');
-                    html += `<div class="item" style="background:${bg}">${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; text-shadow:0 0 4px rgba(0,0,0,0.5);">▢▢</div>` : ''}<div class="carousel-track">${slides}</div></div>`;
+                    html += `<div class="item">${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; font-weight:bold;">▢▢</div>` : ''}<div class="carousel-track">${slides}</div></div>`;
                 } else {
-                    html += `<div class="item" style="background:var(--grey-empty)"><span class="no-content-label">no content</span></div>`;
+                    html += `<div class="item"><span class="no-content-label">no content</span></div>`;
                 }
             }
             grid.innerHTML = html;
