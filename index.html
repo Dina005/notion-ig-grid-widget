@@ -3,44 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Content Feed</title>
+    <title>Pro Planner</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
         :root {
             --bg: #ffffff;
-            --pill: #f2f2f7;
-            --pill-hover: #e5e5ea;
-            --text: #1c1c1e;
-            --text-secondary: #8e8e93;
+            --surface: #f3f3f7;
+            --text: #1a1a1a;
+            --secondary: #8e8e93;
             --accent: #000000;
-            --radius: 12px;
         }
 
         body { 
             margin: 0; 
-            font-family: 'Inter', -apple-system, sans-serif; 
+            font-family: 'Inter', sans-serif; 
             background: var(--bg); 
             color: var(--text); 
-            letter-spacing: -0.01em;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* --- Header Section --- */
-        .controls-row { 
+        /* --- Header & Exact Slider Icon --- */
+        .top-bar { 
             max-width: 935px; 
-            margin: 30px auto 10px; 
+            margin: 40px auto 15px; 
             padding: 0 20px; 
             display: flex; 
             align-items: center; 
-            gap: 10px; 
+            gap: 12px; 
         }
 
-        .btn-main { 
+        .refresh-btn { 
             background: #2c2c2e; 
             color: white; 
             border: none; 
-            padding: 10px 20px; 
-            border-radius: 10px; 
+            padding: 11px 22px; 
+            border-radius: 12px; 
             font-weight: 500; 
             font-size: 14px;
             cursor: pointer;
@@ -49,241 +47,218 @@
             gap: 8px;
         }
 
-        .btn-icon { 
-            background: var(--pill); 
+        .filter-btn { 
+            background: var(--surface); 
             border: none; 
-            width: 42px; 
-            height: 42px; 
-            border-radius: 10px; 
+            width: 44px; 
+            height: 44px; 
+            border-radius: 12px; 
             cursor: pointer; 
             display: flex; 
             align-items: center; 
             justify-content: center;
         }
 
-        /* --- Filter Area --- */
-        .filter-section { 
+        /* --- Filter Drawer --- */
+        .filter-area { 
             max-width: 935px; 
-            margin: 0 auto; 
+            margin: 0 auto 20px; 
             padding: 0 20px; 
-            display: none; /* Controlled by JS */
-            gap: 10px;
-            margin-top: 15px;
-            margin-bottom: 15px;
+            display: none; 
+            gap: 12px; 
         }
-        .filter-section.visible { display: flex; }
+        .filter-area.active { display: flex; }
 
-        /* --- Custom Dropdowns --- */
-        .select-wrapper { position: relative; }
-        
-        .select-header { 
-            background: var(--pill); 
-            padding: 10px 16px; 
-            border-radius: 10px; 
+        /* --- Dropdown UI --- */
+        .dropdown { position: relative; }
+        .dropdown-head { 
+            background: var(--surface); 
+            padding: 11px 18px; 
+            border-radius: 12px; 
             font-size: 14px; 
             font-weight: 500; 
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            min-width: 150px;
-            transition: background 0.2s;
+            min-width: 160px;
         }
-        .select-header:hover { background: var(--pill-hover); }
 
-        .select-menu { 
+        .dropdown-menu { 
             position: absolute; 
-            top: 48px; 
+            top: 52px; 
             left: 0; 
-            width: 240px; 
+            width: 250px; 
             background: white; 
-            border-radius: 14px; 
-            box-shadow: 0 12px 30px rgba(0,0,0,0.1); 
+            border-radius: 16px; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08); 
             display: none; 
-            z-index: 999; 
+            z-index: 1000; 
             padding: 8px;
-            border: 1px solid #f0f0f2;
+            border: 1px solid #ededf0;
         }
-        .select-menu.open { display: block; }
+        .dropdown-menu.open { display: block; }
 
-        .option { 
+        .row { 
             display: flex; 
             align-items: center; 
-            padding: 10px 12px; 
-            border-radius: 8px; 
+            padding: 12px; 
+            border-radius: 10px; 
             cursor: pointer; 
             font-size: 14px;
-            transition: background 0.15s;
         }
-        .option:hover { background: var(--pill); }
+        .row:hover { background: var(--surface); }
 
-        /* --- Fixed Centering for Circles/Checks --- */
-        .box { 
-            width: 18px; 
-            height: 18px; 
-            border: 1.5px solid #d1d1d6; 
-            margin-right: 12px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
+        /* --- PERFECT CENTERING FOR UI ELEMENTS --- */
+        .indicator { 
+            width: 20px; 
+            height: 20px; 
+            border: 2px solid #d1d1d6; 
+            margin-right: 14px; 
+            display: grid; /* Grid is best for absolute center */
+            place-items: center; 
             flex-shrink: 0;
-            transition: all 0.2s;
+            box-sizing: border-box;
         }
-        .circle { border-radius: 50%; }
-        .square { border-radius: 4px; }
+        .is-circle { border-radius: 50%; }
+        .is-square { border-radius: 5px; }
 
         input { display: none; }
 
-        /* Platform Radio logic */
-        input:checked + .circle { background: var(--accent); border-color: var(--accent); }
-        input:checked + .circle::after { 
-            content: ''; width: 6px; height: 6px; background: white; border-radius: 50%; 
+        /* Radio / Circle Centering */
+        input:checked + .is-circle { border-color: var(--accent); background: var(--accent); }
+        input:checked + .is-circle::after { 
+            content: ''; width: 7px; height: 7px; background: white; border-radius: 50%; 
         }
 
-        /* Status Checkbox logic */
-        input:checked + .square { background: var(--accent); border-color: var(--accent); }
-        input:checked + .square::after { 
-            content: '✓'; color: white; font-size: 11px; font-weight: bold;
+        /* Checkbox / Square Centering */
+        input:checked + .is-square { border-color: var(--accent); background: var(--accent); }
+        input:checked + .is-square::after { 
+            content: '✓'; color: white; font-size: 12px; font-weight: 700;
         }
 
-        .count-num { margin-left: auto; color: var(--text-secondary); font-size: 12px; }
+        .val { margin-left: auto; color: var(--secondary); font-size: 12px; }
 
-        /* --- Grid --- */
-        .feed-grid { 
+        /* --- Grid Layout --- */
+        .grid { 
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
             gap: 4px; 
             max-width: 935px; 
-            margin: 0 auto 40px; 
+            margin: 0 auto; 
             padding: 0 20px; 
         }
-        .post-box { 
-            aspect-ratio: 1/1; 
-            background: #fafafa; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            overflow: hidden;
-        }
-        .post-box img { width: 100%; height: 100%; object-fit: cover; }
-        .empty-tag { color: #d1d1d6; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+        .item { aspect-ratio: 1/1; background: #f9f9fb; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .item img { width: 100%; height: 100%; object-fit: cover; }
+        .null-txt { color: #d1d1d6; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; }
     </style>
 </head>
 <body>
 
-    <div class="controls-row">
-        <button class="btn-main" onclick="location.reload()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M23 4v6h-6M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+    <div class="top-bar">
+        <button class="refresh-btn" onclick="location.reload()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
             Refresh
         </button>
 
-        <button class="btn-icon" onclick="toggleFilterBar()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
-                <line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
-                <line x1="2" y1="14" x2="6" y2="14"></line><line x1="10" y1="12" x2="14" y2="12"></line><line x1="18" y1="16" x2="22" y2="16"></line>
+        <button class="filter-btn" onclick="toggleArea()">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round">
+                <line x1="6" y1="4" x2="6" y2="20"></line>
+                <line x1="12" y1="4" x2="12" y2="20"></line>
+                <line x1="18" y1="4" x2="18" y2="20"></line>
+                <rect x="4" y="12" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"></rect>
+                <rect x="10" y="7" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"></rect>
+                <rect x="16" y="14" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"></rect>
             </svg>
         </button>
     </div>
 
-    <div class="filter-section" id="filterBar">
-        <div class="select-wrapper">
-            <div class="select-header" onclick="toggleMenu('platMenu')">All Platforms <span>▾</span></div>
-            <div class="select-menu" id="platMenu">
-                <label class="option"><input type="radio" name="p" value="all" checked onchange="renderGrid()"><div class="box circle"></div> All Platforms <span class="count-num" id="cnt-all-p">(0)</span></label>
-                <label class="option"><input type="radio" name="p" value="instagram" onchange="renderGrid()"><div class="box circle"></div> Instagram <span class="count-num" id="cnt-ig">(0)</span></label>
-                <label class="option"><input type="radio" name="p" value="tiktok" onchange="renderGrid()"><div class="box circle"></div> Tiktok <span class="count-num" id="cnt-tk">(0)</span></label>
+    <div class="filter-area" id="filterArea">
+        <div class="dropdown">
+            <div class="dropdown-head" onclick="toggleMenu('pMenu')">Platform <span>▾</span></div>
+            <div class="dropdown-menu" id="pMenu">
+                <label class="row"><input type="radio" name="p" value="all" checked onchange="doRender()"><div class="indicator is-circle"></div> All Channels <span class="val" id="v-all-p">0</span></label>
+                <label class="row"><input type="radio" name="p" value="instagram" onchange="doRender()"><div class="indicator is-circle"></div> Instagram <span class="val" id="v-ig">0</span></label>
+                <label class="row"><input type="radio" name="p" value="tiktok" onchange="doRender()"><div class="indicator is-circle"></div> Tiktok <span class="val" id="v-tk">0</span></label>
             </div>
         </div>
 
-        <div class="select-wrapper">
-            <div class="select-header" onclick="toggleMenu('statMenu')">All Status <span>▾</span></div>
-            <div class="select-menu" id="statMenu">
-                <label class="option"><input type="checkbox" id="masterS" checked onchange="handleAllStatus()"><div class="box square"></div> All Status <span class="count-num" id="cnt-all-s">(0)</span></label>
-                <label class="option"><input type="checkbox" class="s-check" value="Not started" onchange="syncMaster()"><div class="box square"></div> Not started <span class="count-num" id="cnt-ns">(0)</span></label>
-                <label class="option"><input type="checkbox" class="s-check" value="In progress" onchange="syncMaster()"><div class="box square"></div> In progress <span class="count-num" id="cnt-ip">(0)</span></label>
-                <label class="option"><input type="checkbox" class="s-check" value="Done" onchange="syncMaster()"><div class="box square"></div> Done <span class="count-num" id="cnt-dn">(0)</span></label>
+        <div class="dropdown">
+            <div class="dropdown-head" onclick="toggleMenu('sMenu')">Status <span>▾</span></div>
+            <div class="dropdown-menu" id="sMenu">
+                <label class="row"><input type="checkbox" id="mS" checked onchange="allStats()"><div class="indicator is-square"></div> All Status <span class="val" id="v-all-s">0</span></label>
+                <label class="row"><input type="checkbox" class="sc" value="Not started" onchange="sync()"><div class="indicator is-square"></div> Not started <span class="val" id="v-ns">0</span></label>
+                <label class="row"><input type="checkbox" class="sc" value="In progress" onchange="sync()"><div class="indicator is-square"></div> In progress <span class="val" id="v-ip">0</span></label>
+                <label class="row"><input type="checkbox" class="sc" value="Done" onchange="sync()"><div class="indicator is-square"></div> Done <span class="val" id="v-dn">0</span></label>
             </div>
         </div>
     </div>
 
-    <div id="grid" class="feed-grid"></div>
+    <div id="grid" class="grid"></div>
 
     <script>
-        const WORKER_URL = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
-        let dataStore = [];
+        const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
+        let storage = [];
 
-        function toggleFilterBar() {
-            const bar = document.getElementById('filterBar');
-            bar.classList.toggle('visible');
-            if(!bar.classList.contains('visible')) closeAllMenus();
-        }
-
+        function toggleArea() { document.getElementById('filterArea').classList.toggle('active'); close(); }
         function toggleMenu(id) {
-            const menu = document.getElementById(id);
-            const isOpen = menu.classList.contains('open');
-            closeAllMenus();
-            if(!isOpen) menu.classList.add('open');
+            const m = document.getElementById(id);
+            const wasOpen = m.classList.contains('open');
+            close();
+            if(!wasOpen) m.classList.add('open');
         }
+        function close() { document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open')); }
 
-        function closeAllMenus() {
-            document.querySelectorAll('.select-menu').forEach(m => m.classList.remove('open'));
+        function allStats() {
+            const val = document.getElementById('mS').checked;
+            document.querySelectorAll('.sc').forEach(c => c.checked = val);
+            doRender();
         }
-
-        function handleAllStatus() {
-            const val = document.getElementById('masterS').checked;
-            document.querySelectorAll('.s-check').forEach(c => c.checked = val);
-            renderGrid();
-        }
-
-        function syncMaster() {
-            const checks = document.querySelectorAll('.s-check');
-            document.getElementById('masterS').checked = Array.from(checks).every(c => c.checked);
-            renderGrid();
+        function sync() {
+            document.getElementById('mS').checked = Array.from(document.querySelectorAll('.sc')).every(c => c.checked);
+            doRender();
         }
 
         async function init() {
             try {
-                const res = await fetch(WORKER_URL);
-                dataStore = await res.json();
-                updateUIStats();
-                renderGrid();
-            } catch(e) { renderGrid(); }
+                const r = await fetch(API);
+                storage = await r.json();
+                updateVals();
+                doRender();
+            } catch(e) { doRender(); }
         }
 
-        function updateUIStats() {
-            document.getElementById('cnt-all-p').innerText = `(${dataStore.length})`;
-            document.getElementById('cnt-ig').innerText = `(${dataStore.filter(p => p.platforms.includes('instagram')).length})`;
-            document.getElementById('cnt-tk').innerText = `(${dataStore.filter(p => p.platforms.includes('tiktok')).length})`;
-            document.getElementById('cnt-all-s').innerText = `(${dataStore.length})`;
-            document.getElementById('cnt-ns').innerText = `(${dataStore.filter(p => p.status === 'Not started').length})`;
-            document.getElementById('cnt-ip').innerText = `(${dataStore.filter(p => p.status === 'In progress').length})`;
-            document.getElementById('cnt-dn').innerText = `(${dataStore.filter(p => p.status === 'Done').length})`;
+        function updateVals() {
+            document.getElementById('v-all-p').innerText = storage.length;
+            document.getElementById('v-ig').innerText = storage.filter(p => p.platforms.includes('instagram')).length;
+            document.getElementById('v-tk').innerText = storage.filter(p => p.platforms.includes('tiktok')).length;
+            document.getElementById('v-all-s').innerText = storage.length;
+            document.getElementById('v-ns').innerText = storage.filter(p => p.status === 'Not started').length;
+            document.getElementById('v-ip').innerText = storage.filter(p => p.status === 'In progress').length;
+            document.getElementById('v-dn').innerText = storage.filter(p => p.status === 'Done').length;
         }
 
-        function renderGrid() {
+        function doRender() {
             const grid = document.getElementById('grid');
-            const selPlat = document.querySelector('input[name="p"]:checked').value;
-            const selStat = Array.from(document.querySelectorAll('.s-check:checked')).map(c => c.value);
-            const allS = document.getElementById('masterS').checked;
+            const p = document.querySelector('input[name="p"]:checked').value;
+            const s = Array.from(document.querySelectorAll('.sc:checked')).map(c => c.value);
+            const m = document.getElementById('mS').checked;
 
-            const filtered = dataStore.filter(p => {
-                const pOk = selPlat === 'all' || p.platforms.includes(selPlat);
-                const sOk = allS || selStat.includes(p.status);
+            const filtered = storage.filter(i => {
+                const pOk = p === 'all' || i.platforms.includes(p);
+                const sOk = m || s.includes(i.status);
                 return pOk && sOk;
             });
 
-            let html = '';
-            const items = filtered.length > 0 ? filtered : Array(12).fill(null);
-            items.forEach(item => {
-                html += `<div class="post-box">${item && item.imageUrl ? `<img src="${item.imageUrl}">` : `<span class="empty-tag">NO CONTENT</span>`}</div>`;
+            let h = '';
+            const list = filtered.length > 0 ? filtered : Array(9).fill(null);
+            list.forEach(i => {
+                h += `<div class="item">${i && i.imageUrl ? `<img src="${i.imageUrl}">` : `<span class="null-txt">NO CONTENT</span>`}</div>`;
             });
-            grid.innerHTML = html;
+            grid.innerHTML = h;
         }
 
-        // Close dropdown if clicking away
-        window.onclick = (e) => { if(!e.target.closest('.select-wrapper')) closeAllMenus(); };
+        window.onclick = (e) => { if(!e.target.closest('.dropdown')) close(); };
         init();
     </script>
 </body>
