@@ -259,10 +259,17 @@
         let brandColors = ["#FFD1DC", "#AEEEEE", "#FFECB3", "#D1FFD7", "#E0BBE4"]; 
         let shuffledIndices = [];
 
-        function toggleSettings(e) { e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
+        // UI Interactions
+        function toggleSettings(e) { 
+            e.stopPropagation(); 
+            document.getElementById('setMenu').classList.toggle('open'); 
+        }
+
         function toggleMenu(id, e) { 
             e.stopPropagation(); 
-            document.querySelectorAll('.dropdown-menu').forEach(m => m.id !== id && m.classList.remove('show')); 
+            document.querySelectorAll('.dropdown-menu').forEach(m => {
+                if(m.id !== id) m.classList.remove('show');
+            });
             document.getElementById(id).classList.toggle('show'); 
         }
 
@@ -273,13 +280,19 @@
             doRender(); 
         }
 
-        function shuffleColors() { shuffledIndices = Array.from({ length: 100 }, () => Math.floor(Math.random() * brandColors.length)); doRender(); }
+        // Color Management & Shuffle
+        function shuffleColors() { 
+            shuffledIndices = Array.from({ length: 150 }, () => Math.floor(Math.random() * brandColors.length)); 
+            doRender(); 
+        }
 
         function renderColorControls() {
             const container = document.getElementById('colorList');
             container.innerHTML = brandColors.map((color, idx) => `
                 <div class="color-row">
-                    <div class="color-picker-wrapper"><input type="color" class="color-picker" value="${color}" onchange="updateColor(${idx}, this.value)"></div>
+                    <div class="color-picker-wrapper">
+                        <input type="color" class="color-picker" value="${color}" onchange="updateColor(${idx}, this.value)">
+                    </div>
                     <span style="font-size:12px; font-weight:700; flex:1; color:#555;">Color ${idx+1}</span>
                     ${brandColors.length > 2 ? `<button class="remove-btn" onclick="removeColor(${idx})">×</button>` : ''}
                 </div>`).join('');
@@ -289,6 +302,14 @@
         function removeColor(idx) { brandColors.splice(idx, 1); shuffleColors(); renderColorControls(); }
         function updateColor(idx, val) { brandColors[idx] = val; doRender(); }
 
+        // Canva URL Cleaner (The Fix)
+        function getCanvaEmbedUrl(originalUrl) {
+            if (!originalUrl || !originalUrl.includes('canva.com')) return originalUrl;
+            let cleanUrl = originalUrl.split('?')[0].replace('/view', '').replace('/edit', '').replace('/watch', '');
+            return cleanUrl + '/view?embed';
+        }
+
+        // Preview / Lightbox
         function openPreview(index) {
             const item = gridData[index];
             if (!item) return;
@@ -298,8 +319,8 @@
             let html = "";
 
             if (canvaOn && file.url.includes('canva.com')) {
-                let embed = file.url.split('?')[0].replace(/\/watch$/, '') + '/view?embed';
-                html = `<iframe src="${embed}" allowfullscreen style="width:100%; height:100%; border:none;"></iframe>`;
+                let embedUrl = getCanvaEmbedUrl(file.url);
+                html = `<iframe src="${embedUrl}" allowfullscreen referrerpolicy="no-referrer" style="width:100%; height:100%; border:none; background:#000;"></iframe>`;
             } else if (file.isVideo) {
                 html = `<video src="${file.url}" controls autoplay loop style="max-height:100%; max-width:100%;"></video>`;
             } else {
@@ -309,11 +330,15 @@
             document.getElementById('previewLightbox').style.display = 'flex';
         }
 
+        // Data Fetching
         async function init() {
             document.getElementById('canvaT').checked = true;
             try {
-                const r = await fetch(API); const res = await r.json();
+                const r = await fetch(API); 
+                const res = await r.json();
                 gridData = res.grid;
+                
+                // Set Bio
                 document.getElementById('pfpImg').src = res.bio.profilePicture || "";
                 document.getElementById('bioUser').innerText = "@" + (res.bio.username || "username");
                 document.getElementById('bioDisplay').innerText = res.bio.displayName || "";
@@ -321,6 +346,7 @@
                 document.getElementById('bioLink').innerText = res.bio.linkDisplay || "";
                 document.getElementById('bioLink').href = res.bio.linkUrl || "#";
 
+                // Set Highlights
                 const hData = res.highlights || [];
                 document.getElementById('highRow').innerHTML = hData.map(h => `
                     <div style="text-align:center; min-width:75px;">
@@ -334,13 +360,17 @@
                 updateCounts();
                 renderColorControls();
                 shuffleColors();
-            } catch(e) { console.error(e); }
+            } catch(e) { console.error("Error loading data:", e); }
         }
 
         function renderStatusOptions(stats) {
             document.getElementById('statusOptions').innerHTML = stats.map(s => `
                 <label class="dropdown-item" onclick="event.stopPropagation()">
-                    <div class="item-left"><input type="checkbox" checked onchange="toggleStat('${s}')"><div class="check-box"></div><span>${s}</span></div>
+                    <div class="item-left">
+                        <input type="checkbox" checked onchange="toggleStat('${s}')">
+                        <div class="check-box"></div>
+                        <span>${s}</span>
+                    </div>
                     <span class="count-pill">${gridData.filter(i => i.status === s).length}</span>
                 </label>`).join('');
         }
@@ -362,6 +392,7 @@
             doRender(); 
         }
 
+        // Main Rendering Logic
         function doRender() {
             const grid = document.getElementById('grid');
             const isMap = document.getElementById('mapT').checked;
@@ -372,22 +403,31 @@
                 const dataIdx = gridData.indexOf(item);
                 if (isMap) {
                     const color = brandColors[shuffledIndices[i % brandColors.length]];
-                    return `<div class="item" onclick="openPreview(${dataIdx})" style="background:${color}; cursor:pointer;"><span class="map-mode-label">${item.status}</span></div>`;
+                    return `<div class="item" onclick="openPreview(${dataIdx})" style="background:${color}; cursor:pointer;">
+                                <span class="map-mode-label">${item.status}</span>
+                            </div>`;
                 }
                 const slides = item.files.map(f => {
                     if (canvaOn && f.url.includes('canva.com')) {
-                        let base = f.url.split('?')[0].replace(/\/watch$/, '') + '/view?embed';
-                        return `<div class="slide"><iframe src="${base}"></iframe></div>`;
+                        let base = getCanvaEmbedUrl(f.url);
+                        return `<div class="slide"><iframe src="${base}" referrerpolicy="no-referrer"></iframe></div>`;
                     }
                     return `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop muted playsinline></video>` : `<img src="${f.url}">`}</div>`;
                 }).join('');
                 return `<div class="item" onclick="openPreview(${dataIdx})" style="cursor:pointer;">
-                    ${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; font-weight:bold;">▢▢</div>` : ''}
+                    ${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; font-weight:bold; text-shadow: 0 0 4px rgba(0,0,0,0.5);">▢▢</div>` : ''}
                     <div class="carousel-track">${slides}</div></div>`;
             }).join('');
         }
 
-        window.onclick = () => document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+        // Close dropdowns when clicking outside
+        window.onclick = function(event) {
+            if (!event.target.closest('.dropdown-container') && !event.target.closest('.settings-menu') && !event.target.closest('.icon-btn')) {
+                document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+                document.getElementById('setMenu').classList.remove('open');
+            }
+        };
+
         init();
     </script>
 </body>
