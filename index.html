@@ -202,7 +202,7 @@
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px; font-weight:600;">
     <div style="display:flex; align-items:center; gap:8px;">
-        <span style="font-size:16px;"></span> Direct Canva Previews
+        <span style="font-size:16px;"></span>Direct Canva Previews
     </div>
     <label class="switch">
         <input type="checkbox" id="canvaT" onchange="updateUI()">
@@ -262,103 +262,61 @@ function updateUI() {
     doRender(); 
 }
 
-function shuffleColors() {
-    shuffledIndices = Array.from({ length: 100 }, () => Math.floor(Math.random() * brandColors.length));
-    doRender();
-}
+// Lightbox Preview Logic
+function openPreview(index) {
+    const item = gridData[index];
+    if (!item) return;
 
-function renderColorControls() {
-    const container = document.getElementById('colorList');
-    container.innerHTML = brandColors.map((color, idx) => `
-        <div class="color-row">
-            <div class="color-picker-wrapper">
-                <input type="color" class="color-picker" value="${color}" onchange="updateColor(${idx}, this.value)">
-            </div>
-            <span style="font-size:12px; font-weight:700; flex:1; color:#555;">Color ${idx+1}</span>
-            ${brandColors.length > 2 ? `<button class="remove-btn" onclick="removeColor(${idx})">×</button>` : ''}
-        </div>
-    `).join('');
+    const content = document.getElementById('lightboxContent');
+    const lightbox = document.getElementById('previewLightbox');
+    const canvaEnabled = document.getElementById('canvaT').checked;
     
-    if (!document.getElementById('shuffleBtn')) {
-        const btn = document.createElement('button');
-        btn.id = 'shuffleBtn';
-        btn.className = 'add-btn';
-        btn.style.marginTop = '8px';
-        btn.style.background = '#000';
-        btn.style.color = '#fff';
-        btn.innerText = '🎲 Re-Shuffle Layout';
-        btn.onclick = shuffleColors;
-        container.after(btn);
-    }
-}
+    let html = "";
+    const primaryFile = item.files[0];
 
-function addColor() { brandColors.push("#e0e0e0"); shuffleColors(); renderColorControls(); }
-function removeColor(idx) { brandColors.splice(idx, 1); shuffleColors(); renderColorControls(); }
-function updateColor(idx, val) { brandColors[idx] = val; doRender(); }
+    if (canvaEnabled && primaryFile.url.includes('canva.com/design/')) {
+        let base = primaryFile.url.split('?')[0].replace(/\/watch$/, '') + '/view?embed';
+        html = `<iframe src="${base}" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>`;
+    } else if (primaryFile.isVideo) {
+        html = `<video src="${primaryFile.url}" controls autoplay style="max-width:100%; max-height:100%;"></video>`;
+    } else {
+        html = `<img src="${primaryFile.url}" style="max-width:100%; max-height:100%; object-fit:contain;">`;
+    }
+
+    content.innerHTML = html;
+    lightbox.style.display = 'flex';
+}
 
 async function init() {
-    // 1. Auto-on Direct Canva Previews
-    document.getElementById('canvaT').checked = true;
-
+    document.getElementById('canvaT').checked = true; // Auto-on Canva
     try {
         const r = await fetch(API); const res = await r.json();
         gridData = res.grid;
-        
-        document.getElementById('pfpImg').src = res.bio.profilePicture || "";
-        document.getElementById('bioUser').innerText = "@" + (res.bio.username || "username");
-        document.getElementById('bioDisplay').innerText = res.bio.displayName || "";
-        document.getElementById('bioDesc').innerText = res.bio.bioText || "";
-        document.getElementById('bioLink').innerText = res.bio.linkDisplay || "";
-        document.getElementById('bioLink').href = res.bio.linkUrl || "#";
-
-        const hData = res.highlights && res.highlights.length > 0 ? res.highlights : Array(4).fill(null);
-        document.getElementById('highRow').innerHTML = hData.map(h => `
-            <div style="text-align:center; min-width:75px;">
-                <div class="h-circle">${h && h.image ? `<img src="${h.image}" class="h-img">` : `<div class="h-img">no content</div>`}</div>
-                <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h ? h.name : 'Highlight'}</span>
-            </div>
-        `).join('');
-
-        const stats = [...new Set(gridData.map(i => i.status))];
-        activeStats = [...stats];
-        renderStatusOptions(stats);
-        updateCounts();
-        renderColorControls();
-        shuffleColors();
-        doRender();
+        // ... (Bio and Highlights code remains same as previous version)
+        initUI(res);
     } catch(e) { console.error(e); }
 }
 
-function renderStatusOptions(stats) {
-    document.getElementById('statusOptions').innerHTML = stats.map(s => {
-        const count = gridData.filter(i => i.status === s).length;
-        return `
-        <label class="dropdown-item" onclick="event.stopPropagation()">
-            <div class="item-left">
-                <input type="checkbox" checked value="${s}" onchange="toggleStat('${s}')">
-                <div class="check-box"></div>
-                <span style="margin-top: 1px;">${s}</span>
-            </div>
-            <span class="count-pill">${count}</span>
-        </label>`;
-    }).join('');
-}
+function initUI(res) {
+    document.getElementById('pfpImg').src = res.bio.profilePicture || "";
+    document.getElementById('bioUser').innerText = "@" + (res.bio.username || "username");
+    document.getElementById('bioDisplay').innerText = res.bio.displayName || "";
+    document.getElementById('bioDesc').innerText = res.bio.bioText || "";
+    document.getElementById('bioLink').innerText = res.bio.linkDisplay || "";
+    document.getElementById('bioLink').href = res.bio.linkUrl || "#";
 
-function updateCounts() {
-    document.getElementById('cnt-all').innerText = gridData.length;
-    document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
-    document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
-}
+    const hData = res.highlights && res.highlights.length > 0 ? res.highlights : Array(4).fill(null);
+    document.getElementById('highRow').innerHTML = hData.map(h => `
+        <div style="text-align:center; min-width:75px;">
+            <div class="h-circle">${h && h.image ? `<img src="${h.image}" class="h-img">` : `<div class="h-img">no content</div>`}</div>
+            <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h ? h.name : 'Highlight'}</span>
+        </div>`).join('');
 
-function setPlat(p) { 
-    currentPlat = p; 
-    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
-    doRender(); 
-}
-
-function toggleStat(s) {
-    if (activeStats.includes(s)) activeStats = activeStats.filter(x => x !== s);
-    else activeStats.push(s);
+    const stats = [...new Set(gridData.map(i => i.status))];
+    activeStats = [...stats];
+    renderStatusOptions(stats);
+    renderColorControls();
+    shuffledIndices = Array.from({ length: 100 }, () => Math.floor(Math.random() * brandColors.length));
     doRender();
 }
 
@@ -371,32 +329,27 @@ function doRender() {
     let html = "";
     for (let i = 0; i < Math.max(9, filtered.length); i++) {
         const item = filtered[i];
+        const dataIndex = gridData.indexOf(item);
+        
         if (item) {
             if (isMap) {
                 const color = brandColors[shuffledIndices[i % shuffledIndices.length]];
-                html += `<div class="item" style="background:${color}; transition: background 0.4s ease;"><span class="map-mode-label">${item.status}</span></div>`;
+                html += `<div class="item" onclick="openPreview(${dataIndex})" style="background:${color}; cursor:pointer;"><span class="map-mode-label">${item.status}</span></div>`;
             } else {
                 const slides = item.files.map(f => {
-                    // 2. Canva Logic with Zoom/Scaling to fix black sides
                     if (canvaEnabled && f.url.includes('canva.com/design/')) {
-                        let base = f.url.split('?')[0];
-                        if (!base.endsWith('/view')) {
-                            base = base.replace(/\/watch$/, '') + '/view';
-                        }
-                        const embedUrl = base + '?embed';
-                        
-                        return `<div class="slide" style="position:relative; width:100%; height:100%; overflow:hidden;">
-                                    <iframe src="${embedUrl}" 
-                                            style="position:absolute; top:50%; left:50%; width:125%; height:125%; border:none; transform: translate(-50%, -50%) scale(1.1);" 
-                                            allow="fullscreen">
-                                    </iframe>
+                        let base = f.url.split('?')[0].replace(/\/watch$/, '') + '/view?embed';
+                        return `<div class="slide" style="width:100%; height:100%; overflow:hidden;">
+                                    <iframe src="${base}" style="width:140%; height:140%; border:none; transform: translate(-15%, -15%) scale(1.1); pointer-events:none;"></iframe>
                                 </div>`;
                     }
-                    
-                    return `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline onclick="this.paused?this.play():this.pause()"></video>` : `<img src="${f.url}">`}</div>`;
+                    return `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline muted></video>` : `<img src="${f.url}">`}</div>`;
                 }).join('');
                 
-                html += `<div class="item">${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; font-weight:bold; text-shadow: 0 0 4px rgba(0,0,0,0.5);">▢▢</div>` : ''}<div class="carousel-track">${slides}</div></div>`;
+                html += `<div class="item" onclick="openPreview(${dataIndex})" style="cursor:pointer;">
+                            ${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; font-weight:bold;">▢▢</div>` : ''}
+                            <div class="carousel-track">${slides}</div>
+                         </div>`;
             }
         } else {
             html += `<div class="item"><span class="no-content-label">no content</span></div>`;
@@ -411,5 +364,10 @@ window.onclick = () => {
 
 init();
 </script>
+    <div id="previewLightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center; cursor:zoom-out;" onclick="this.style.display='none'">
+    <div id="lightboxContent" style="width:90%; height:90%; display:flex; align-items:center; justify-content:center;">
+        </div>
+    <div style="position:absolute; top:20px; right:20px; color:white; font-size:30px; font-weight:bold; cursor:pointer;">&times;</div>
+</div>
 </body>
 </html>
