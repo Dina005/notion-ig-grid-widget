@@ -3,10 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notion Instagram Grid</title>
+    <title>Social Media Grid Planner</title>
     <style>
-        body { margin: 0; font-family: -apple-system, sans-serif; background: #fff; }
-        
+        /* General Layout */
+        body { 
+            margin: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #ffffff; 
+        }
+
         .grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -16,6 +21,7 @@
             padding: 10px;
         }
 
+        /* Post Container */
         .post {
             position: relative;
             width: 100%;
@@ -32,32 +38,55 @@
             display: block;
         }
 
-        /* --- HOVER EFFECT START --- */
+        /* Hover Overlay Effect */
         .overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.4); /* Darkens the image slightly */
+            background: rgba(0, 0, 0, 0.65); /* Darken on hover */
             color: white;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0; /* Hidden by default */
+            flex-direction: column;
+            justify-content: center; /* Centers the Name */
+            opacity: 0;
             transition: opacity 0.3s ease;
             padding: 15px;
             box-sizing: border-box;
-            text-align: center;
-            font-weight: bold;
-            font-size: 0.9rem;
+            text-align: left;
         }
 
         .post:hover .overlay {
-            opacity: 1; /* Shows the name on hover */
+            opacity: 1;
         }
-        /* --- HOVER EFFECT END --- */
 
+        /* Top Right Date */
+        .overlay-date {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            font-size: 0.8rem;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+
+        /* Center Name */
+        .overlay-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        /* Bottom Pillar */
+        .overlay-pillar {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #d1d1d1;
+        }
+
+        /* Lightbox (Full Size View) */
         #lightbox {
             display: none;
             position: fixed;
@@ -74,45 +103,59 @@
             max-width: 90%;
             max-height: 90%;
             border-radius: 4px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
     </style>
 </head>
 <body>
 
-    <div class="grid" id="grid"></div>
+    <div class="grid" id="grid">
+        </div>
 
     <div id="lightbox" onclick="this.style.display='none'">
         <img id="lightbox-img" src="">
     </div>
 
     <script>
+        // Use your specific Cloudflare Worker URL
         const WORKER_URL = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 
-        async function fetchNotionData() {
+        async function loadNotionGrid() {
             try {
                 const response = await fetch(WORKER_URL);
                 const posts = await response.json();
-                const grid = document.getElementById('grid');
+                const gridElement = document.getElementById('grid');
                 
-                grid.innerHTML = posts.map(post => `
+                // Clear existing content
+                gridElement.innerHTML = '';
+
+                // Loop through posts and create the HTML structure
+                gridElement.innerHTML = posts.map(post => `
                     <div class="post" onclick="openLightbox('${post.imageUrl}')">
                         <img src="${post.imageUrl}" alt="${post.name}">
-                        <div class="overlay">${post.name}</div>
+                        <div class="overlay">
+                            <div class="overlay-date">${post.date}</div>
+                            <div class="overlay-name">${post.name}</div>
+                            <div class="overlay-pillar">Pillar: ${post.pillar}</div>
+                        </div>
                     </div>
                 `).join('');
-            } catch (err) {
-                console.error("Error loading grid:", err);
+                
+            } catch (error) {
+                console.error("Error fetching data from Worker:", error);
             }
         }
 
+        // Function to handle the full-size image popup
         function openLightbox(url) {
-            const lb = document.getElementById('lightbox');
-            const img = document.getElementById('lightbox-img');
-            img.src = url;
-            lb.style.display = 'flex';
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            lightboxImg.src = url;
+            lightbox.style.display = 'flex';
         }
 
-        fetchNotionData();
+        // Initialize the grid on page load
+        loadNotionGrid();
     </script>
 </body>
 </html>
