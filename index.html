@@ -200,6 +200,15 @@
                     <div id="colorList"></div>
                     <button class="add-btn" onclick="addColor()">+ Add Color</button>
                 </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px; font-weight:600;">
+    <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:16px;">✨</span> Direct Canva Previews
+    </div>
+    <label class="switch">
+        <input type="checkbox" id="canvaT" onchange="updateUI()">
+        <span class="slider"></span>
+    </label>
+</div>
             </div>
         </div>
     </div>
@@ -393,6 +402,7 @@ function toggleStat(s) {
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
+    const canvaEnabled = document.getElementById('canvaT').checked; // New Toggle
     const filtered = gridData.filter(i => (currentPlat === 'all' || i.platforms.includes(currentPlat)) && activeStats.includes(i.status));
     
     let html = "";
@@ -400,18 +410,24 @@ function doRender() {
         const item = filtered[i];
         if (item) {
             if (isMap) {
-                // Pick the pre-randomized color for this slot
                 const color = brandColors[shuffledIndices[i % shuffledIndices.length]];
-                html += `
-                <div class="item" style="background:${color}; transition: background 0.4s ease;">
-                    <span class="map-mode-label">${item.status}</span>
-                </div>`;
+                html += `<div class="item" style="background:${color}; transition: background 0.4s ease;"><span class="map-mode-label">${item.status}</span></div>`;
             } else {
-                const slides = item.files.map(f => `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline onclick="this.paused?this.play():this.pause()"></video>` : `<img src="${f.url}">`}</div>`).join('');
+                const slides = item.files.map(f => {
+                    // CANVA DETECTION LOGIC
+                    if (canvaEnabled && f.url.includes('canva.com')) {
+                        // Converts a standard link to an embeddable view
+                        const embedUrl = f.url.replace('/view', '/view?embed');
+                        return `<div class="slide"><iframe src="${embedUrl}" style="width:100%; height:100%; border:none;" allowfullscreen></iframe></div>`;
+                    }
+                    
+                    // STANDARD MEDIA LOGIC
+                    return `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline onclick="this.paused?this.play():this.pause()"></video>` : `<img src="${f.url}">`}</div>`;
+                }).join('');
+                
                 html += `<div class="item">${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; font-weight:bold; text-shadow: 0 0 4px rgba(0,0,0,0.5);">▢▢</div>` : ''}<div class="carousel-track">${slides}</div></div>`;
             }
         } else {
-            // Placeholder for empty slots
             html += `<div class="item"><span class="no-content-label">no content</span></div>`;
         }
     }
