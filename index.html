@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v17</title>
+    <title>Pro Planner v18 - Carousel Support</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; --secondary: #8e8e93; --accent: #000000; }
@@ -12,27 +12,32 @@
         /* Bio & Highlights */
         #bioSection { max-width: 935px; margin: 40px auto 10px; padding: 0 20px; display: none; flex-direction: column; align-items: center; text-align: center; }
         .pfp-circle { width: 85px; height: 85px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 1px solid #efefef; }
-        #highRow { max-width: 935px; margin: 0 auto 30px; padding: 0 20px; display: none; justify-content: center; gap: 20px; overflow-x: auto; }
+        #highRow { max-width: 935px; margin: 0 auto 30px; padding: 0 20px; display: none; justify-content: center; gap: 20px; overflow-x: auto; scrollbar-width: none; }
         .h-circle { width: 77px; height: 77px; border-radius: 50%; border: 1px solid #dbdbdb; background: #fafafa; padding: 3px; display: flex; align-items: center; justify-content: center; }
         .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; object-position: center; }
         .h-label { font-size: 12px; font-weight: 600; margin-top: 8px; color: #262626; }
 
-        /* Top Bar & Filters */
+        /* Grid & Carousel Logic */
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
+        .item { aspect-ratio: 1/1; background: #f9f9fb; overflow: hidden; position: relative; }
+        
+        /* Carousel Track */
+        .carousel-track { display: flex; width: 100%; height: 100%; overflow-x: scroll; scroll-snap-type: x mandatory; scrollbar-width: none; }
+        .carousel-track::-webkit-scrollbar { display: none; }
+        .slide { min-width: 100%; height: 100%; scroll-snap-align: start; position: relative; }
+        .slide img, .slide video { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Icons */
+        .indicator-icon { position: absolute; top: 10px; right: 10px; color: white; z-index: 5; filter: drop-shadow(0 0 2px rgba(0,0,0,0.5)); pointer-events: none; font-size: 18px; }
+        .video-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 24px; background: rgba(0,0,0,0.4); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+        .overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); color: white; padding: 15px; transform: translateY(102%); transition: 0.3s; pointer-events: none; }
+        .item:hover .overlay { transform: translateY(0); }
+
+        /* Top Bar & Toggles */
         .top-bar { max-width: 935px; margin: 20px auto 15px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
         .refresh-btn { background: #000; color: white; border: none; padding: 11px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; }
         .icon-btn { background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .filter-area { max-width: 935px; margin: 0 auto 20px; padding: 0 20px; display: none; gap: 12px; }
-        .filter-area.active { display: flex; }
-
-        /* Grid & Media */
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
-        .item { aspect-ratio: 1/1; background: #f9f9fb; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .item img, .item video { width: 100%; height: 100%; object-fit: cover; }
-        .video-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 30px; z-index: 5; pointer-events: none; background: rgba(0,0,0,0.3); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        .overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); color: white; padding: 15px; transform: translateY(102%); transition: 0.3s; }
-        .item:hover .overlay { transform: translateY(0); }
-        
-        /* Settings */
         .settings-menu { position: absolute; top: 55px; right: 0; width: 260px; background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: none; z-index: 2000; padding: 20px; border: 1px solid #ededf0; }
         .settings-menu.open { display: block; }
         .switch { position: relative; width: 40px; height: 22px; display: inline-block; }
@@ -48,12 +53,11 @@
         <h1 id="bioUser" style="font-size: 28px; font-weight: 800; margin: 0;"></h1>
         <p id="bioDisplay" style="font-weight: 600; margin: 8px 0 5px;"></p>
         <p id="bioDesc" style="font-size: 14px; max-width: 450px;"></p>
-        <a id="bioLink" class="b-link" style="color: #00376b; font-weight: 700; text-decoration: none;"></a>
+        <a id="bioLink" style="color: #00376b; font-weight: 700; text-decoration: none;"></a>
     </div>
     <div id="highRow"></div>
     <div class="top-bar">
         <button class="refresh-btn" onclick="location.reload()">Refresh</button>
-        <button class="icon-btn" onclick="document.getElementById('filterArea').classList.toggle('active')">⚙</button>
         <div style="margin-left:auto; position:relative;">
             <button class="icon-btn" onclick="document.getElementById('setMenu').classList.toggle('open')">•••</button>
             <div class="settings-menu" id="setMenu">
@@ -62,7 +66,6 @@
             </div>
         </div>
     </div>
-    <div class="filter-area" id="filterArea"></div>
     <div id="grid" class="grid"></div>
 
     <script>
@@ -89,7 +92,7 @@
                 
                 const hContainer = document.getElementById('highRow');
                 hContainer.innerHTML = (res.highlights || []).map(h => `
-                    <div class="h-item" style="display:flex; flex-direction:column; align-items:center;">
+                    <div style="display:flex; flex-direction:column; align-items:center; min-width:85px;">
                         <div class="h-circle"><img src="${h.image}" class="h-img"></div>
                         <span class="h-label">${h.name}</span>
                     </div>`).join('');
@@ -99,22 +102,34 @@
         }
 
         function togglePlay(vid) {
-            const icon = vid.nextElementSibling;
-            if (vid.paused) { vid.play(); icon.style.display = 'none'; } 
-            else { vid.pause(); icon.style.display = 'flex'; }
+            const btn = vid.nextElementSibling;
+            if (vid.paused) { vid.play(); btn.style.display = 'none'; } 
+            else { vid.pause(); btn.style.display = 'flex'; }
         }
 
         function doRender() {
             const grid = document.getElementById('grid');
-            grid.innerHTML = gridData.map((i, idx) => {
+            grid.innerHTML = gridData.map((item, idx) => {
                 const bg = palette[idx % palette.length];
-                if (i && i.imageUrl) {
-                    const media = i.isVideo 
-                        ? `<video src="${i.imageUrl}" preload="metadata" loop playsinline onclick="togglePlay(this)"></video><div class="video-icon">▶</div>` 
-                        : `<img src="${i.imageUrl}">`;
-                    return `<div class="item" style="background-color:${bg}">${media}<div class="overlay">${i.name}</div></div>`;
+                if (!item || !item.files || item.files.length === 0) {
+                    return `<div class="item" style="background-color:${bg}; display:flex; align-items:center; justify-content:center; color:#d1d1d6; font-size:10px; font-weight:800;">EMPTY</div>`;
                 }
-                return `<div class="item" style="background-color:${bg}">EMPTY</div>`;
+
+                // Multiple files = Carousel
+                const isCarousel = item.files.length > 1;
+                const slidesHtml = item.files.map(f => `
+                    <div class="slide">
+                        ${f.isVideo 
+                            ? `<video src="${f.url}" preload="metadata" loop playsinline onclick="togglePlay(this)"></video><div class="video-btn" onclick="togglePlay(this.previousElementSibling)">▶</div>` 
+                            : `<img src="${f.url}">`}
+                    </div>`).join('');
+
+                return `
+                    <div class="item" style="background-color:${bg}">
+                        ${isCarousel ? `<div class="indicator-icon">▢▢</div>` : ''}
+                        <div class="carousel-track">${slidesHtml}</div>
+                        <div class="overlay">${item.name}</div>
+                    </div>`;
             }).join('');
         }
         init();
