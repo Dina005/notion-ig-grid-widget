@@ -3,159 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Social Media Grid Planner</title>
+    <title>Content Planner Dashboard</title>
     <style>
-        /* General Layout */
-        body { 
-            margin: 0; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background-color: #ffffff; 
-        }
+        body { margin: 0; font-family: sans-serif; background: #fafafa; color: #333; }
+        
+        /* Filters & Tabs Container */
+        .controls { max-width: 935px; margin: 20px auto; padding: 0 10px; display: flex; flex-direction: column; gap: 15px; }
+        
+        .tabs { display: flex; gap: 20px; border-bottom: 1px solid #dbdbdb; }
+        .tab { padding: 10px 0; cursor: pointer; font-weight: 600; color: #8e8e8e; border-bottom: 2px solid transparent; text-transform: uppercase; font-size: 0.8rem; }
+        .tab.active { color: #000; border-bottom: 2px solid #000; }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2px;
-            max-width: 935px;
-            margin: 0 auto;
-            padding: 10px;
-        }
+        .filter-row { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
+        select { padding: 5px 10px; border-radius: 4px; border: 1px solid #dbdbdb; background: white; }
 
-        /* Post Container */
-        .post {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            overflow: hidden;
-            background: #f0f0f0;
-            cursor: pointer;
-        }
+        /* Grid */
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; max-width: 935px; margin: 0 auto; padding: 10px; }
+        
+        .post { position: relative; width: 100%; aspect-ratio: 1/1; background: #efefef; overflow: hidden; }
+        .post img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* No Content Placeholder */
+        .no-content { display: flex; align-items: center; justify-content: center; color: #b0b0b0; font-weight: bold; font-size: 0.8rem; text-align: center; background: #f4f4f4; border: 1px dashed #ddd; }
 
-        .post img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        /* Hover Overlay Effect */
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.65); /* Darken on hover */
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center; /* Centers the Name */
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            padding: 15px;
-            box-sizing: border-box;
-            text-align: left;
-        }
-
-        .post:hover .overlay {
-            opacity: 1;
-        }
-
-        /* Top Right Date */
-        .overlay-date {
-            position: absolute;
-            top: 10px;
-            right: 12px;
-            font-size: 0.8rem;
-            font-weight: 400;
-            opacity: 0.9;
-        }
-
-        /* Center Name */
-        .overlay-name {
-            font-weight: 700;
-            font-size: 1.1rem;
-            line-height: 1.2;
-            margin-bottom: 8px;
-        }
-
-        /* Bottom Pillar */
-        .overlay-pillar {
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: #d1d1d1;
-        }
-
-        /* Lightbox (Full Size View) */
-        #lightbox {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            cursor: zoom-out;
-        }
-
-        #lightbox img {
-            max-width: 90%;
-            max-height: 90%;
-            border-radius: 4px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
+        .overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); color:white; opacity:0; transition:0.3s; padding:15px; box-sizing:border-box; display:flex; flex-direction:column; justify-content:center; }
+        .post:hover .overlay { opacity:1; }
+        .overlay-date { position:absolute; top:10px; right:12px; font-size:0.75rem; }
     </style>
 </head>
 <body>
 
-    <div class="grid" id="grid">
+    <div class="controls">
+        <div class="tabs" id="platformTabs">
+            <div class="tab active" onclick="filterByPlatform('All')">All Channels</div>
+            <div class="tab" onclick="filterByPlatform('Instagram')">Instagram</div>
+            <div class="tab" onclick="filterByPlatform('TikTok')">TikTok</div>
         </div>
-
-    <div id="lightbox" onclick="this.style.display='none'">
-        <img id="lightbox-img" src="">
+        
+        <div class="filter-row">
+            <label>Status:</label>
+            <select id="statusFilter" onchange="renderGrid()">
+                <option value="All">All Statuses</option>
+                <option value="In progress">In Progress</option>
+                <option value="Done">Done</option>
+            </select>
+        </div>
     </div>
 
+    <div class="grid" id="grid"></div>
+
     <script>
-        // Use your specific Cloudflare Worker URL
         const WORKER_URL = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
+        let allPosts = [];
+        let currentPlatform = 'All';
 
-        async function loadNotionGrid() {
-            try {
-                const response = await fetch(WORKER_URL);
-                const posts = await response.json();
-                const gridElement = document.getElementById('grid');
-                
-                // Clear existing content
-                gridElement.innerHTML = '';
+        async function init() {
+            const res = await fetch(WORKER_URL);
+            allPosts = await res.json();
+            renderGrid();
+        }
 
-                // Loop through posts and create the HTML structure
-                gridElement.innerHTML = posts.map(post => `
-                    <div class="post" onclick="openLightbox('${post.imageUrl}')">
-                        <img src="${post.imageUrl}" alt="${post.name}">
-                        <div class="overlay">
-                            <div class="overlay-date">${post.date}</div>
-                            <div class="overlay-name">${post.name}</div>
-                            <div class="overlay-pillar">Pillar: ${post.pillar}</div>
-                        </div>
+        function filterByPlatform(platform) {
+            currentPlatform = platform;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            renderGrid();
+        }
+
+        function renderGrid() {
+            const statusValue = document.getElementById('statusFilter').value;
+            const container = document.getElementById('grid');
+            
+            // Filter Logic
+            let filtered = allPosts.filter(p => {
+                const matchPlatform = currentPlatform === 'All' || p.platform.includes(currentPlatform);
+                const matchStatus = statusValue === 'All' || p.status === statusValue;
+                return matchPlatform && matchStatus;
+            });
+
+            // Ensure grid fills rows of 3
+            const remainder = filtered.length % 3;
+            const placeholdersNeeded = remainder === 0 ? 0 : 3 - remainder;
+            
+            let html = filtered.map(post => `
+                <div class="post">
+                    ${post.imageUrl ? `<img src="${post.imageUrl}">` : `<div class="no-content">No Content</div>`}
+                    <div class="overlay">
+                        <div class="overlay-date">${post.date}</div>
+                        <strong>${post.name}</strong>
+                        <div style="font-size:0.8rem">${post.pillar}</div>
                     </div>
-                `).join('');
-                
-            } catch (error) {
-                console.error("Error fetching data from Worker:", error);
+                </div>
+            `).join('');
+
+            // Add "No Content" greyed out boxes to fill the row
+            for(let i=0; i < placeholdersNeeded; i++) {
+                html += `<div class="post no-content">No Content</div>`;
             }
+
+            container.innerHTML = html;
         }
 
-        // Function to handle the full-size image popup
-        function openLightbox(url) {
-            const lightbox = document.getElementById('lightbox');
-            const lightboxImg = document.getElementById('lightbox-img');
-            lightboxImg.src = url;
-            lightbox.style.display = 'flex';
-        }
-
-        // Initialize the grid on page load
-        loadNotionGrid();
+        init();
     </script>
 </body>
 </html>
