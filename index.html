@@ -9,11 +9,44 @@
         :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-        /* Bio/Highlights */
-        #bioSection { max-width: 935px; margin: 40px auto 10px; padding: 0 20px; display: none; flex-direction: column; align-items: center; text-align: center; }
-        .pfp-circle { width: 85px; height: 85px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; }
-        #highRow { max-width: 935px; margin: 0 auto 30px; padding: 0 20px; display: none; gap: 20px; overflow-x: auto; scrollbar-width: none; justify-content: center; }
-        .h-circle { width: 77px; height: 77px; border-radius: 50%; border: 1px solid #dbdbdb; padding: 3px; display: flex; align-items: center; justify-content: center; }
+        /* Updated Header for Left Alignment */
+.profile-header { 
+    max-width: 935px; 
+    margin: 40px auto 30px; 
+    padding: 0 20px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: flex-start; /* Shifts PFP and containers to the left */
+    text-align: left; /* Aligns all text lines to the left */
+}
+
+/* Bio Section Alignment */
+#bioSection { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: flex-start; /* Ensures name and text stack on the left */
+    width: 100%; 
+    margin-bottom: 25px; 
+}
+
+/* Highlights Row Alignment */
+#highRow { 
+    display: flex; 
+    width: 100%;
+    justify-content: flex-start; /* Starts the circle row from the left margin */
+    gap: 15px; 
+    overflow-x: auto; 
+    padding: 10px 0 20px;
+    scrollbar-width: none; 
+}
+
+/* Individual Highlight Item */
+.h-item { 
+    flex: 0 0 85px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; /* Keeps the label centered under the circle itself */
+}
 
         /* Top Bar */
         .top-bar { max-width: 935px; margin: 20px auto 15px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
