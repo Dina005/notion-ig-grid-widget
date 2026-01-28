@@ -3,98 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v9 | Full Dashboard</title>
+    <title>Pro Planner v11</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; --secondary: #8e8e93; }
 
-        :root {
-            --bg: #ffffff;
-            --surface: #f3f3f7;
-            --text: #1a1a1a;
-            --secondary: #8e8e93;
-            --accent: #000000;
-        }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; padding-bottom: 50px; }
+        /* --- BIO SECTION (NOTION CALLOUT) --- */
+        #bioSection { max-width: 935px; margin: 40px auto 20px; padding: 0 20px; display: none; flex-direction: column; align-items: flex-start; }
+        .username { font-size: 28px; font-weight: 700; margin: 0; }
+        .display-name { font-size: 16px; font-weight: 600; margin: 8px 0 4px; }
+        .bio-link-text { color: #1a1a1a; text-decoration: none; font-size: 15px; line-height: 1.5; white-space: pre-wrap; display: block; }
 
-        /* --- BIO SECTION --- */
-        #bioSection { max-width: 935px; margin: 40px auto 20px; padding: 0 20px; display: none; }
-        .username { font-size: 28px; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
-        .display-name { font-size: 16px; font-weight: 600; margin: 10px 0 5px; }
-        .bio-text { font-size: 15px; line-height: 1.5; color: #1a1a1a; white-space: pre-wrap; margin-bottom: 8px; }
-        .website-link { color: #00376b; text-decoration: none; font-weight: 600; font-size: 15px; }
-
-        /* --- HIGHLIGHTS --- */
-        #highlightsSection { max-width: 935px; margin: 0 auto 30px; padding: 0 20px; display: none; gap: 15px; overflow-x: auto; scrollbar-width: none; }
-        .highlight-item { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 85px; }
-        .highlight-circle { width: 77px; height: 77px; border-radius: 50%; background: #f0f0f0; border: 1px solid #dbdbdb; padding: 3px; }
-        .highlight-inner { width: 100%; height: 100%; background: #eee; border-radius: 50%; }
+        /* --- HIGHLIGHTS SECTION (NOTION DATABASE) --- */
+        #highlightsSection { max-width: 935px; margin: 0 auto 30px; padding: 0 20px; display: none; gap: 18px; overflow-x: auto; scrollbar-width: none; }
+        .highlight-item { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 80px; }
+        .highlight-circle { width: 77px; height: 77px; border-radius: 50%; background: #fafafa; border: 1px solid #dbdbdb; display: grid; place-items: center; overflow: hidden; }
+        .highlight-img { width: 100%; height: 100%; object-fit: cover; }
+        .no-content-text { font-size: 8px; font-weight: 800; color: #d1d1d6; text-align: center; }
         .highlight-label { font-size: 12px; font-weight: 500; color: #262626; }
 
-        /* --- NAVIGATION --- */
-        .top-bar { max-width: 935px; margin: 20px auto 15px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
-        .refresh-btn { background: #000; color: white; border: none; padding: 11px 20px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; }
-        .icon-btn { background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-
-        /* --- SETTINGS & TOGGLE --- */
-        .menu-wrapper { position: relative; }
-        .settings-menu { position: absolute; top: 55px; right: 0; width: 280px; background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: none; z-index: 2000; padding: 20px; border: 1px solid #ededf0; }
+        /* --- SETTINGS MENU --- */
+        .top-nav { max-width: 935px; margin: 20px auto; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
+        .refresh-btn { background: #000; color: #fff; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 600; cursor: pointer; }
+        .menu-wrapper { position: relative; margin-left: auto; }
+        .icon-btn { background: var(--surface); border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: grid; place-items: center; }
+        .settings-menu { position: absolute; top: 50px; right: 0; width: 250px; background: white; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: none; z-index: 2000; padding: 15px; border: 1px solid #eee; }
         .settings-menu.open { display: block; }
-        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; font-size: 14px; font-weight: 500; border-bottom: 1px solid #f9f9f9; }
+        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; font-size: 14px; font-weight: 600; }
 
-        /* Custom Black Toggle */
-        .switch { position: relative; width: 40px; height: 22px; }
+        /* Black Toggle Switch */
+        .switch { position: relative; width: 38px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e5ea; transition: .3s; border-radius: 20px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
         input:checked + .slider { background-color: #000; }
         input:checked + .slider:before { transform: translateX(18px); }
 
-        /* --- COLOR PALETTE --- */
-        .color-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center; }
-        input[type="color"] { -webkit-appearance: none; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; background: none; }
-        input[type="color"]::-webkit-color-swatch { border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px #ddd; }
-        .add-btn { width: 30px; height: 30px; border-radius: 50%; border: 1.5px dashed #ccc; background: none; cursor: pointer; font-size: 18px; color: #999; display: grid; place-items: center; }
-
         /* --- GRID --- */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto; padding: 0 20px; }
-        .item { aspect-ratio: 1/1; background: #f9f9fb; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
+        .item { aspect-ratio: 1/1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #f9f9fb; }
         .item img { width: 100%; height: 100%; object-fit: cover; }
         .map-mode .item img { display: none; }
-        .map-label { display: none; color: white; font-weight: 600; font-size: 14px; text-align: center; padding: 15px; line-height: 1.4; }
+        .map-label { display: none; color: white; font-weight: 600; font-size: 13px; text-align: center; padding: 15px; }
         .map-mode .map-label { display: block; }
-        .empty-tag { color: #d1d1d6; font-size: 10px; font-weight: 800; }
     </style>
 </head>
 <body>
 
     <div id="bioSection">
-        <h1 class="username" id="notion-username">@your_username</h1>
-        <p class="display-name" id="notion-displayname">Your Display Name</p>
-        <div class="bio-text" id="notion-bio">Helping creators turn skills into income ✨\nServing clients globally\nTips to build income streams\nStart your journey here</div>
-        <a href="#" class="website-link" id="notion-link">websitelink.com</a>
+        <h1 class="username">@your_username</h1>
+        <p class="display-name">Your Display Name</p>
+        <a href="#" id="bioLink" class="bio-link-text">Loading bio...</a>
     </div>
 
-    <div id="highlightsSection">
-        <div class="highlight-item"><div class="highlight-circle"><div class="highlight-inner"></div></div><span class="highlight-label">Highlight</span></div>
-        <div class="highlight-item"><div class="highlight-circle"><div class="highlight-inner"></div></div><span class="highlight-label">Highlight</span></div>
-        <div class="highlight-item"><div class="highlight-circle"><div class="highlight-inner"></div></div><span class="highlight-label">Highlight</span></div>
-        <div class="highlight-item"><div class="highlight-circle"><div class="highlight-inner"></div></div><span class="highlight-label">Highlight</span></div>
-    </div>
+    <div id="highlightsSection"></div>
 
-    <div class="top-bar">
+    <div class="top-nav">
         <button class="refresh-btn" onclick="location.reload()">Refresh</button>
-        <div class="menu-wrapper" style="margin-left: auto;">
-            <button class="icon-btn" onclick="toggleSettings()">•••</button>
+        <div class="menu-wrapper">
+            <button class="icon-btn" onclick="document.getElementById('setMenu').classList.toggle('open')">•••</button>
             <div class="settings-menu" id="setMenu">
-                <div class="setting-row">Show Bio <label class="switch"><input type="checkbox" id="t-bio" onchange="updateUI()"><span class="slider"></span></label></div>
-                <div class="setting-row">Show Highlights <label class="switch"><input type="checkbox" id="t-high" onchange="updateUI()"><span class="slider"></span></label></div>
-                <div class="setting-row">Content Map Mode <label class="switch"><input type="checkbox" id="t-map" onchange="updateUI()"><span class="slider"></span></label></div>
-                
-                <div style="margin-top:15px; font-size:10px; font-weight:800; color:#8e8e93; letter-spacing:1px;">BRAND PALETTE</div>
-                <div class="color-grid" id="colorContainer"></div>
-                
-                <a href="#" style="display:block; margin-top:15px; text-align:center; font-size:12px; color:#00376b; text-decoration:none; font-weight:600;">Edit Profile in Notion ↗</a>
+                <div class="setting-row">Show Bio <label class="switch"><input type="checkbox" id="t-bio" checked onchange="refreshUI()"><span class="slider"></span></label></div>
+                <div class="setting-row">Show Highlights <label class="switch"><input type="checkbox" id="t-high" checked onchange="refreshUI()"><span class="slider"></span></label></div>
+                <div class="setting-row">Content Map <label class="switch"><input type="checkbox" id="t-map" onchange="refreshUI()"><span class="slider"></span></label></div>
             </div>
         </div>
     </div>
@@ -103,63 +76,48 @@
 
     <script>
         const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
-        let palette = ['#b4b4a5', '#a5a596', '#d2c8b4'];
-        let storage = [];
+        let state = { posts: [], highlights: [], bio: {} };
+        let palette = ['#b4b4a5', '#a5a596'];
 
-        function toggleSettings() { document.getElementById('setMenu').classList.toggle('open'); }
-        
-        function updateUI() {
-            document.getElementById('bioSection').style.display = document.getElementById('t-bio').checked ? 'block' : 'none';
+        function refreshUI() {
+            document.getElementById('bioSection').style.display = document.getElementById('t-bio').checked ? 'flex' : 'none';
             document.getElementById('highlightsSection').style.display = document.getElementById('t-high').checked ? 'flex' : 'none';
             document.getElementById('grid').classList.toggle('map-mode', document.getElementById('t-map').checked);
-            
-            localStorage.setItem('settings', JSON.stringify({
-                bio: document.getElementById('t-bio').checked,
-                high: document.getElementById('t-high').checked,
-                map: document.getElementById('t-map').checked
-            }));
-            render();
-        }
-
-        function renderColors() {
-            const container = document.getElementById('colorContainer');
-            container.innerHTML = palette.map((c, i) => `
-                <div style="position:relative">
-                    <input type="color" value="${c}" onchange="palette[${i}]=this.value; renderColors()">
-                    <button onclick="palette.splice(${i},1); renderColors()" style="position:absolute; top:-5px; right:-5px; background:#000; color:#fff; border:none; border-radius:50%; width:14px; height:14px; font-size:9px; cursor:pointer">×</button>
-                </div>`).join('') + `<button class="add-btn" onclick="palette.push('#dddddd'); renderColors()">+</button>`;
-            localStorage.setItem('palette', JSON.stringify(palette));
             render();
         }
 
         async function init() {
-            const s = JSON.parse(localStorage.getItem('settings') || '{"bio":true,"high":true,"map":false}');
-            document.getElementById('t-bio').checked = s.bio;
-            document.getElementById('t-high').checked = s.high;
-            document.getElementById('t-map').checked = s.map;
-            
-            const p = JSON.parse(localStorage.getItem('palette'));
-            if(p) palette = p;
-            
-            renderColors();
-            updateUI();
-            
             try {
                 const r = await fetch(API);
-                storage = await r.json();
-                render();
-            } catch(e) {}
+                state = await r.json();
+                
+                // Set Bio Link
+                const link = document.getElementById('bioLink');
+                link.innerText = state.bio.text || "No bio text set";
+                link.href = state.bio.url || "#";
+
+                // Set Highlights
+                const highBox = document.getElementById('highlightsSection');
+                highBox.innerHTML = state.highlights.map(h => `
+                    <div class="highlight-item">
+                        <div class="highlight-circle">
+                            ${h.image ? `<img src="${h.image}" class="highlight-img">` : `<span class="no-content-text">NO CONTENT</span>`}
+                        </div>
+                        <span class="highlight-label">${h.name}</span>
+                    </div>
+                `).join('');
+                
+                refreshUI();
+            } catch(e) { render(); }
         }
 
         function render() {
             const grid = document.getElementById('grid');
-            let items = storage.length > 0 ? storage : Array(9).fill(null);
+            let items = state.posts.length > 0 ? state.posts : Array(6).fill(null);
             grid.innerHTML = items.map((i, idx) => {
                 const bg = palette[idx % palette.length];
-                if(i && i.imageUrl) {
-                    return `<div class="item" style="background-color:${bg}"><img src="${i.imageUrl}"><div class="map-label">${i.name}</div></div>`;
-                }
-                return `<div class="item"><span class="empty-tag">EMPTY</span></div>`;
+                if(i) return `<div class="item" style="background-color:${bg}"><img src="${i.imageUrl}"><div class="map-label">${i.name}</div></div>`;
+                return `<div class="item" style="background-color:${bg}"><span class="no-content-text">EMPTY</span></div>`;
             }).join('');
         }
 
