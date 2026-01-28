@@ -3,16 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v22 - Final Restoration</title>
+    <title>Pro Planner v22 - Centered Header</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; --grey-empty: #efefef; --border: #e0e0e6; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-        /* Bio & Highlights - Restored snapped left */
-        #bioSection { max-width: 935px; margin: 40px auto 10px; padding: 0 20px; display: none; flex-direction: column; align-items: flex-start; text-align: left; }
+        /* Bio Section - Stacked and Centered */
+        #bioSection { 
+            max-width: 935px; 
+            margin: 40px auto 20px; 
+            padding: 0 20px; 
+            display: none; 
+            flex-direction: column; 
+            align-items: center; 
+            text-align: center; 
+        }
+        
+        .pfp-container { 
+            width: 150px; 
+            height: 150px; 
+            border-radius: 50%; 
+            overflow: hidden; 
+            background: var(--grey-empty); 
+            flex-shrink: 0; 
+            border: 1px solid var(--border); 
+            margin-bottom: 20px; 
+        }
+        .pfp-img { width: 100%; height: 100%; object-fit: cover; }
+
         #bioUser { font-size: 32px; font-weight: 800; margin-bottom: 10px; }
 
+        /* Highlights */
         #highRow { max-width: 935px; margin: 0 auto 30px; padding: 0 20px; display: none; gap: 15px; overflow-x: auto; scrollbar-width: none; justify-content: flex-start; }
         .h-circle { width: 64px; height: 64px; border-radius: 50%; border: 1px solid #dbdbdb; padding: 3px; display: flex; align-items: center; justify-content: center; background: #fff; }
         .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: var(--grey-empty); display: flex; align-items: center; justify-content: center; font-size: 8px; color: #999; font-weight: 600; text-transform: lowercase; }
@@ -41,7 +63,7 @@
         }
         .dropdown-menu.show { display: block; }
 
-        /* Checkbox & Item Alignment - Precision Fixed */
+        /* Checkbox & Item Alignment */
         .dropdown-item { 
             padding: 10px 12px; border-radius: 8px; display: flex; 
             align-items: center; justify-content: space-between; 
@@ -83,6 +105,8 @@
 </head>
 <body>
     <div id="bioSection">
+        <div class="pfp-container"><img id="pfpImg" class="pfp-img" src=""></div>
+        
         <h1 id="bioUser"></h1>
         <p id="bioDisplay" style="font-weight:600; margin-bottom: 5px;"></p>
         <p id="bioDesc" style="font-size:14px; color:#1a1a1a; max-width:600px; line-height:1.4; margin-bottom:10px; white-space: pre-wrap;"></p>
@@ -151,6 +175,8 @@
             try {
                 const r = await fetch(API); const res = await r.json();
                 gridData = res.grid;
+                // Restored PFP and Bio Logic
+                document.getElementById('pfpImg').src = res.bio.profilePicture || "";
                 document.getElementById('bioUser').innerText = "@" + (res.bio.username || "username");
                 document.getElementById('bioDisplay').innerText = res.bio.displayName || "";
                 document.getElementById('bioDesc').innerText = res.bio.bioText || "";
