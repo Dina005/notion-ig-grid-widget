@@ -3,69 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v22 - Precision Centering</title>
+    <title>Pro Planner v22 - Final Master</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; --grey-empty: #efefef; --border: #e0e0e6; }
+        :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; --grey-empty: #efefef; --border: #e0e0e6; --accent: #000000; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-        /* Layout Sections */
+        /* Bio & Highlights */
         #bioSection { max-width: 935px; margin: 40px auto 10px; padding: 0 20px; display: none; flex-direction: column; align-items: flex-start; }
-        #highRow { max-width: 935px; margin: 0 auto 30px; padding: 0 20px; display: none; gap: 15px; overflow-x: auto; justify-content: flex-start; }
+        #highRow { max-width: 935px; margin: 0 auto 30px; padding: 0 20px; display: none; gap: 15px; overflow-x: auto; justify-content: flex-start; scrollbar-width: none; }
         .h-circle { width: 64px; height: 64px; border-radius: 50%; border: 1px solid #dbdbdb; padding: 3px; display: flex; align-items: center; justify-content: center; background: #fff; }
         .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: var(--grey-empty); display: flex; align-items: center; justify-content: center; font-size: 8px; color: #999; font-weight: 600; text-transform: lowercase; }
 
         /* Top Bar */
         .top-bar { max-width: 935px; margin: 20px auto 10px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
         .refresh-btn { background: #000; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
-        .icon-btn { background: var(--surface); border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .icon-btn { background: var(--surface); border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .icon-btn:hover { background: #e2e2e8; }
 
         /* Filter Bar */
         .filter-row { display: none; padding: 15px 20px; gap: 12px; max-width: 935px; margin: 0 auto; align-items: center; border-top: 1px solid #f0f0f2; }
         .filter-row.active { display: flex; }
 
-        /* Dropdowns */
+        /* Aesthetic Dropdowns */
         .dropdown-container { position: relative; font-size: 14px; font-weight: 600; }
         .dropdown-trigger { 
             padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border);
             background: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px;
-            transition: all 0.2s; min-width: 140px; justify-content: space-between;
+            min-width: 140px; justify-content: space-between;
         }
-        .dropdown-trigger:hover { border-color: #000; }
         .dropdown-menu {
             position: absolute; top: 110%; left: 0; background: white; 
             border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.08);
             z-index: 3000; min-width: 220px; display: none; padding: 8px;
         }
         .dropdown-menu.show { display: block; }
-
-        /* ITEM ALIGNMENT FIX */
-        .dropdown-item { 
-            padding: 10px 12px; 
-            border-radius: 8px; 
-            display: flex; 
-            align-items: center; /* Centers checkbox and text vertically */
-            justify-content: space-between; 
-            cursor: pointer; 
-            color: #444; 
-            line-height: 1; /* Normalizes text height */
-        }
+        .dropdown-item { padding: 10px 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; color: #444; }
         .dropdown-item:hover { background: var(--surface); color: #000; }
         
-        .item-left { display: flex; align-items: center; gap: 12px; }
-
-        /* CHECKBOX PRECISION CENTERED */
-        .check-box { 
-            width: 18px; 
-            height: 18px; 
-            border: 1.5px solid #ccc; 
-            border-radius: 5px; 
-            position: relative; 
-            flex-shrink: 0; 
-            background: #fff;
-            box-sizing: border-box;
-            display: inline-block; /* Essential for flex-centering */
-        }
+        /* Precision Checkbox */
+        .check-box { width: 18px; height: 18px; border: 1.5px solid #ccc; border-radius: 5px; position: relative; flex-shrink: 0; background: #fff; }
         input[type="checkbox"]:checked + .check-box { background: #000; border-color: #000; }
         input[type="checkbox"]:checked + .check-box::after {
             content: ""; position: absolute; left: 5px; top: 1px; width: 4px; height: 8px;
@@ -73,18 +50,31 @@
         }
         input[type="checkbox"] { display: none; }
 
-        .count-pill { font-size: 11px; background: #eee; padding: 2px 8px; border-radius: 20px; color: #888; font-weight: 700; }
+        /* AESTHETIC TOGGLE SWITCHES (Settings) */
+        .switch { position: relative; width: 42px; height: 24px; display: inline-block; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e5ea; transition: .3s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        input:checked + .slider { background-color: #000; }
+        input:checked + .slider:before { transform: translateX(18px); }
 
-        /* Grid */
+        .settings-menu { 
+            position: absolute; top: 55px; right: 20px; width: 260px; background: white; 
+            border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: none; 
+            z-index: 4000; padding: 16px; border: 1px solid #ededf0;
+        }
+        .settings-menu.open { display: block; }
+        .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f5f5f7; font-size: 14px; font-weight: 600; }
+        .settings-item:last-child { border-bottom: none; }
+
+        /* Grid & Images */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
         .item { aspect-ratio: 1/1; background: var(--grey-empty); overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
         .no-content-label { color: #aaaaaa; font-size: 13px; font-weight: 500; text-transform: lowercase; }
         .carousel-track { display: flex; width: 100%; height: 100%; overflow-x: auto; scrollbar-width: none; }
         .slide { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
         .slide img, .slide video { width: 100%; height: 100%; object-fit: cover; }
-        
-        .settings-menu { position: absolute; top: 55px; right: 20px; width: 280px; background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: none; z-index: 2000; padding: 20px; border: 1px solid #ededf0; }
-        .settings-menu.open { display: block; }
+        .count-pill { font-size: 11px; background: #eee; padding: 2px 8px; border-radius: 20px; color: #888; font-weight: 700; }
     </style>
 </head>
 <body>
@@ -104,8 +94,9 @@
         <div style="margin-left:auto; position:relative;">
             <button class="icon-btn" onclick="toggleSettings(event)">•••</button>
             <div class="settings-menu" id="setMenu">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">Show Bio <input type="checkbox" id="bioT" onchange="updateUI()"></div>
-                <div style="display:flex; justify-content:space-between; align-items:center;">Show Highlights <input type="checkbox" id="highT" onchange="updateUI()"></div>
+                <div class="settings-item">Show Bio <label class="switch"><input type="checkbox" id="bioT" onchange="updateUI()"><span class="slider"></span></label></div>
+                <div class="settings-item">Show Highlights <label class="switch"><input type="checkbox" id="highT" onchange="updateUI()"><span class="slider"></span></label></div>
+                <div class="settings-item">Content Map <label class="switch"><input type="checkbox" id="mapT" onchange="updateUI()"><span class="slider"></span></label></div>
             </div>
         </div>
     </div>
@@ -146,6 +137,8 @@
         function updateUI() { 
             document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none'; 
             document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none'; 
+            // Content Map Logic: If active, we show post labels, else just images
+            doRender();
         }
 
         async function init() {
@@ -177,7 +170,7 @@
                 const count = gridData.filter(i => i.status === s).length;
                 return `
                 <label class="dropdown-item" onclick="event.stopPropagation()">
-                    <div class="item-left">
+                    <div style="display:flex; align-items:center; gap:12px;">
                         <input type="checkbox" checked value="${s}" onchange="toggleStat('${s}')">
                         <div class="check-box"></div>
                         <span style="margin-top: 1px;">${s}</span>
@@ -207,6 +200,7 @@
 
         function doRender() {
             const grid = document.getElementById('grid');
+            const showMap = document.getElementById('mapT').checked;
             const filtered = gridData.filter(i => (currentPlat === 'all' || i.platforms.includes(currentPlat)) && activeStats.includes(i.status));
             
             let html = "";
@@ -214,7 +208,12 @@
                 const item = filtered[i];
                 if (item) {
                     const slides = item.files.map(f => `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline onclick="this.paused?this.play():this.pause()"></video>` : `<img src="${f.url}">`}</div>`).join('');
-                    html += `<div class="item">${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; font-weight:bold; text-shadow: 0 0 4px rgba(0,0,0,0.5);">▢▢</div>` : ''}<div class="carousel-track">${slides}</div></div>`;
+                    html += `
+                        <div class="item">
+                            ${showMap ? `<div style="position:absolute; bottom:10px; left:10px; right:10px; background:rgba(255,255,255,0.9); padding:5px; border-radius:6px; font-size:10px; font-weight:700; z-index:20; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.name || 'Post'}</div>` : ''}
+                            ${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; font-weight:bold; text-shadow: 0 0 4px rgba(0,0,0,0.5);">▢▢</div>` : ''}
+                            <div class="carousel-track">${slides}</div>
+                        </div>`;
                 } else {
                     html += `<div class="item"><span class="no-content-label">no content</span></div>`;
                 }
@@ -222,7 +221,10 @@
             grid.innerHTML = html;
         }
 
-        window.onclick = () => document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+        window.onclick = () => {
+            document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+            document.getElementById('setMenu').classList.remove('open');
+        };
         init();
     </script>
 </body>
