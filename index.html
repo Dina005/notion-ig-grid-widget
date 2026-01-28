@@ -93,77 +93,33 @@
         input:checked + .slider { background-color: #000; }
         input:checked + .slider:before { transform: translateX(18px); }
 
-        /* NEW: Brand Color Manager UI */
+        /* Brand Color Manager UI */
         .brand-color-section { margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; }
-        .color-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-        .color-picker { width: 30px; height: 30px; border: none; padding: 0; background: none; cursor: pointer; border-radius: 50%; overflow: hidden; }
-        .color-picker::-webkit-color-swatch { border: none; border-radius: 50%; }
-        .remove-btn { color: #ff4d4d; border: none; background: none; font-weight: 800; cursor: pointer; font-size: 16px; }
-        .add-btn { width: 100%; padding: 8px; background: var(--surface); border: 1px dashed #ccc; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
+        .color-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .color-picker-wrapper {
+            position: relative; width: 32px; height: 32px; border-radius: 50%;
+            border: 2px solid #eee; transition: transform 0.2s, border-color 0.2s;
+            overflow: hidden; cursor: pointer;
+        }
+        .color-picker-wrapper:hover { transform: scale(1.1); border-color: #000; }
+        .color-picker { position: absolute; top: -5px; left: -5px; width: 44px; height: 44px; cursor: pointer; border: none; padding: 0; background: none; }
+        .remove-btn { color: #ccc; border: none; background: none; font-size: 18px; cursor: pointer; transition: color 0.2s; }
+        .remove-btn:hover { color: #ff4d4d; }
+        .add-btn { width: 100%; padding: 10px; background: #f9f9f9; border: 1px dashed #ddd; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
 
-        /* Grid & Map Item Styles */
+        /* Grid & Item Styles */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
         .item { aspect-ratio: 1/1; background: var(--grey-empty); overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
         .map-mode-label { color: #fff; font-weight: 800; font-size: 14px; text-transform: uppercase; text-align: center; padding: 15px; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-        
         .no-content-label { color: #aaaaaa; font-size: 13px; font-weight: 500; text-transform: lowercase; }
         .carousel-track { display: flex; width: 100%; height: 100%; overflow-x: auto; scrollbar-width: none; }
-        .slide { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .slide { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
         .slide img, .slide video { width: 100%; height: 100%; object-fit: cover; }
-        /* Custom Editable Color Circles */
-.brand-color-section { margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; }
-.color-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .slide iframe { position: absolute; top: 50%; left: 50%; width: 140%; height: 140%; border: none; transform: translate(-50%, -50%) scale(1.1); pointer-events: none; }
 
-.color-picker-wrapper {
-    position: relative;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 2px solid #eee;
-    transition: transform 0.2s, border-color 0.2s;
-    overflow: hidden;
-    cursor: pointer;
-}
-
-.color-picker-wrapper:hover {
-    transform: scale(1.1);
-    border-color: #000;
-}
-
-.color-picker {
-    position: absolute;
-    top: -5px;
-    left: -5px;
-    width: 44px;
-    height: 44px;
-    cursor: pointer;
-    border: none;
-    padding: 0;
-    background: none;
-}
-
-.remove-btn { 
-    color: #ccc; 
-    border: none; 
-    background: none; 
-    font-size: 18px; 
-    cursor: pointer; 
-    transition: color 0.2s;
-}
-.remove-btn:hover { color: #ff4d4d; }
-
-.add-btn { 
-    width: 100%; 
-    padding: 10px; 
-    background: #f9f9f9; 
-    border: 1px dashed #ddd; 
-    border-radius: 12px; 
-    font-size: 11px; 
-    font-weight: 700; 
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.add-btn:hover { background: #eee; }
+        /* Lightbox */
+        #previewLightbox { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center; cursor:zoom-out; }
+        #lightboxContent { width:90%; height:90%; display:flex; align-items:center; justify-content:center; }
     </style>
 </head>
 <body>
@@ -176,7 +132,6 @@
     </div>
 
     <div id="highRow"></div>
-
     <div class="top-bar">
         <button class="refresh-btn" onclick="location.reload()">Refresh</button>
         <button class="icon-btn" onclick="document.getElementById('filterArea').classList.toggle('active')">
@@ -191,8 +146,11 @@
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
                     Show Highlights <label class="switch"><input type="checkbox" id="highT" onchange="updateUI()"><span class="slider"></span></label>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; font-weight:600;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
                     Content Map <label class="switch"><input type="checkbox" id="mapT" onchange="updateUI()"><span class="slider"></span></label>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-weight:600;">
+                    Direct Canva Previews <label class="switch"><input type="checkbox" id="canvaT" onchange="updateUI()"><span class="slider"></span></label>
                 </div>
                 
                 <div class="brand-color-section" id="colorManagerUI" style="display:none;">
@@ -200,15 +158,6 @@
                     <div id="colorList"></div>
                     <button class="add-btn" onclick="addColor()">+ Add Color</button>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px; font-weight:600;">
-    <div style="display:flex; align-items:center; gap:8px;">
-        <span style="font-size:16px;">Direct Canva Previews</span>
-    </div>
-    <label class="switch">
-        <input type="checkbox" id="canvaT" onchange="updateUI()">
-        <span class="slider"></span>
-    </label>
-</div>
             </div>
         </div>
     </div>
@@ -238,119 +187,208 @@
     </div>
 
     <div id="grid" class="grid"></div>
-    <div id="previewLightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center; cursor:zoom-out;" onclick="this.style.display='none'">
-    <div id="lightboxContent" style="width:90%; height:90%; display:flex; align-items:center; justify-content:center;"></div>
-    <div style="position:absolute; top:20px; right:20px; color:white; font-size:30px; font-weight:bold; cursor:pointer;">&times;</div>
-</div>
-   <script>
-const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
-let gridData = [], currentPlat = 'all', activeStats = [];
-let brandColors = ["#FFD1DC", "#AEEEEE", "#FFECB3"]; 
-let shuffledIndices = [];
-function toggleSettings(e) { 
-    e.stopPropagation(); 
-    document.getElementById('setMenu').classList.toggle('open'); 
-}
 
-function toggleMenu(id, e) { 
-    e.stopPropagation(); 
-    document.querySelectorAll('.dropdown-menu').forEach(m => m.id !== id && m.classList.remove('show')); 
-    document.getElementById(id).classList.toggle('show'); 
-}
+    <div id="previewLightbox" onclick="this.style.display='none'">
+        <div id="lightboxContent"></div>
+    </div>
 
-function updateUI() { 
-    document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none'; 
-    document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none'; 
-    document.getElementById('colorManagerUI').style.display = document.getElementById('mapT').checked ? 'block' : 'none';
-    doRender(); 
-}
+    <script>
+        <div class="top-bar">
+        <button class="refresh-btn" onclick="location.reload()">Refresh</button>
+        <button class="icon-btn" onclick="document.getElementById('filterArea').classList.toggle('active')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><rect x="2" y="10" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="10" y="8" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="18" y="12" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/></svg>
+        </button>
+        <div style="margin-left:auto; position:relative;">
+            <button class="icon-btn" onclick="toggleSettings(event)">•••</button>
+            <div class="settings-menu" id="setMenu">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
+                    Show Bio <label class="switch"><input type="checkbox" id="bioT" onchange="updateUI()"><span class="slider"></span></label>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
+                    Show Highlights <label class="switch"><input type="checkbox" id="highT" onchange="updateUI()"><span class="slider"></span></label>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
+                    Content Map <label class="switch"><input type="checkbox" id="mapT" onchange="updateUI()"><span class="slider"></span></label>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-weight:600;">
+                    Direct Canva Previews <label class="switch"><input type="checkbox" id="canvaT" onchange="updateUI()"><span class="slider"></span></label>
+                </div>
+                
+                <div class="brand-color-section" id="colorManagerUI" style="display:none;">
+                    <div style="font-size: 11px; font-weight: 800; color: #888; margin-bottom: 10px; text-transform: uppercase;">Brand Palette</div>
+                    <div id="colorList"></div>
+                    <button class="add-btn" onclick="addColor()">+ Add Color</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-// AUTO-ON & INITIALIZATION
-async function init() {
-    document.getElementById('canvaT').checked = true; // Sets Canva preview to active by default
-    try {
-        const r = await fetch(API); const res = await r.json();
-        gridData = res.grid;
-        initUI(res);
-    } catch(e) { console.error("Load error:", e); }
-}
+    <div class="filter-row" id="filterArea">
+        <div class="dropdown-container">
+            <div class="dropdown-trigger" onclick="toggleMenu('platMenu', event)">
+                <span id="platCurrent">All Platforms</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 9l-7 7-7-7"/></svg>
+            </div>
+            <div class="dropdown-menu" id="platMenu">
+                <div class="dropdown-item" onclick="setPlat('all')">All Platforms <span class="count-pill" id="cnt-all">0</span></div>
+                <div class="dropdown-item" onclick="setPlat('instagram')">Instagram <span class="count-pill" id="cnt-ig">0</span></div>
+                <div class="dropdown-item" onclick="setPlat('tiktok')">TikTok <span class="count-pill" id="cnt-tt">0</span></div>
+            </div>
+        </div>
 
-// UNIVERSAL PREVIEW LOGIC
-function openPreview(index) {
-    const item = gridData[index];
-    if (!item) return;
+        <div class="dropdown-container">
+            <div class="dropdown-trigger" onclick="toggleMenu('statMenu', event)">
+                <span>Status</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 9l-7 7-7-7"/></svg>
+            </div>
+            <div class="dropdown-menu" id="statMenu" style="padding: 12px;">
+                <div id="statusOptions"></div>
+            </div>
+        </div>
+    </div>
 
-    const content = document.getElementById('lightboxContent');
-    const lightbox = document.getElementById('previewLightbox');
-    const primaryFile = item.files[0];
-    
-    let html = "";
-    if (primaryFile.url.includes('canva.com')) {
-        // Forces the embed format to bypass the 403 error
-        let embedUrl = primaryFile.url.split('?')[0].replace(/\/watch$/, '') + '/view?embed';
-        html = `<iframe src="${embedUrl}" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>`;
-    } else if (primaryFile.isVideo) {
-        html = `<video src="${primaryFile.url}" controls autoplay style="max-width:100%; max-height:100%;"></video>`;
-    } else {
-        html = `<img src="${primaryFile.url}" style="max-width:100%; max-height:100%; object-fit:contain;">`;
-    }
+    <div id="grid" class="grid"></div>
 
-    content.innerHTML = html;
-    lightbox.style.display = 'flex'; // Opens the overlay for all post types
-}
+    <div id="previewLightbox" onclick="this.style.display='none'">
+        <div id="lightboxContent"></div>
+    </div>
 
-function initUI(res) {
-    document.getElementById('pfpImg').src = res.bio.profilePicture || "";
-    document.getElementById('bioUser').innerText = "@" + (res.bio.username || "username");
-    document.getElementById('bioDisplay').innerText = res.bio.displayName || "";
-    document.getElementById('bioDesc').innerText = res.bio.bioText || "";
-    document.getElementById('bioLink').innerText = res.bio.linkDisplay || "";
-    document.getElementById('bioLink').href = res.bio.linkUrl || "#";
+    <script>
+        const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
+        let gridData = [], currentPlat = 'all', activeStats = [];
+        let brandColors = ["#FFD1DC", "#AEEEEE", "#FFECB3", "#D1FFD7", "#E0BBE4"]; 
+        let shuffledIndices = [];
 
-    const hData = res.highlights && res.highlights.length > 0 ? res.highlights : Array(4).fill(null);
-    document.getElementById('highRow').innerHTML = hData.map(h => `
-        <div style="text-align:center; min-width:75px;">
-            <div class="h-circle">${h && h.image ? `<img src="${h.image}" class="h-img">` : `<div class="h-img">no content</div>`}</div>
-            <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h ? h.name : 'Highlight'}</span>
-        </div>`).join('');
+        function toggleSettings(e) { e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
+        function toggleMenu(id, e) { 
+            e.stopPropagation(); 
+            document.querySelectorAll('.dropdown-menu').forEach(m => m.id !== id && m.classList.remove('show')); 
+            document.getElementById(id).classList.toggle('show'); 
+        }
 
-    const stats = [...new Set(gridData.map(i => i.status))];
-    activeStats = [...stats];
-    renderStatusOptions(stats);
-    renderColorControls();
-    shuffledIndices = Array.from({ length: 100 }, () => Math.floor(Math.random() * brandColors.length));
-    doRender();
-}
+        function updateUI() { 
+            document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none'; 
+            document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none'; 
+            document.getElementById('colorManagerUI').style.display = document.getElementById('mapT').checked ? 'block' : 'none';
+            doRender(); 
+        }
 
-function doRender() {
-    const grid = document.getElementById('grid');
-    const canvaEnabled = document.getElementById('canvaT').checked;
-    const filtered = gridData.filter(i => (currentPlat === 'all' || i.platforms.includes(currentPlat)) && activeStats.includes(i.status));
-    
-    let html = "";
-    filtered.forEach((item, i) => {
-        const dataIndex = gridData.indexOf(item);
-        const slides = item.files.map(f => {
-            if (canvaEnabled && f.url.includes('canva.com')) {
-                let base = f.url.split('?')[0].replace(/\/watch$/, '') + '/view?embed';
-                // Zooms in to hide black bars
-                return `<div class="slide" style="width:100%; height:100%; overflow:hidden;">
-                            <iframe src="${base}" style="width:140%; height:140%; border:none; transform: translate(-15%, -15%) scale(1.1); pointer-events:none;"></iframe>
-                        </div>`;
+        function shuffleColors() { shuffledIndices = Array.from({ length: 100 }, () => Math.floor(Math.random() * brandColors.length)); doRender(); }
+
+        function renderColorControls() {
+            const container = document.getElementById('colorList');
+            container.innerHTML = brandColors.map((color, idx) => `
+                <div class="color-row">
+                    <div class="color-picker-wrapper"><input type="color" class="color-picker" value="${color}" onchange="updateColor(${idx}, this.value)"></div>
+                    <span style="font-size:12px; font-weight:700; flex:1; color:#555;">Color ${idx+1}</span>
+                    ${brandColors.length > 2 ? `<button class="remove-btn" onclick="removeColor(${idx})">×</button>` : ''}
+                </div>`).join('');
+        }
+
+        function addColor() { brandColors.push("#e0e0e0"); shuffleColors(); renderColorControls(); }
+        function removeColor(idx) { brandColors.splice(idx, 1); shuffleColors(); renderColorControls(); }
+        function updateColor(idx, val) { brandColors[idx] = val; doRender(); }
+
+        function openPreview(index) {
+            const item = gridData[index];
+            if (!item) return;
+            const content = document.getElementById('lightboxContent');
+            const file = item.files[0];
+            const canvaOn = document.getElementById('canvaT').checked;
+            let html = "";
+
+            if (canvaOn && file.url.includes('canva.com')) {
+                let embed = file.url.split('?')[0].replace(/\/watch$/, '') + '/view?embed';
+                html = `<iframe src="${embed}" allowfullscreen style="width:100%; height:100%; border:none;"></iframe>`;
+            } else if (file.isVideo) {
+                html = `<video src="${file.url}" controls autoplay loop style="max-height:100%; max-width:100%;"></video>`;
+            } else {
+                html = `<img src="${file.url}" style="max-height:100%; max-width:100%; object-fit:contain;">`;
             }
-            return `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline muted></video>` : `<img src="${f.url}">`}</div>`;
-        }).join('');
-        
-        html += `<div class="item" onclick="openPreview(${dataIndex})" style="cursor:pointer;">
+            content.innerHTML = html;
+            document.getElementById('previewLightbox').style.display = 'flex';
+        }
+
+        async function init() {
+            document.getElementById('canvaT').checked = true;
+            try {
+                const r = await fetch(API); const res = await r.json();
+                gridData = res.grid;
+                document.getElementById('pfpImg').src = res.bio.profilePicture || "";
+                document.getElementById('bioUser').innerText = "@" + (res.bio.username || "username");
+                document.getElementById('bioDisplay').innerText = res.bio.displayName || "";
+                document.getElementById('bioDesc').innerText = res.bio.bioText || "";
+                document.getElementById('bioLink').innerText = res.bio.linkDisplay || "";
+                document.getElementById('bioLink').href = res.bio.linkUrl || "#";
+
+                const hData = res.highlights || [];
+                document.getElementById('highRow').innerHTML = hData.map(h => `
+                    <div style="text-align:center; min-width:75px;">
+                        <div class="h-circle"><img src="${h.image}" class="h-img"></div>
+                        <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h.name}</span>
+                    </div>`).join('');
+
+                const stats = [...new Set(gridData.map(i => i.status))];
+                activeStats = [...stats];
+                renderStatusOptions(stats);
+                updateCounts();
+                renderColorControls();
+                shuffleColors();
+            } catch(e) { console.error(e); }
+        }
+
+        function renderStatusOptions(stats) {
+            document.getElementById('statusOptions').innerHTML = stats.map(s => `
+                <label class="dropdown-item" onclick="event.stopPropagation()">
+                    <div class="item-left"><input type="checkbox" checked onchange="toggleStat('${s}')"><div class="check-box"></div><span>${s}</span></div>
+                    <span class="count-pill">${gridData.filter(i => i.status === s).length}</span>
+                </label>`).join('');
+        }
+
+        function updateCounts() {
+            document.getElementById('cnt-all').innerText = gridData.length;
+            document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
+            document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
+        }
+
+        function setPlat(p) { 
+            currentPlat = p; 
+            document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
+            doRender(); 
+        }
+
+        function toggleStat(s) { 
+            activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s]; 
+            doRender(); 
+        }
+
+        function doRender() {
+            const grid = document.getElementById('grid');
+            const isMap = document.getElementById('mapT').checked;
+            const canvaOn = document.getElementById('canvaT').checked;
+            const filtered = gridData.filter(i => (currentPlat === 'all' || i.platforms.includes(currentPlat)) && activeStats.includes(i.status));
+            
+            grid.innerHTML = filtered.map((item, i) => {
+                const dataIdx = gridData.indexOf(item);
+                if (isMap) {
+                    const color = brandColors[shuffledIndices[i % brandColors.length]];
+                    return `<div class="item" onclick="openPreview(${dataIdx})" style="background:${color}; cursor:pointer;"><span class="map-mode-label">${item.status}</span></div>`;
+                }
+                const slides = item.files.map(f => {
+                    if (canvaOn && f.url.includes('canva.com')) {
+                        let base = f.url.split('?')[0].replace(/\/watch$/, '') + '/view?embed';
+                        return `<div class="slide"><iframe src="${base}"></iframe></div>`;
+                    }
+                    return `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop muted playsinline></video>` : `<img src="${f.url}">`}</div>`;
+                }).join('');
+                return `<div class="item" onclick="openPreview(${dataIdx})" style="cursor:pointer;">
                     ${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; font-weight:bold;">▢▢</div>` : ''}
-                    <div class="carousel-track">${slides}</div>
-                 </div>`;
-    });
-    grid.innerHTML = html;
-}
-// (Other support functions like toggleSettings, renderColorControls remain the same)
-init();
-</script>
-   
+                    <div class="carousel-track">${slides}</div></div>`;
+            }).join('');
+        }
+
+        window.onclick = () => document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+        init();
+    </script>
 </body>
 </html>
