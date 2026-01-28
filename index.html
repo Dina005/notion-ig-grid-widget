@@ -1,77 +1,207 @@
-<style>
-    /* Profile Centering */
-    #bioSection {
-        display: none;
-        flex-direction: column;
-        align-items: center; /* Centers the profile content */
-        text-align: center;
-        max-width: 935px;
-        margin: 40px auto;
-    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Planner v12 | Unified Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-    .profile-pic {
-        width: 77px;
-        height: 77px;
-        border-radius: 50%;
-        object-fit: cover; /* Ensures image doesn't stretch */
-        border: 1px solid #dbdbdb;
-        margin-bottom: 15px;
-    }
-
-    /* Highlights Centering */
-    #highlightsSection {
-        display: none;
-        justify-content: center; /* Centers the highlights row */
-        gap: 15px;
-        margin-bottom: 30px;
-        flex-wrap: wrap;
-    }
-
-    /* NO CONTENT placeholder for Highlights */
-    .highlight-circle {
-        width: 77px;
-        height: 77px;
-        border-radius: 50%;
-        background: #f0f0f0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        border: 1px solid #dbdbdb;
-    }
-
-    .no-content-placeholder {
-        font-size: 8px;
-        color: #8e8e93;
-        font-weight: 700;
-        text-transform: uppercase;
-        text-align: center;
-    }
-</style>
-
-<script>
-    // Updating the frontend render to handle the new data structure
-    function updateProfile(bioData) {
-        document.querySelector('.username').innerText = bioData.username;
-        document.querySelector('.display-name').innerText = bioData.displayName;
-        const link = document.getElementById('bioLink');
-        link.innerText = bioData.text;
-        link.href = bioData.url;
-        
-        if (bioData.icon) {
-            document.getElementById('profilePic').src = bioData.icon;
+        :root {
+            --bg: #ffffff;
+            --surface: #f3f3f7;
+            --text: #1a1a1a;
+            --secondary: #8e8e93;
+            --accent: #000000;
         }
-    }
 
-    function renderHighlights(highlights) {
-        const container = document.getElementById('highlightsSection');
-        container.innerHTML = highlights.map(h => `
-            <div class="highlight-item">
-                <div class="highlight-circle">
-                    ${h.image ? `<img src="${h.image}" class="highlight-img">` : `<span class="no-content-placeholder">No Content</span>`}
-                </div>
-                <span class="highlight-label">${h.name}</span>
+        body { 
+            margin: 0; 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            -webkit-font-smoothing: antialiased; 
+            padding-bottom: 50px;
+        }
+
+        /* --- BIO SECTION (Database Driven) --- */
+        #bioSection { 
+            max-width: 935px; 
+            margin: 40px auto 20px; 
+            padding: 0 20px; 
+            display: none; 
+            flex-direction: column; 
+            align-items: center; /* Perfectly centered */
+            text-align: center;
+        }
+        .username { font-size: 28px; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
+        .display-name { font-size: 16px; font-weight: 600; margin: 10px 0 5px; }
+        .bio-link-display { 
+            color: #00376b; 
+            text-decoration: none; 
+            font-weight: 600; 
+            font-size: 15px; 
+            margin-top: 5px;
+        }
+
+        /* --- HIGHLIGHTS SECTION --- */
+        #highlightsSection { 
+            max-width: 935px; 
+            margin: 0 auto 30px; 
+            padding: 0 20px; 
+            display: none; 
+            gap: 15px; 
+            justify-content: center; /* Centered highlights */
+            flex-wrap: wrap;
+        }
+        .highlight-item { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 85px; }
+        .highlight-circle { 
+            width: 77px; 
+            height: 77px; 
+            border-radius: 50%; 
+            background: #f0f0f0; 
+            border: 1px solid #dbdbdb; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            overflow: hidden; 
+        }
+        .highlight-img { width: 100%; height: 100%; object-fit: cover; }
+        .no-content-text { 
+            font-size: 8px; 
+            font-weight: 800; 
+            color: #8e8e93; 
+            text-align: center; 
+            text-transform: uppercase; /* */
+        }
+        .highlight-label { font-size: 12px; font-weight: 500; color: #262626; }
+
+        /* --- NAVIGATION & MENU --- */
+        .top-bar { max-width: 935px; margin: 20px auto; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
+        .refresh-btn { background: #000; color: white; border: none; padding: 11px 20px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; }
+        .menu-wrapper { position: relative; margin-left: auto; }
+        .icon-btn { background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        .settings-menu { 
+            position: absolute; top: 55px; right: 0; width: 260px; background: white; border-radius: 16px; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: none; z-index: 2000; padding: 20px; border: 1px solid #ededf0; 
+        }
+        .settings-menu.open { display: block; }
+        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; font-size: 14px; font-weight: 600; }
+
+        /* Sleek Black Toggle */
+        .switch { position: relative; width: 40px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e5ea; transition: .3s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: #000; }
+        input:checked + .slider:before { transform: translateX(18px); }
+
+        /* --- COLOR PALETTE --- */
+        .color-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .color-circle { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 2px solid white; box-shadow: 0 0 0 1px #ddd; position: relative; }
+        .remove-col { position: absolute; top: -5px; right: -5px; background: #000; color: #fff; border: none; border-radius: 50%; width: 14px; height: 14px; font-size: 9px; cursor: pointer; }
+
+        /* --- FEED GRID --- */
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto; padding: 0 20px; }
+        .item { aspect-ratio: 1/1; background: #f9f9fb; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .item img { width: 100%; height: 100%; object-fit: cover; }
+        .map-mode .item img { display: none; }
+        .map-label { display: none; color: white; font-weight: 600; font-size: 13px; text-align: center; padding: 10px; line-height: 1.4; }
+        .map-mode .map-label { display: block; }
+    </style>
+</head>
+<body>
+
+    <div id="bioSection">
+        <h1 class="username" id="u-name">@username</h1>
+        <p class="display-name" id="d-name">Display Name</p>
+        <a href="#" class="bio-link-display" id="l-display">link.com</a>
+    </div>
+
+    <div id="highlightsSection"></div>
+
+    <div class="top-bar">
+        <button class="refresh-btn" onclick="location.reload()">Refresh</button>
+        <div class="menu-wrapper">
+            <button class="icon-btn" onclick="toggleMenu()">•••</button>
+            <div class="settings-menu" id="setMenu">
+                <div class="setting-row">Show Bio <label class="switch"><input type="checkbox" id="t-bio" checked onchange="updateView()"><span class="slider"></span></label></div>
+                <div class="setting-row">Show Highlights <label class="switch"><input type="checkbox" id="t-high" checked onchange="updateView()"><span class="slider"></span></label></div>
+                <div class="setting-row">Content Map <label class="switch"><input type="checkbox" id="t-map" onchange="updateView()"><span class="slider"></span></label></div>
+                
+                <div style="margin-top:15px; font-size:10px; font-weight:800; color:var(--secondary); letter-spacing:1px;">BRAND PALETTE</div>
+                <div class="color-grid" id="colorContainer"></div>
             </div>
-        `).join('');
-    }
-</script>
+        </div>
+    </div>
+
+    <div id="grid" class="grid"></div>
+
+    <script>
+        const API = "YOUR_CLOUDFLARE_WORKER_URL";
+        let palette = ['#b4b4a5', '#a5a596'];
+        let dataStore = { posts: [], highlights: [], bio: {} };
+
+        function toggleMenu() { document.getElementById('setMenu').classList.toggle('open'); }
+
+        function updateView() {
+            document.getElementById('bioSection').style.display = document.getElementById('t-bio').checked ? 'flex' : 'none';
+            document.getElementById('highlightsSection').style.display = document.getElementById('t-high').checked ? 'flex' : 'none';
+            document.getElementById('grid').classList.toggle('map-mode', document.getElementById('t-map').checked);
+            render();
+        }
+
+        function renderColors() {
+            const container = document.getElementById('colorContainer');
+            container.innerHTML = palette.map((c, i) => `
+                <div class="color-circle" style="background:${c}">
+                    <button class="remove-col" onclick="palette.splice(${i},1); renderColors()">×</button>
+                </div>
+            `).join('') + `<button onclick="palette.push('#dddddd'); renderColors()" style="width:30px; height:30px; border-radius:50%; border:1px dashed #ccc; background:none; cursor:pointer">+</button>`;
+            render();
+        }
+
+        async function init() {
+            renderColors();
+            try {
+                const r = await fetch(API);
+                dataStore = await r.json();
+                
+                // Update Bio Fields
+                document.getElementById('u-name').innerText = dataStore.bio.username || "@username";
+                document.getElementById('d-name').innerText = dataStore.bio.displayName || "Name";
+                document.getElementById('l-display').innerText = dataStore.bio.linkDisplay || "link.com";
+
+                // Update Highlights
+                const highBox = document.getElementById('highlightsSection');
+                highBox.innerHTML = dataStore.highlights.map(h => `
+                    <div class="highlight-item">
+                        <div class="highlight-circle">
+                            ${h.image ? `<img src="${h.image}" class="highlight-img">` : `<span class="no-content-text">No Content</span>`}
+                        </div>
+                        <span class="highlight-label">${h.name}</span>
+                    </div>
+                `).join('');
+
+                updateView();
+            } catch (e) { render(); }
+        }
+
+        function render() {
+            const grid = document.getElementById('grid');
+            let items = dataStore.posts.length > 0 ? dataStore.posts : Array(9).fill(null);
+            
+            grid.innerHTML = items.map((i, idx) => {
+                const bg = palette[idx % palette.length];
+                if(i && i.imageUrl) {
+                    return `<div class="item" style="background:${bg}"><img src="${i.imageUrl}"><div class="map-label">${i.name}</div></div>`;
+                }
+                return `<div class="item" style="background:${bg}"><span class="no-content-text">No Content</span></div>`;
+            }).join('');
+        }
+
+        init();
+    </script>
+</body>
+</html>
