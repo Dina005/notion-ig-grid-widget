@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v22 - Layout Restored</title>
+    <title>Pro Planner v22 - Left Aligned Stack</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; --grey-empty: #efefef; --border: #e0e0e6; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-        /* Bio Section - Profile Pic on Left, Text on Right */
+        /* Bio Section - Stacked and LEFT aligned */
         #bioSection { 
             max-width: 935px; 
             margin: 40px auto 20px; 
             padding: 0 20px; 
             display: none; 
-            flex-direction: row; 
-            align-items: center; 
-            gap: 40px; /* Space between PFP and Text */
+            flex-direction: column; 
+            align-items: flex-start; /* Aligns items to the left */
+            text-align: left; /* Aligns text to the left */
         }
         
         .pfp-container { 
@@ -28,17 +28,11 @@
             background: var(--grey-empty); 
             flex-shrink: 0; 
             border: 1px solid var(--border); 
+            margin-bottom: 25px; /* Spacing between pic and username */
         }
         .pfp-img { width: 100%; height: 100%; object-fit: cover; }
 
-        .bio-text-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            text-align: left;
-        }
-
-        #bioUser { font-size: 28px; font-weight: 300; margin: 0 0 15px 0; }
+        #bioUser { font-size: 32px; font-weight: 800; margin: 0 0 10px 0; }
 
         /* Highlights */
         #highRow { max-width: 935px; margin: 0 auto 30px; padding: 0 20px; display: none; gap: 15px; overflow-x: auto; scrollbar-width: none; justify-content: flex-start; }
@@ -113,12 +107,10 @@
     <div id="bioSection">
         <div class="pfp-container"><img id="pfpImg" class="pfp-img" src=""></div>
         
-        <div class="bio-text-wrapper">
-            <h1 id="bioUser"></h1>
-            <p id="bioDisplay" style="font-weight:600; margin-bottom: 5px;"></p>
-            <p id="bioDesc" style="font-size:14px; color:#1a1a1a; max-width:450px; line-height:1.4; margin-bottom:10px; white-space: pre-wrap;"></p>
-            <a id="bioLink" style="font-weight:700; color:#00376b; text-decoration:none;" target="_blank"></a>
-        </div>
+        <h1 id="bioUser"></h1>
+        <p id="bioDisplay" style="font-weight:600; margin-bottom: 5px;"></p>
+        <p id="bioDesc" style="font-size:14px; color:#1a1a1a; max-width:600px; line-height:1.4; margin-bottom:10px; white-space: pre-wrap;"></p>
+        <a id="bioLink" style="font-weight:700; color:#00376b; text-decoration:none;" target="_blank"></a>
     </div>
 
     <div id="highRow"></div>
@@ -183,8 +175,11 @@
             try {
                 const r = await fetch(API); const res = await r.json();
                 gridData = res.grid;
+                
+                // RESTORED PFP LOGIC
                 document.getElementById('pfpImg').src = res.bio.profilePicture || "";
-                document.getElementById('bioUser').innerText = res.bio.username || "username";
+                
+                document.getElementById('bioUser').innerText = "@" + (res.bio.username || "username");
                 document.getElementById('bioDisplay').innerText = res.bio.displayName || "";
                 document.getElementById('bioDesc').innerText = res.bio.bioText || "";
                 document.getElementById('bioLink').innerText = res.bio.linkDisplay || "";
