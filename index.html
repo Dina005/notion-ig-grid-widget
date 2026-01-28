@@ -3,261 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v16</title>
+    <title>Pro Planner v17</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-        :root {
-            --bg: #ffffff;
-            --surface: #f3f3f7;
-            --text: #1a1a1a;
-            --secondary: #8e8e93;
-            --accent: #000000;
-        }
-
+        :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; --secondary: #8e8e93; --accent: #000000; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-        /* --- Bio Section --- */
-        #bioSection { 
-            max-width: 935px; margin: 40px auto 10px; padding: 0 20px; 
-            display: none; flex-direction: column; align-items: center; text-align: center; 
-        }
+        /* Bio & Highlights */
+        #bioSection { max-width: 935px; margin: 40px auto 10px; padding: 0 20px; display: none; flex-direction: column; align-items: center; text-align: center; }
         .pfp-circle { width: 85px; height: 85px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 1px solid #efefef; }
-        .u-name { font-size: 28px; font-weight: 800; margin: 0; letter-spacing: -0.5px; }
-        .d-name { font-size: 16px; font-weight: 600; margin: 8px 0 5px; }
-        .b-text { font-size: 14px; color: #262626; max-width: 450px; margin: 0 0 10px; line-height: 1.4; white-space: pre-wrap; }
-        .b-link { color: #00376b; font-weight: 700; text-decoration: none; font-size: 15px; }
-
-        /* --- Highlights Section --- */
-        #highRow { 
-            max-width: 935px; margin: 0 auto 30px; padding: 0 20px; 
-            display: none; justify-content: center; gap: 20px; overflow-x: auto; 
-        }
-        .h-item { display: flex; flex-direction: column; align-items: center; min-width: 85px; }
-        .h-circle { 
-            width: 77px; height: 77px; border-radius: 50%; border: 1px solid #dbdbdb; 
-            background: #fafafa; padding: 3px; display: flex; align-items: center; justify-content: center; 
-        }
+        #highRow { max-width: 935px; margin: 0 auto 30px; padding: 0 20px; display: none; justify-content: center; gap: 20px; overflow-x: auto; }
+        .h-circle { width: 77px; height: 77px; border-radius: 50%; border: 1px solid #dbdbdb; background: #fafafa; padding: 3px; display: flex; align-items: center; justify-content: center; }
         .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; object-position: center; }
         .h-label { font-size: 12px; font-weight: 600; margin-top: 8px; color: #262626; }
 
-        /* --- Navigation Bar --- */
+        /* Top Bar & Filters */
         .top-bar { max-width: 935px; margin: 20px auto 15px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
-        .refresh-btn { background: #000; color: white; border: none; padding: 11px 20px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; }
-        .icon-btn { background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .icon-btn:hover { background: #e5e5ea; }
-
-        /* --- Filter Drawer --- */
+        .refresh-btn { background: #000; color: white; border: none; padding: 11px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; }
+        .icon-btn { background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .filter-area { max-width: 935px; margin: 0 auto 20px; padding: 0 20px; display: none; gap: 12px; }
         .filter-area.active { display: flex; }
-        .dropdown { position: relative; }
-        .dropdown-head { background: var(--surface); padding: 11px 18px; border-radius: 12px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; justify-content: space-between; align-items: center; min-width: 160px; }
-        .dropdown-menu { position: absolute; top: 52px; left: 0; width: 250px; background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.08); display: none; z-index: 1000; padding: 8px; border: 1px solid #ededf0; }
-        .dropdown-menu.open { display: block; }
+
+        /* Grid & Media */
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
+        .item { aspect-ratio: 1/1; background: #f9f9fb; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .item img, .item video { width: 100%; height: 100%; object-fit: cover; }
+        .video-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 30px; z-index: 5; pointer-events: none; background: rgba(0,0,0,0.3); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); color: white; padding: 15px; transform: translateY(102%); transition: 0.3s; }
+        .item:hover .overlay { transform: translateY(0); }
         
-        .row { display: flex; align-items: center; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 14px; }
-        .row:hover { background: var(--surface); }
-
-        .indicator { width: 20px; height: 20px; border: 2px solid #d1d1d6; margin-right: 14px; display: grid; place-items: center; flex-shrink: 0; }
-        .is-circle { border-radius: 50%; }
-        .is-square { border-radius: 5px; }
-        input[type="radio"], .sc, #mS { display: none; }
-        input:checked + .indicator { border-color: var(--accent); background: var(--accent); }
-        input:checked + .indicator::after { content: ''; width: 6px; height: 6px; background: white; border-radius: 50%; }
-        input:checked + .is-square::after { content: '✓'; color: white; font-size: 11px; font-weight: 800; }
-
-        /* --- Settings Menu & Toggles --- */
-        .menu-wrapper { position: relative; }
+        /* Settings */
         .settings-menu { position: absolute; top: 55px; right: 0; width: 260px; background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: none; z-index: 2000; padding: 20px; border: 1px solid #ededf0; }
         .settings-menu.open { display: block; }
-        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; font-size: 14px; font-weight: 600; }
-
-        .switch { position: relative; width: 40px; height: 22px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
+        .switch { position: relative; width: 40px; height: 22px; display: inline-block; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e5ea; transition: .3s; border-radius: 20px; }
         .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
         input:checked + .slider { background-color: #000; }
         input:checked + .slider:before { transform: translateX(18px); }
-
-        .palette-section { margin-top: 15px; border-top: 1px solid #f0f0f0; padding-top: 15px; }
-        .color-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start; margin-top: 10px; }
-        .color-item { position: relative; display: grid; place-items: center; }
-        input[type="color"] { -webkit-appearance: none; border: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; background: none; }
-        input[type="color"]::-webkit-color-swatch { border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px #ddd; }
-        
-        .remove-btn { position: absolute; top: -4px; right: -4px; background: #000; color: #fff; border: none; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; cursor: pointer; }
-        .add-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px dashed #ccc; background: none; cursor: pointer; font-size: 20px; color: #999; display: flex; align-items: center; justify-content: center; }
-
-        /* --- Grid & Media Rendering --- */
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
-        .item { aspect-ratio: 1/1; background: #f9f9fb; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
-        .item img, .item video { width: 100%; height: 100%; object-fit: cover; transition: 0.4s; }
-        
-        .video-icon { position: absolute; top: 10px; right: 10px; color: white; filter: drop-shadow(0 0 2px rgba(0,0,0,0.5)); z-index: 5; pointer-events: none; }
-
-        .map-mode .item img, .map-mode .item video, .map-mode .video-icon { display: none !important; }
-        .map-label { display: none; color: white; font-weight: 600; font-size: 14px; text-align: center; padding: 15px; line-height: 1.4; z-index: 5; }
-        .map-mode .map-label { display: block; }
-
-        .overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); color: white; padding: 25px 15px 15px; transform: translateY(102%); transition: 0.3s; text-align: left; }
-        .item:hover .overlay { transform: translateY(0); }
-        .ov-title { font-size: 13px; font-weight: 600; margin: 0; }
-        .empty-tag { color: #d1d1d6; font-size: 10px; font-weight: 800; letter-spacing: 1px; }
     </style>
 </head>
 <body>
-
     <div id="bioSection">
         <img id="bioPfp" class="pfp-circle" src="" style="display:none;">
-        <h1 class="u-name" id="bioUser"></h1>
-        <p class="d-name" id="bioDisplay"></p>
-        <p class="b-text" id="bioDesc"></p>
-        <a href="#" class="b-link" id="bioLink"></a>
+        <h1 id="bioUser" style="font-size: 28px; font-weight: 800; margin: 0;"></h1>
+        <p id="bioDisplay" style="font-weight: 600; margin: 8px 0 5px;"></p>
+        <p id="bioDesc" style="font-size: 14px; max-width: 450px;"></p>
+        <a id="bioLink" class="b-link" style="color: #00376b; font-weight: 700; text-decoration: none;"></a>
     </div>
-
     <div id="highRow"></div>
-
     <div class="top-bar">
         <button class="refresh-btn" onclick="location.reload()">Refresh</button>
-        <button class="icon-btn" onclick="toggleFilters()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><rect x="2" y="10" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="10" y="8" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="18" y="12" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/></svg>
-        </button>
-        <div class="menu-wrapper" style="margin-left: auto;">
-            <button class="icon-btn" onclick="toggleSettings()">•••</button>
+        <button class="icon-btn" onclick="document.getElementById('filterArea').classList.toggle('active')">⚙</button>
+        <div style="margin-left:auto; position:relative;">
+            <button class="icon-btn" onclick="document.getElementById('setMenu').classList.toggle('open')">•••</button>
             <div class="settings-menu" id="setMenu">
-                <div class="setting-row">Show Bio <label class="switch"><input type="checkbox" id="bioT" checked onchange="updateView()"><span class="slider"></span></label></div>
-                <div class="setting-row">Show Highlights <label class="switch"><input type="checkbox" id="highT" checked onchange="updateView()"><span class="slider"></span></label></div>
-                <div class="setting-row">Content Map Mode <label class="switch"><input type="checkbox" id="mapT" onchange="applyMode()"><span class="slider"></span></label></div>
-                <div class="palette-section">
-                    <span style="font-size: 10px; font-weight: 800; color: #8e8e93; letter-spacing: 1px;">BRAND PALETTE</span>
-                    <div class="color-grid" id="colorContainer"></div>
-                </div>
+                <div>Show Bio <label class="switch"><input type="checkbox" id="bioT" checked onchange="updateView()"><span class="slider"></span></label></div>
+                <div>Show Highlights <label class="switch"><input type="checkbox" id="highT" checked onchange="updateView()"><span class="slider"></span></label></div>
             </div>
         </div>
     </div>
-
-    <div class="filter-area" id="filterArea">
-        <div class="dropdown">
-            <div class="dropdown-head" onclick="toggleDrop('pMenu')">Platform <span>▾</span></div>
-            <div class="dropdown-menu" id="pMenu">
-                <label class="row"><input type="radio" name="p" value="all" checked onchange="doRender()"><div class="indicator is-circle"></div> All Channels</label>
-                <label class="row"><input type="radio" name="p" value="instagram" onchange="doRender()"><div class="indicator is-circle"></div> Instagram</label>
-                <label class="row"><input type="radio" name="p" value="tiktok" onchange="doRender()"><div class="indicator is-circle"></div> Tiktok</label>
-            </div>
-        </div>
-        <div class="dropdown">
-            <div class="dropdown-head" onclick="toggleDrop('sMenu')">Status <span>▾</span></div>
-            <div class="dropdown-menu" id="sMenu">
-                <label class="row"><input type="checkbox" id="mS" checked onchange="allS()"><div class="indicator is-square"></div> All Status</label>
-                <label class="row"><input type="checkbox" class="sc" value="Done" onchange="syncS()"><div class="indicator is-square"></div> Published</label>
-            </div>
-        </div>
-    </div>
-
+    <div class="filter-area" id="filterArea"></div>
     <div id="grid" class="grid"></div>
 
     <script>
         const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
         let gridData = [];
-        let bioData = {};
         let palette = ['#b4b4a5', '#a5a596'];
-
-        function toggleFilters() { document.getElementById('filterArea').classList.toggle('active'); closeAll(); }
-        function toggleSettings() { document.getElementById('setMenu').classList.toggle('open'); }
-        function toggleDrop(id) { const m = document.getElementById(id); const open = m.classList.contains('open'); closeAll(); if(!open) m.classList.add('open'); }
-        function closeAll() { document.querySelectorAll('.dropdown-menu, .settings-menu').forEach(m => m.classList.remove('open')); }
-
-        function applyMode() { document.getElementById('grid').classList.toggle('map-mode', document.getElementById('mapT').checked); doRender(); }
 
         function updateView() { 
             document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none';
             document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none';
         }
 
-        function renderColors() {
-            const container = document.getElementById('colorContainer');
-            container.innerHTML = palette.map((c, i) => `
-                <div class="color-item">
-                    <input type="color" value="${c}" onchange="updCol(${i}, this.value)">
-                    ${palette.length > 1 ? `<button class="remove-btn" onclick="remCol(${i})">×</button>` : ''}
-                </div>`).join('') + `<button class="add-btn" onclick="addCol()">+</button>`;
-            localStorage.setItem('userPalette', JSON.stringify(palette));
-            doRender();
-        }
-        function addCol() { palette.push('#dddddd'); renderColors(); }
-        function remCol(i) { palette.splice(i, 1); renderColors(); }
-        function updCol(i, v) { palette[i] = v; renderColors(); }
-
-        function allS() { document.querySelectorAll('.sc').forEach(c => c.checked = document.getElementById('mS').checked); doRender(); }
-        function syncS() { document.getElementById('mS').checked = Array.from(document.querySelectorAll('.sc')).every(c => c.checked); doRender(); }
-
         async function init() {
-            const saved = localStorage.getItem('userPalette');
-            if(saved) palette = JSON.parse(saved);
-            renderColors();
             try { 
                 const r = await fetch(API); 
                 const res = await r.json(); 
-                bioData = res.bio; 
                 gridData = res.grid; 
-
-                // Bio Rendering
-                document.getElementById('bioUser').innerText = bioData.username || "@username";
-                document.getElementById('bioDisplay').innerText = bioData.displayName || "Name";
-                document.getElementById('bioDesc').innerText = bioData.bioText || "";
-                document.getElementById('bioLink').innerText = bioData.linkDisplay || "link.com";
-                document.getElementById('bioLink').href = bioData.linkUrl || "#";
-                if(bioData.pfp) {
-                    const pImg = document.getElementById('bioPfp');
-                    pImg.src = bioData.pfp;
-                    pImg.style.display = 'block';
-                }
-
-                // Highlights Rendering
+                document.getElementById('bioUser').innerText = res.bio.username;
+                document.getElementById('bioDisplay').innerText = res.bio.displayName;
+                document.getElementById('bioDesc').innerText = res.bio.bioText;
+                document.getElementById('bioLink').innerText = res.bio.linkDisplay;
+                document.getElementById('bioLink').href = res.bio.linkUrl;
+                if(res.bio.pfp) { document.getElementById('bioPfp').src = res.bio.pfp; document.getElementById('bioPfp').style.display = 'block'; }
+                
                 const hContainer = document.getElementById('highRow');
                 hContainer.innerHTML = (res.highlights || []).map(h => `
-                    <div class="h-item">
-                        <div class="h-circle">
-                            <img src="${h.image}" class="h-img">
-                        </div>
+                    <div class="h-item" style="display:flex; flex-direction:column; align-items:center;">
+                        <div class="h-circle"><img src="${h.image}" class="h-img"></div>
                         <span class="h-label">${h.name}</span>
-                    </div>
-                `).join('');
-
-            } catch(e) { console.error("Load Failed", e); }
+                    </div>`).join('');
+                doRender();
+            } catch(e) { console.error(e); }
             updateView();
-            doRender();
+        }
+
+        function togglePlay(vid) {
+            const icon = vid.nextElementSibling;
+            if (vid.paused) { vid.play(); icon.style.display = 'none'; } 
+            else { vid.pause(); icon.style.display = 'flex'; }
         }
 
         function doRender() {
             const grid = document.getElementById('grid');
-            const p = document.querySelector('input[name="p"]:checked').value;
-            const s = Array.from(document.querySelectorAll('.sc:checked')).map(c => c.value);
-            const m = document.getElementById('mS').checked;
-
-            const filtered = gridData.filter(i => (p === 'all' || i.platforms.includes(p)) && (m || s.includes(i.status)));
-            let items = filtered.length > 0 ? filtered : Array(9).fill(null);
-
-            grid.innerHTML = items.map((i, idx) => {
+            grid.innerHTML = gridData.map((i, idx) => {
                 const bg = palette[idx % palette.length];
                 if (i && i.imageUrl) {
-                    // Autoplay logic: play on hover, pause when out
-                    const mediaHtml = i.isVideo 
-                        ? `<video src="${i.imageUrl}" muted loop playsinline onmouseover="this.play()" onmouseout="this.pause()"></video>
-                           <div class="video-icon">▶</div>` 
+                    const media = i.isVideo 
+                        ? `<video src="${i.imageUrl}" preload="metadata" loop playsinline onclick="togglePlay(this)"></video><div class="video-icon">▶</div>` 
                         : `<img src="${i.imageUrl}">`;
-
-                    return `<div class="item" style="background-color:${bg}">
-                        ${mediaHtml}
-                        <div class="map-label">${i.name || 'Untitled'}</div>
-                        <div class="overlay"><p class="ov-title">${i.name || 'Untitled'}</p></div>
-                    </div>`;
+                    return `<div class="item" style="background-color:${bg}">${media}<div class="overlay">${i.name}</div></div>`;
                 }
-                return `<div class="item" style="background-color:${bg}"><span class="empty-tag">EMPTY</span></div>`;
+                return `<div class="item" style="background-color:${bg}">EMPTY</div>`;
             }).join('');
         }
-
-        window.onclick = (e) => { if(!e.target.closest('.dropdown') && !e.target.closest('.menu-wrapper')) closeAll(); };
         init();
     </script>
 </body>
