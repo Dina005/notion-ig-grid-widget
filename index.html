@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v13</title>
+    <title>Pro Planner v15</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -27,6 +27,23 @@
         .d-name { font-size: 16px; font-weight: 600; margin: 8px 0 5px; }
         .b-text { font-size: 14px; color: #262626; max-width: 450px; margin: 0 0 10px; line-height: 1.4; white-space: pre-wrap; }
         .b-link { color: #00376b; font-weight: 700; text-decoration: none; font-size: 15px; }
+
+        /* --- Highlights Section --- */
+        #highRow { 
+            max-width: 935px; margin: 0 auto 30px; padding: 0 20px; 
+            display: none; justify-content: center; gap: 20px; overflow-x: auto; 
+        }
+        .h-item { display: flex; flex-direction: column; align-items: center; min-width: 85px; }
+        .h-circle { 
+            width: 77px; height: 77px; border-radius: 50%; border: 1px solid #dbdbdb; 
+            background: #fafafa; padding: 3px; display: flex; align-items: center; justify-content: center; 
+        }
+        .h-img { 
+            width: 100%; height: 100%; border-radius: 50%; 
+            object-fit: cover; /* Centers image content */
+            object-position: center; 
+        }
+        .h-label { font-size: 12px; font-weight: 600; margin-top: 8px; color: #262626; }
 
         /* --- Navigation Bar --- */
         .top-bar { max-width: 935px; margin: 20px auto 15px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
@@ -100,6 +117,8 @@
         <a href="#" class="b-link" id="bioLink"></a>
     </div>
 
+    <div id="highRow"></div>
+
     <div class="top-bar">
         <button class="refresh-btn" onclick="location.reload()">Refresh</button>
         <button class="icon-btn" onclick="toggleFilters()">
@@ -109,6 +128,7 @@
             <button class="icon-btn" onclick="toggleSettings()">•••</button>
             <div class="settings-menu" id="setMenu">
                 <div class="setting-row">Show Bio <label class="switch"><input type="checkbox" id="bioT" checked onchange="updateView()"><span class="slider"></span></label></div>
+                <div class="setting-row">Show Highlights <label class="switch"><input type="checkbox" id="highT" checked onchange="updateView()"><span class="slider"></span></label></div>
                 <div class="setting-row">Content Map Mode <label class="switch"><input type="checkbox" id="mapT" onchange="applyMode()"><span class="slider"></span></label></div>
                 <div class="palette-section">
                     <span style="font-size: 10px; font-weight: 800; color: #8e8e93; letter-spacing: 1px;">BRAND PALETTE</span>
@@ -150,7 +170,11 @@
         function closeAll() { document.querySelectorAll('.dropdown-menu, .settings-menu').forEach(m => m.classList.remove('open')); }
 
         function applyMode() { document.getElementById('grid').classList.toggle('map-mode', document.getElementById('mapT').checked); doRender(); }
-        function updateView() { document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none'; }
+
+        function updateView() { 
+            document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none';
+            document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none';
+        }
 
         function renderColors() {
             const container = document.getElementById('colorContainer');
@@ -190,6 +214,18 @@
                     pImg.src = bioData.pfp;
                     pImg.style.display = 'block';
                 }
+
+                // Populate Highlights
+                const hContainer = document.getElementById('highRow');
+                hContainer.innerHTML = (res.highlights || []).map(h => `
+                    <div class="h-item">
+                        <div class="h-circle">
+                            <img src="${h.image}" class="h-img">
+                        </div>
+                        <span class="h-label">${h.name}</span>
+                    </div>
+                `).join('');
+
             } catch(e) { console.error("Load Failed", e); }
             updateView();
             doRender();
