@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner</title>
+    <title>Pro Planner Dashboard</title>
     <style>
         :root {
             --bg: #ffffff;
             --pill-grey: #f1f1f3;
             --dark-btn: #2c2c2e;
+            --accent: #ff4500; /* The orange-red from your screenshots */
             --text: #1d1d1f;
         }
 
@@ -22,50 +23,54 @@
             border-radius: 12px; display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer; 
         }
 
-        /* The WiFi/Mixer Style Filter Button */
         .filter-toggle { 
             background: var(--pill-grey); border: none; width: 44px; height: 44px; 
             border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; 
         }
         .filter-toggle.active { background: #e5e5ea; }
 
-        /* --- Sliding Filter Bar (Hidden by default) --- */
+        /* --- Sliding Filter Bar --- */
         .filter-bar { 
             max-width: 935px; margin: 0 auto; padding: 0 20px; 
-            display: none; /* Initially hidden */
-            gap: 12px; height: 0; opacity: 0; transition: all 0.3s ease;
+            display: none; gap: 12px; opacity: 0; transition: 0.3s;
         }
-        .filter-bar.show { display: flex; height: auto; opacity: 1; margin-top: 15px; margin-bottom: 20px; }
+        .filter-bar.show { display: flex; opacity: 1; margin-top: 15px; margin-bottom: 20px; }
 
-        /* --- Dropdowns --- */
+        /* --- Custom Multi-Select Dropdowns --- */
         .custom-select { position: relative; }
         .trigger { 
             background: var(--pill-grey); padding: 10px 18px; border-radius: 14px; 
-            font-size: 14px; font-weight: 500; display: flex; justify-content: space-between; align-items: center; 
-            cursor: pointer; min-width: 140px; 
+            font-size: 14px; font-weight: 500; display: flex; justify-content: space-between; 
+            align-items: center; cursor: pointer; min-width: 160px; 
         }
 
         .pane { 
-            position: absolute; top: 50px; left: 0; width: 230px; background: white; 
+            position: absolute; top: 50px; left: 0; width: 240px; background: white; 
             border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.12); display: none; z-index: 1000; padding: 12px; 
         }
         .pane.open { display: block; }
 
-        .item { display: flex; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 14px; }
+        .item { display: flex; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 14px; transition: 0.2s; }
         .item:hover { background: #f5f5f7; }
+        
+        /* Custom Orange Checkbox */
         .item input { 
-            appearance: none; width: 18px; height: 18px; border: 2px solid #d1d1d6; 
-            border-radius: 50%; margin-right: 12px; position: relative; cursor: pointer; 
+            appearance: none; width: 20px; height: 20px; border: 2px solid #d1d1d6; 
+            border-radius: 50%; margin-right: 12px; position: relative; cursor: pointer; outline: none;
         }
-        .item input:checked { background: #ff4500; border-color: #ff4500; } /* Matches the orange-red in your image */
-        .item input:checked::after { content: ''; position: absolute; width: 6px; height: 6px; background: white; border-radius: 50%; top: 4px; left: 4px; }
-        .count { margin-left: auto; color: #8e8e93; font-size: 12px; }
+        .item input:checked { background: var(--accent); border-color: var(--accent); }
+        .item input:checked::after { 
+            content: ''; position: absolute; width: 6px; height: 6px; 
+            background: white; border-radius: 50%; top: 5px; left: 5px; 
+        }
 
-        /* --- Feed Grid --- */
+        .count { margin-left: auto; color: #8e8e93; font-size: 12px; font-weight: 500; }
+
+        /* --- Grid --- */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto; padding: 0 20px; }
         .post { aspect-ratio: 1/1; background: #f2f2f2; overflow: hidden; position: relative; }
         .post img { width: 100%; height: 100%; object-fit: cover; }
-        .post .label { position: absolute; color: #ccc; font-size: 10px; font-weight: 800; }
+        .no-content { display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 10px; font-weight: 800; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -90,20 +95,20 @@
         <div class="custom-select">
             <div class="trigger" onclick="togglePane('platPane')">All Platforms <small>∨</small></div>
             <div class="pane" id="platPane">
-                <div class="item"><input type="checkbox" checked> All Platforms <span class="count">(18)</span></div>
-                <div class="item"><input type="checkbox"> Instagram <span class="count">(3)</span></div>
-                <div class="item"><input type="checkbox"> Pinterest <span class="count">(3)</span></div>
-                <div class="item"><input type="checkbox"> Tiktok <span class="count">(3)</span></div>
+                <div class="item"><input type="checkbox" id="allPlats" checked onchange="handleMasterCheck('allPlats', 'platGroup')"> All Platforms <span class="count" id="count-allPlats">0</span></div>
+                <div class="item"><input type="checkbox" class="platGroup" value="instagram" onchange="syncMaster('allPlats', 'platGroup')"> Instagram <span class="count" id="count-instagram">0</span></div>
+                <div class="item"><input type="checkbox" class="platGroup" value="tiktok" onchange="syncMaster('allPlats', 'platGroup')"> Tiktok <span class="count" id="count-tiktok">0</span></div>
+                <div class="item"><input type="checkbox" class="platGroup" value="pinterest" onchange="syncMaster('allPlats', 'platGroup')"> Pinterest <span class="count" id="count-pinterest">0</span></div>
             </div>
         </div>
 
         <div class="custom-select">
             <div class="trigger" onclick="togglePane('statPane')">All Status <small>∨</small></div>
             <div class="pane" id="statPane">
-                <div class="item"><input type="checkbox" checked> All Status <span class="count">(18)</span></div>
-                <div class="item"><input type="checkbox"> Not started <span class="count">(3)</span></div>
-                <div class="item"><input type="checkbox"> In progress <span class="count">(5)</span></div>
-                <div class="item"><input type="checkbox"> Done <span class="count">(10)</span></div>
+                <div class="item"><input type="checkbox" id="allStats" checked onchange="handleMasterCheck('allStats', 'statGroup')"> All Status <span class="count" id="count-allStats">0</span></div>
+                <div class="item"><input type="checkbox" class="statGroup" value="Not started" onchange="syncMaster('allStats', 'statGroup')"> Not started <span class="count" id="count-notstarted">0</span></div>
+                <div class="item"><input type="checkbox" class="statGroup" value="In progress" onchange="syncMaster('allStats', 'statGroup')"> In progress <span class="count" id="count-inprogress">0</span></div>
+                <div class="item"><input type="checkbox" class="statGroup" value="Done" onchange="syncMaster('allStats', 'statGroup')"> Done <span class="count" id="count-done">0</span></div>
             </div>
         </div>
     </div>
@@ -112,55 +117,98 @@
 
     <script>
         const WORKER_URL = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
-        let posts = [];
+        let allPosts = [];
 
+        // UI Toggles
         function toggleFilters() {
             const bar = document.getElementById('filterBar');
-            const btn = document.getElementById('toggleBtn');
-            const isShowing = bar.classList.toggle('show');
-            btn.classList.toggle('active');
-            if(!isShowing) closeAllPanes();
+            bar.classList.toggle('show');
+            document.getElementById('toggleBtn').classList.toggle('active');
         }
 
         function togglePane(id) {
             const pane = document.getElementById(id);
             const isOpen = pane.classList.contains('open');
-            closeAllPanes();
+            document.querySelectorAll('.pane').forEach(p => p.classList.remove('open'));
             if(!isOpen) pane.classList.add('open');
         }
 
-        function closeAllPanes() {
-            document.querySelectorAll('.pane').forEach(p => p.classList.remove('open'));
+        // Logic: Master checkbox select/deselect all
+        function handleMasterCheck(masterId, groupClass) {
+            const isChecked = document.getElementById(masterId).checked;
+            document.querySelectorAll('.' + groupClass).forEach(el => el.checked = isChecked);
+            render();
         }
 
-        async function load() {
-            const grid = document.getElementById('grid');
+        // Logic: Individual checkbox affects Master
+        function syncMaster(masterId, groupClass) {
+            const master = document.getElementById(masterId);
+            const group = document.querySelectorAll('.' + groupClass);
+            const checkedCount = Array.from(group).filter(el => el.checked).length;
+            
+            master.checked = (checkedCount === group.length);
+            render();
+        }
+
+        async function init() {
             try {
                 const res = await fetch(WORKER_URL);
-                posts = await res.json();
+                allPosts = await res.json();
+                updateCounts();
                 render();
-            } catch (e) {
-                render(); // Render placeholders if fetch fails
+            } catch (e) { render(); }
+        }
+
+        function updateCounts() {
+            // Calculate Platform Counts
+            document.getElementById('count-allPlats').innerText = `(${allPosts.length})`;
+            ['instagram', 'tiktok', 'pinterest'].forEach(p => {
+                const count = allPosts.filter(post => post.platforms.includes(p)).length;
+                document.getElementById(`count-${p}`).innerText = `(${count})`;
+            });
+
+            // Calculate Status Counts
+            document.getElementById('count-allStats').innerText = `(${allPosts.length})`;
+            const statusMap = { 'notstarted': 'Not started', 'inprogress': 'In progress', 'done': 'Done' };
+            for (let key in statusMap) {
+                const count = allPosts.filter(post => post.status === statusMap[key]).length;
+                document.getElementById(`count-${key}`).innerText = `(${count})`;
             }
         }
 
         function render() {
             const grid = document.getElementById('grid');
-            let html = '';
-            const data = posts.length > 0 ? posts : Array(12).fill(null);
+            
+            // Get selected platforms
+            const selectedPlats = Array.from(document.querySelectorAll('.platGroup:checked')).map(el => el.value);
+            const platMaster = document.getElementById('allPlats').checked;
 
-            data.forEach(p => {
+            // Get selected statuses
+            const selectedStats = Array.from(document.querySelectorAll('.statGroup:checked')).map(el => el.value);
+            const statMaster = document.getElementById('allStats').checked;
+
+            // Filtering Logic
+            const filtered = allPosts.filter(p => {
+                const matchesPlat = platMaster || p.platforms.some(plat => selectedPlats.includes(plat));
+                const matchesStat = statMaster || selectedStats.includes(p.status);
+                return matchesPlat && matchesStat;
+            });
+
+            let html = '';
+            const displayData = filtered.length > 0 ? filtered : Array(12).fill(null);
+            
+            displayData.forEach(p => {
                 if(p && p.imageUrl) {
                     html += `<div class="post"><img src="${p.imageUrl}"></div>`;
                 } else {
-                    html += `<div class="post" style="display:flex;align-items:center;justify-content:center;"><span class="label">NO CONTENT</span></div>`;
+                    html += `<div class="post no-content">NO CONTENT</div>`;
                 }
             });
             grid.innerHTML = html;
         }
 
-        window.onclick = (e) => { if(!e.target.closest('.custom-select')) closeAllPanes(); };
-        load();
+        window.onclick = (e) => { if(!e.target.closest('.custom-select')) document.querySelectorAll('.pane').forEach(p => p.classList.remove('open')); };
+        init();
     </script>
 </body>
 </html>
