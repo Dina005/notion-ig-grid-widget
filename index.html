@@ -3,24 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v22 - Centered Header</title>
+    <title>Pro Planner v22 - Final Restoration</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; --grey-empty: #efefef; --border: #e0e0e6; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-        /* Bio Section - Stacked & Centered */
-        #bioSection { max-width: 935px; margin: 40px auto 20px; padding: 0 20px; display: none; flex-direction: column; align-items: center; text-align: center; }
-        .pfp-container { width: 150px; height: 150px; border-radius: 50%; overflow: hidden; background: var(--grey-empty); flex-shrink: 0; border: 1px solid var(--border); margin-bottom: 20px; }
-        .pfp-img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .bio-content { display: flex; flex-direction: column; align-items: center; }
-        #bioUser { font-size: 28px; font-weight: 300; margin: 0 0 10px 0; }
+        /* Bio & Highlights - Restored snapped left */
+        #bioSection { max-width: 935px; margin: 40px auto 10px; padding: 0 20px; display: none; flex-direction: column; align-items: flex-start; text-align: left; }
+        #bioUser { font-size: 32px; font-weight: 800; margin-bottom: 10px; }
 
-        /* Highlights */
-        #highRow { max-width: 935px; margin: 0 auto 30px; padding: 0 20px; display: none; gap: 25px; overflow-x: auto; scrollbar-width: none; justify-content: flex-start; }
-        .h-circle { width: 77px; height: 77px; border-radius: 50%; border: 1px solid #dbdbdb; padding: 3px; display: flex; align-items: center; justify-content: center; background: #fff; }
-        .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: var(--grey-empty); display: flex; align-items: center; justify-content: center; font-size: 8px; color: #999; }
+        #highRow { max-width: 935px; margin: 0 auto 30px; padding: 0 20px; display: none; gap: 15px; overflow-x: auto; scrollbar-width: none; justify-content: flex-start; }
+        .h-circle { width: 64px; height: 64px; border-radius: 50%; border: 1px solid #dbdbdb; padding: 3px; display: flex; align-items: center; justify-content: center; background: #fff; }
+        .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: var(--grey-empty); display: flex; align-items: center; justify-content: center; font-size: 8px; color: #999; font-weight: 600; text-transform: lowercase; }
 
         /* Top Bar */
         .top-bar { max-width: 935px; margin: 20px auto 10px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
@@ -35,26 +30,40 @@
         .dropdown-container { position: relative; font-size: 14px; font-weight: 600; }
         .dropdown-trigger { 
             padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border);
-            background: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px; min-width: 140px; justify-content: space-between;
+            background: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px;
+            transition: all 0.2s; min-width: 140px; justify-content: space-between;
         }
+        .dropdown-trigger:hover { border-color: #000; }
         .dropdown-menu {
-            position: absolute; top: 110%; left: 0; background: white; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            position: absolute; top: 110%; left: 0; background: white; 
+            border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.08);
             z-index: 3000; min-width: 220px; display: none; padding: 8px;
         }
         .dropdown-menu.show { display: block; }
 
-        /* Checkbox & Dropdown Items */
-        .dropdown-item { padding: 10px 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; color: #444; line-height: 1; }
+        /* Checkbox & Item Alignment - Precision Fixed */
+        .dropdown-item { 
+            padding: 10px 12px; border-radius: 8px; display: flex; 
+            align-items: center; justify-content: space-between; 
+            cursor: pointer; color: #444; line-height: 1;
+        }
         .dropdown-item:hover { background: var(--surface); color: #000; }
         .item-left { display: flex; align-items: center; gap: 12px; }
 
-        .check-box { width: 18px; height: 18px; border: 1.5px solid #ccc; border-radius: 5px; position: relative; flex-shrink: 0; background: #fff; }
+        .check-box { 
+            width: 18px; height: 18px; border: 1.5px solid #ccc; 
+            border-radius: 5px; position: relative; flex-shrink: 0; 
+            background: #fff; box-sizing: border-box; display: inline-block;
+        }
         input[type="checkbox"]:checked + .check-box { background: #000; border-color: #000; }
-        input[type="checkbox"]:checked + .check-box::after { content: ""; position: absolute; left: 5px; top: 1px; width: 4px; height: 8px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+        input[type="checkbox"]:checked + .check-box::after {
+            content: ""; position: absolute; left: 5px; top: 1px; width: 4px; height: 8px;
+            border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg);
+        }
         input[type="checkbox"] { display: none; }
         .count-pill { font-size: 11px; background: #eee; padding: 2px 8px; border-radius: 20px; color: #888; font-weight: 700; }
 
-        /* Settings Toggle */
+        /* Settings Toggle Switch */
         .settings-menu { position: absolute; top: 55px; right: 20px; width: 280px; background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: none; z-index: 2000; padding: 20px; border: 1px solid #ededf0; }
         .settings-menu.open { display: block; }
         .switch { position: relative; width: 40px; height: 22px; display: inline-block; }
@@ -67,18 +76,17 @@
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
         .item { aspect-ratio: 1/1; background: var(--grey-empty); overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
         .no-content-label { color: #aaaaaa; font-size: 13px; font-weight: 500; text-transform: lowercase; }
+        .carousel-track { display: flex; width: 100%; height: 100%; overflow-x: auto; scrollbar-width: none; }
+        .slide { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
         .slide img, .slide video { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body>
     <div id="bioSection">
-        <div class="pfp-container"><img id="pfpImg" class="pfp-img" src=""></div>
-        <div class="bio-content">
-            <h1 id="bioUser"></h1>
-            <p id="bioDisplay" style="font-weight:600; margin-bottom: 5px;"></p>
-            <p id="bioDesc" style="font-size:14px; color:#1a1a1a; max-width:450px; line-height:1.4; margin-bottom:10px; white-space: pre-wrap;"></p>
-            <a id="bioLink" style="font-weight:700; color:#00376b; text-decoration:none;" target="_blank"></a>
-        </div>
+        <h1 id="bioUser"></h1>
+        <p id="bioDisplay" style="font-weight:600; margin-bottom: 5px;"></p>
+        <p id="bioDesc" style="font-size:14px; color:#1a1a1a; max-width:600px; line-height:1.4; margin-bottom:10px; white-space: pre-wrap;"></p>
+        <a id="bioLink" style="font-weight:700; color:#00376b; text-decoration:none;" target="_blank"></a>
     </div>
 
     <div id="highRow"></div>
@@ -113,12 +121,15 @@
                 <div class="dropdown-item" onclick="setPlat('tiktok')">TikTok <span class="count-pill" id="cnt-tt">0</span></div>
             </div>
         </div>
+
         <div class="dropdown-container">
             <div class="dropdown-trigger" onclick="toggleMenu('statMenu', event)">
                 <span>Status</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 9l-7 7-7-7"/></svg>
             </div>
-            <div class="dropdown-menu" id="statMenu" style="padding: 12px;"><div id="statusOptions"></div></div>
+            <div class="dropdown-menu" id="statMenu" style="padding: 12px;">
+                <div id="statusOptions"></div>
+            </div>
         </div>
     </div>
 
@@ -130,6 +141,7 @@
 
         function toggleSettings(e) { e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
         function toggleMenu(id, e) { e.stopPropagation(); document.querySelectorAll('.dropdown-menu').forEach(m => m.id !== id && m.classList.remove('show')); document.getElementById(id).classList.toggle('show'); }
+        
         function updateUI() { 
             document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none'; 
             document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none'; 
@@ -139,8 +151,7 @@
             try {
                 const r = await fetch(API); const res = await r.json();
                 gridData = res.grid;
-                document.getElementById('pfpImg').src = res.bio.profilePicture || "";
-                document.getElementById('bioUser').innerText = res.bio.username || "username";
+                document.getElementById('bioUser').innerText = "@" + (res.bio.username || "username");
                 document.getElementById('bioDisplay').innerText = res.bio.displayName || "";
                 document.getElementById('bioDesc').innerText = res.bio.bioText || "";
                 document.getElementById('bioLink').innerText = res.bio.linkDisplay || "";
@@ -148,9 +159,9 @@
 
                 const hData = res.highlights && res.highlights.length > 0 ? res.highlights : Array(4).fill(null);
                 document.getElementById('highRow').innerHTML = hData.map(h => `
-                    <div style="text-align:center; min-width:80px;">
+                    <div style="text-align:center; min-width:75px;">
                         <div class="h-circle">${h && h.image ? `<img src="${h.image}" class="h-img">` : `<div class="h-img">no content</div>`}</div>
-                        <span style="font-size:12px; font-weight:600; margin-top:8px; display:block;">${h ? h.name : 'Highlight'}</span>
+                        <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h ? h.name : 'Highlight'}</span>
                     </div>
                 `).join('');
 
@@ -170,7 +181,7 @@
                     <div class="item-left">
                         <input type="checkbox" checked value="${s}" onchange="toggleStat('${s}')">
                         <div class="check-box"></div>
-                        <span>${s}</span>
+                        <span style="margin-top: 1px;">${s}</span>
                     </div>
                     <span class="count-pill">${count}</span>
                 </label>`;
@@ -183,8 +194,17 @@
             document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
         }
 
-        function setPlat(p) { currentPlat = p; document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1); doRender(); }
-        function toggleStat(s) { activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s]; doRender(); }
+        function setPlat(p) { 
+            currentPlat = p; 
+            document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
+            doRender(); 
+        }
+
+        function toggleStat(s) {
+            if (activeStats.includes(s)) activeStats = activeStats.filter(x => x !== s);
+            else activeStats.push(s);
+            doRender();
+        }
 
         function doRender() {
             const grid = document.getElementById('grid');
@@ -194,7 +214,7 @@
                 const item = filtered[i];
                 if (item) {
                     const slides = item.files.map(f => `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline onclick="this.paused?this.play():this.pause()"></video>` : `<img src="${f.url}">`}</div>`).join('');
-                    html += `<div class="item">${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; font-weight:bold;">▢▢</div>` : ''}<div class="carousel-track" style="display:flex; width:100%; height:100%; overflow-x:auto; scrollbar-width:none;">${slides}</div></div>`;
+                    html += `<div class="item">${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; font-weight:bold; text-shadow: 0 0 4px rgba(0,0,0,0.5);">▢▢</div>` : ''}<div class="carousel-track">${slides}</div></div>`;
                 } else {
                     html += `<div class="item"><span class="no-content-label">no content</span></div>`;
                 }
@@ -202,7 +222,10 @@
             grid.innerHTML = html;
         }
 
-        window.onclick = () => { document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show')); document.getElementById('setMenu').classList.remove('open'); };
+        window.onclick = () => {
+            document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+            document.getElementById('setMenu').classList.remove('open');
+        };
         init();
     </script>
 </body>
