@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v7 | Brand Edition</title>
+    <title>Pro Planner | Dynamic Brand Edition</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -13,132 +13,74 @@
             --text: #1a1a1a;
             --secondary: #8e8e93;
             --accent: #000000;
-            /* Default Brand Colors */
-            --map-bg-1: #b4b4a5; --map-bg-2: #a5a596; --map-bg-3: #d2c8b4;
-            --map-bg-4: #c0c0c0; --map-bg-5: #4a5043; --map-bg-6: #d9d1bc;
         }
 
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-        /* --- Top Bar & Navigation --- */
+        /* --- Header --- */
         .top-bar { max-width: 935px; margin: 40px auto 15px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
-        .refresh-btn { background: #2c2c2e; color: white; border: none; padding: 11px 20px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; }
-        .icon-btn { background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .icon-btn:hover { background: #e5e5ea; }
+        .refresh-btn { background: #000; color: white; border: none; padding: 11px 20px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; }
+        .icon-btn { background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        /* --- Settings Menu (Three Dots) --- */
+        /* --- Settings Menu & Dynamic Colors --- */
         .menu-wrapper { position: relative; }
         .settings-menu { 
-            position: absolute; top: 55px; right: 0; width: 240px; background: white; 
-            border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.12); 
-            display: none; z-index: 2000; padding: 16px; border: 1px solid #ededf0; 
+            position: absolute; top: 55px; right: 0; width: 260px; background: white; 
+            border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); 
+            display: none; z-index: 2000; padding: 18px; border: 1px solid #ededf0; 
         }
         .settings-menu.open { display: block; }
-        .setting-title { font-size: 10px; font-weight: 800; color: var(--secondary); letter-spacing: 1px; margin: 15px 0 8px; text-transform: uppercase; }
-        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 13px; font-weight: 500; }
+        .setting-title { font-size: 10px; font-weight: 800; color: var(--secondary); letter-spacing: 1px; margin-bottom: 12px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
 
-        /* Custom Toggle Switch */
-        .switch { position: relative; width: 34px; height: 20px; }
+        /* Sleek Black Toggle */
+        .switch { position: relative; width: 36px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #d1d1d6; transition: .3s; border-radius: 20px; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e5ea; transition: .3s; border-radius: 20px; }
         .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
-        input:checked + .slider { background-color: #ff5a1f; }
-        input:checked + .slider:before { transform: translateX(14px); }
+        input:checked + .slider { background-color: #000; }
+        input:checked + .slider:before { transform: translateX(16px); }
 
-        /* Color Picker Grid */
-        .color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
-        input[type="color"] { -webkit-appearance: none; border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; background: none; }
+        /* Color Management UI */
+        .color-list { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 15px 0; padding: 10px; background: #fafafa; border-radius: 12px; }
+        .color-item { position: relative; width: 34px; height: 34px; }
+        input[type="color"] { -webkit-appearance: none; border: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; background: none; display: block; }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        input[type="color"]::-webkit-color-swatch { border: 2px solid #f0f0f0; border-radius: 50%; }
+        input[type="color"]::-webkit-color-swatch { border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px #ddd; }
+        
+        .del-btn { position: absolute; top: -5px; right: -5px; background: #ff3b30; color: white; border: none; border-radius: 50%; width: 14px; height: 14px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .add-color-btn { background: #eee; border: 1px dashed #ccc; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 18px; font-weight: bold; color: #666; }
 
-        /* --- Filter Area --- */
-        .filter-area { max-width: 935px; margin: 0 auto 20px; padding: 0 20px; display: none; gap: 12px; }
-        .filter-area.active { display: flex; }
-        .dropdown { position: relative; }
-        .dropdown-head { background: var(--surface); padding: 11px 18px; border-radius: 12px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; justify-content: space-between; align-items: center; min-width: 160px; }
-        .dropdown-menu { position: absolute; top: 52px; left: 0; width: 250px; background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.08); display: none; z-index: 1000; padding: 8px; border: 1px solid #ededf0; }
-        .dropdown-menu.open { display: block; }
-        .row { display: flex; align-items: center; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 14px; }
-        .row:hover { background: var(--surface); }
-
-        /* Centered Indicators */
-        .indicator { width: 20px; height: 20px; border: 2px solid #d1d1d6; margin-right: 14px; display: grid; place-items: center; flex-shrink: 0; }
-        .is-circle { border-radius: 50%; }
-        .is-square { border-radius: 5px; }
-        input[type="radio"], input[type="checkbox"] { display: none; }
-        input:checked + .is-circle { border-color: var(--accent); background: var(--accent); }
-        input:checked + .is-circle::after { content: ''; width: 6px; height: 6px; background: white; border-radius: 50%; }
-        input:checked + .is-square { border-color: var(--accent); background: var(--accent); }
-        input:checked + .is-square::after { content: '✓'; color: white; font-size: 11px; font-weight: 800; }
-        .val { margin-left: auto; color: var(--secondary); font-size: 12px; }
-
-        /* --- The Grid --- */
+        /* --- Grid Styles --- */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
-        .item { aspect-ratio: 1/1; background: #f9f9fb; overflow: hidden; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; }
-        .item img { width: 100%; height: 100%; object-fit: cover; transition: 0.6s cubic-bezier(0.2, 1, 0.3, 1); }
-        .item:hover img { transform: scale(1.08); }
-
-        /* Hover Overlay */
-        .overlay { 
-            position: absolute; bottom: 0; left: 0; right: 0; 
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); 
-            color: white; padding: 30px 15px 15px; transform: translateY(102%); 
-            transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; text-align: left;
-        }
-        .item:hover .overlay { transform: translateY(0); }
-        .ov-pillar { font-size: 10px; font-weight: 700; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
-        .ov-title { font-size: 13px; font-weight: 600; margin: 2px 0; }
-
-        /* Content Map Mode */
+        .item { aspect-ratio: 1/1; background: #f9f9fb; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
+        .item img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Map Mode Text & Colors */
+        .map-text { display: none; color: white; font-weight: 600; font-size: 13px; padding: 15px; text-align: center; line-height: 1.4; z-index: 2; }
         .map-mode .item img { display: none; }
-        .map-mode .item .overlay { display: none; }
-        .map-mode .item:nth-child(6n+1) { background: var(--map-bg-1); }
-        .map-mode .item:nth-child(6n+2) { background: var(--map-bg-2); }
-        .map-mode .item:nth-child(6n+3) { background: var(--map-bg-3); }
-        .map-mode .item:nth-child(6n+4) { background: var(--map-bg-4); }
-        .map-mode .item:nth-child(6n+5) { background: var(--map-bg-5); }
-        .map-mode .item:nth-child(6n+6) { background: var(--map-bg-6); }
-        .map-text { display: none; color: white; font-weight: 600; font-size: 14px; padding: 20px; line-height: 1.4; }
         .map-mode .map-text { display: block; }
+        
+        /* Overlay */
+        .overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); color: white; padding: 25px 15px 15px; transform: translateY(102%); transition: 0.3s; text-align: left; }
+        .item:hover .overlay { transform: translateY(0); }
+        .ov-title { font-size: 13px; font-weight: 600; margin: 0; }
+
+        .empty-tag { color: #d1d1d6; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
         <button class="refresh-btn" onclick="location.reload()">Refresh</button>
-        <button class="icon-btn" onclick="toggleFilter()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><rect x="2" y="10" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="10" y="8" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="18" y="12" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/></svg></button>
-        <div class="menu-wrapper">
+        <div class="menu-wrapper" style="margin-left: auto;">
             <button class="icon-btn" onclick="toggleSettings()">•••</button>
             <div class="settings-menu" id="settingsMenu">
-                <div class="setting-title">View Options</div>
-                <div class="setting-row">Show Content Map <label class="switch"><input type="checkbox" id="mapToggle" onchange="applyMapMode()"><span class="slider"></span></label></div>
-                <div class="setting-title">Brand Palette</div>
-                <div class="color-grid">
-                    <input type="color" id="c1" value="#b4b4a5" onchange="setBrandColor(1, this.value)">
-                    <input type="color" id="c2" value="#a5a596" onchange="setBrandColor(2, this.value)">
-                    <input type="color" id="c3" value="#d2c8b4" onchange="setBrandColor(3, this.value)">
-                    <input type="color" id="c4" value="#c0c0c0" onchange="setBrandColor(4, this.value)">
-                    <input type="color" id="c5" value="#4a5043" onchange="setBrandColor(5, this.value)">
-                    <input type="color" id="c6" value="#d9d1bc" onchange="setBrandColor(6, this.value)">
+                <div class="setting-row">Show Content Map 
+                    <label class="switch"><input type="checkbox" id="mapToggle" onchange="applyMap()"><span class="slider"></span></label>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="filter-area" id="filterArea">
-        <div class="dropdown">
-            <div class="dropdown-head" onclick="toggleMenu('pMenu')">Platform <span>▾</span></div>
-            <div class="dropdown-menu" id="pMenu">
-                <label class="row"><input type="radio" name="p" value="all" checked onchange="render()"><div class="indicator is-circle"></div> All Channels <span class="val" id="v-all-p">0</span></label>
-                <label class="row"><input type="radio" name="p" value="instagram" onchange="render()"><div class="indicator is-circle"></div> Instagram <span class="val" id="v-ig">0</span></label>
-                <label class="row"><input type="radio" name="p" value="tiktok" onchange="render()"><div class="indicator is-circle"></div> Tiktok <span class="val" id="v-tk">0</span></label>
-            </div>
-        </div>
-        <div class="dropdown">
-            <div class="dropdown-head" onclick="toggleMenu('sMenu')">Status <span>▾</span></div>
-            <div class="dropdown-menu" id="sMenu">
-                <label class="row"><input type="checkbox" id="mS" checked onchange="allStats()"><div class="indicator is-square"></div> All Status <span class="val" id="v-all-s">0</span></label>
-                <label class="row"><input type="checkbox" class="sc" value="Done" onchange="sync()"><div class="indicator is-square"></div> Published <span class="val" id="v-dn">0</span></label>
+                
+                <div class="setting-title">Brand Palette <button class="add-color-btn" onclick="addColor()">+</button></div>
+                <div class="color-list" id="colorList"></div>
             </div>
         </div>
     </div>
@@ -148,44 +90,60 @@
     <script>
         const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
         let storage = [];
+        let brandColors = ['#b4b4a5', '#a5a596']; // Default start with 2 colors
 
-        function toggleFilter() { document.getElementById('filterArea').classList.toggle('active'); closeAll(); }
         function toggleSettings() { document.getElementById('settingsMenu').classList.toggle('open'); }
-        function toggleMenu(id) { const m = document.getElementById(id); const wasOpen = m.classList.contains('open'); closeAll(); if(!wasOpen) m.classList.add('open'); }
-        function closeAll() { document.querySelectorAll('.dropdown-menu, .settings-menu').forEach(m => m.classList.remove('open')); }
+        function applyMap() { document.getElementById('grid').classList.toggle('map-mode', document.getElementById('mapToggle').checked); render(); }
 
-        function setBrandColor(i, val) { document.documentElement.style.setProperty(`--map-bg-${i}`, val); localStorage.setItem(`brand-${i}`, val); }
-        function applyMapMode() { const isMap = document.getElementById('mapToggle').checked; document.getElementById('grid').classList.toggle('map-mode', isMap); }
-
-        async function init() {
-            for(let i=1; i<=6; i++) { const c = localStorage.getItem(`brand-${i}`); if(c) { setBrandColor(i, c); document.getElementById(`c${i}`).value = c; } }
-            const r = await fetch(API); storage = await r.json();
-            updateCounts(); render();
+        // --- Brand Color Management ---
+        function renderColorPickers() {
+            const list = document.getElementById('colorList');
+            list.innerHTML = brandColors.map((col, i) => `
+                <div class="color-item">
+                    <input type="color" value="${col}" onchange="updateColor(${i}, this.value)">
+                    ${brandColors.length > 1 ? `<button class="del-btn" onclick="removeColor(${i})">×</button>` : ''}
+                </div>
+            `).join('') + `<button class="add-color-btn" onclick="addColor()">+</button>`;
+            localStorage.setItem('savedColors', JSON.stringify(brandColors));
+            render(); // Refresh grid colors
         }
 
-        function updateCounts() {
-            document.getElementById('v-all-p').innerText = storage.length;
-            document.getElementById('v-ig').innerText = storage.filter(i => i.platforms.includes('instagram')).length;
-            document.getElementById('v-dn').innerText = storage.filter(i => i.status === 'Done').length;
+        function addColor() { brandColors.push('#cccccc'); renderColorPickers(); }
+        function removeColor(i) { brandColors.splice(i, 1); renderColorPickers(); }
+        function updateColor(i, val) { brandColors[i] = val; renderColorPickers(); }
+
+        async function init() {
+            const saved = localStorage.getItem('savedColors');
+            if(saved) brandColors = JSON.parse(saved);
+            renderColorPickers();
+            
+            try {
+                const r = await fetch(API);
+                storage = await r.json();
+            } catch(e) { console.error("Fetch failed"); }
+            render();
         }
 
         function render() {
             const grid = document.getElementById('grid');
-            const p = document.querySelector('input[name="p"]:checked').value;
-            const filtered = storage.filter(i => p === 'all' || i.platforms.includes(p));
-
-            grid.innerHTML = filtered.map(i => `
-                <div class="item">
-                    <img src="${i.imageUrl}">
-                    <div class="map-text">${i.name || 'Untitled'}</div>
-                    <div class="overlay">
-                        <span class="ov-pillar">${i.pillar || 'General'}</span>
-                        <h3 class="ov-title">${i.name || 'Untitled'}</h3>
-                    </div>
-                </div>`).join('');
+            let itemsToRender = storage.length > 0 ? storage : Array(12).fill(null);
+            
+            grid.innerHTML = itemsToRender.map((i, index) => {
+                const bgColor = brandColors[index % brandColors.length];
+                if (i && i.imageUrl) {
+                    return `
+                    <div class="item" style="background-color: ${bgColor}">
+                        <img src="${i.imageUrl}">
+                        <div class="map-text">${i.name || 'Untitled'}</div>
+                        <div class="overlay"><p class="ov-title">${i.name || 'Untitled'}</p></div>
+                    </div>`;
+                } else {
+                    return `<div class="item"><span class="empty-tag">NO CONTENT</span></div>`;
+                }
+            }).join('');
         }
 
-        window.onclick = (e) => { if(!e.target.closest('.dropdown') && !e.target.closest('.menu-wrapper')) closeAll(); };
+        window.onclick = (e) => { if(!e.target.closest('.menu-wrapper')) document.getElementById('settingsMenu').classList.remove('open'); };
         init();
     </script>
 </body>
