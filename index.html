@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v6</title>
+    <title>Pro Planner v7 | Brand Edition</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -13,107 +13,132 @@
             --text: #1a1a1a;
             --secondary: #8e8e93;
             --accent: #000000;
+            /* Default Brand Colors */
+            --map-bg-1: #b4b4a5; --map-bg-2: #a5a596; --map-bg-3: #d2c8b4;
+            --map-bg-4: #c0c0c0; --map-bg-5: #4a5043; --map-bg-6: #d9d1bc;
         }
 
-        body { 
-            margin: 0; 
-            font-family: 'Inter', sans-serif; 
-            background: var(--bg); 
-            color: var(--text); 
-            -webkit-font-smoothing: antialiased;
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+
+        /* --- Top Bar & Navigation --- */
+        .top-bar { max-width: 935px; margin: 40px auto 15px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
+        .refresh-btn { background: #2c2c2e; color: white; border: none; padding: 11px 20px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; }
+        .icon-btn { background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .icon-btn:hover { background: #e5e5ea; }
+
+        /* --- Settings Menu (Three Dots) --- */
+        .menu-wrapper { position: relative; }
+        .settings-menu { 
+            position: absolute; top: 55px; right: 0; width: 240px; background: white; 
+            border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.12); 
+            display: none; z-index: 2000; padding: 16px; border: 1px solid #ededf0; 
         }
+        .settings-menu.open { display: block; }
+        .setting-title { font-size: 10px; font-weight: 800; color: var(--secondary); letter-spacing: 1px; margin: 15px 0 8px; text-transform: uppercase; }
+        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 13px; font-weight: 500; }
 
-        /* --- Header --- */
-        .top-bar { max-width: 935px; margin: 40px auto 15px; padding: 0 20px; display: flex; align-items: center; gap: 12px; }
-        .refresh-btn { background: #2c2c2e; color: white; border: none; padding: 11px 22px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .filter-btn { background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        /* Custom Toggle Switch */
+        .switch { position: relative; width: 34px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #d1d1d6; transition: .3s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: #ff5a1f; }
+        input:checked + .slider:before { transform: translateX(14px); }
 
-        /* --- Filters --- */
+        /* Color Picker Grid */
+        .color-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+        input[type="color"] { -webkit-appearance: none; border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; background: none; }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: 2px solid #f0f0f0; border-radius: 50%; }
+
+        /* --- Filter Area --- */
         .filter-area { max-width: 935px; margin: 0 auto 20px; padding: 0 20px; display: none; gap: 12px; }
         .filter-area.active { display: flex; }
-
         .dropdown { position: relative; }
         .dropdown-head { background: var(--surface); padding: 11px 18px; border-radius: 12px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; justify-content: space-between; align-items: center; min-width: 160px; }
         .dropdown-menu { position: absolute; top: 52px; left: 0; width: 250px; background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.08); display: none; z-index: 1000; padding: 8px; border: 1px solid #ededf0; }
         .dropdown-menu.open { display: block; }
-
         .row { display: flex; align-items: center; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 14px; }
         .row:hover { background: var(--surface); }
 
-        /* --- PERFECTLY CENTERED INDICATORS --- */
-        .indicator { 
-            width: 20px; height: 20px; border: 2px solid #d1d1d6; margin-right: 14px; 
-            display: grid; place-items: center; flex-shrink: 0; box-sizing: border-box; position: relative;
-        }
+        /* Centered Indicators */
+        .indicator { width: 20px; height: 20px; border: 2px solid #d1d1d6; margin-right: 14px; display: grid; place-items: center; flex-shrink: 0; }
         .is-circle { border-radius: 50%; }
         .is-square { border-radius: 5px; }
-        input { display: none; }
-
-        /* Radio Dot Center */
+        input[type="radio"], input[type="checkbox"] { display: none; }
         input:checked + .is-circle { border-color: var(--accent); background: var(--accent); }
         input:checked + .is-circle::after { content: ''; width: 6px; height: 6px; background: white; border-radius: 50%; }
-
-        /* Checkmark Center */
         input:checked + .is-square { border-color: var(--accent); background: var(--accent); }
-        input:checked + .is-square::after { content: '✓'; color: white; font-size: 12px; font-weight: 900; }
-
+        input:checked + .is-square::after { content: '✓'; color: white; font-size: 11px; font-weight: 800; }
         .val { margin-left: auto; color: var(--secondary); font-size: 12px; }
 
-        /* --- Grid & Hover --- */
+        /* --- The Grid --- */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
-        .item { aspect-ratio: 1/1; background: #f9f9fb; overflow: hidden; position: relative; cursor: pointer; }
-        .item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s cubic-bezier(0.2, 1, 0.3, 1); }
+        .item { aspect-ratio: 1/1; background: #f9f9fb; overflow: hidden; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .item img { width: 100%; height: 100%; object-fit: cover; transition: 0.6s cubic-bezier(0.2, 1, 0.3, 1); }
         .item:hover img { transform: scale(1.08); }
 
-        .overlay {
-            position: absolute; bottom: 0; left: 0; right: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
-            color: white; padding: 30px 15px 15px;
-            transform: translateY(102%);
-            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex; flex-direction: column; gap: 2px;
+        /* Hover Overlay */
+        .overlay { 
+            position: absolute; bottom: 0; left: 0; right: 0; 
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); 
+            color: white; padding: 30px 15px 15px; transform: translateY(102%); 
+            transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; text-align: left;
         }
         .item:hover .overlay { transform: translateY(0); }
+        .ov-pillar { font-size: 10px; font-weight: 700; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
+        .ov-title { font-size: 13px; font-weight: 600; margin: 2px 0; }
 
-        .ov-pillar { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 2px; }
-        .ov-title { font-size: 13px; font-weight: 600; line-height: 1.3; margin: 0; }
-        .ov-date { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 5px; }
-
-        .null-txt { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #d1d1d6; font-size: 10px; font-weight: 800; letter-spacing: 1px; }
+        /* Content Map Mode */
+        .map-mode .item img { display: none; }
+        .map-mode .item .overlay { display: none; }
+        .map-mode .item:nth-child(6n+1) { background: var(--map-bg-1); }
+        .map-mode .item:nth-child(6n+2) { background: var(--map-bg-2); }
+        .map-mode .item:nth-child(6n+3) { background: var(--map-bg-3); }
+        .map-mode .item:nth-child(6n+4) { background: var(--map-bg-4); }
+        .map-mode .item:nth-child(6n+5) { background: var(--map-bg-5); }
+        .map-mode .item:nth-child(6n+6) { background: var(--map-bg-6); }
+        .map-text { display: none; color: white; font-weight: 600; font-size: 14px; padding: 20px; line-height: 1.4; }
+        .map-mode .map-text { display: block; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
         <button class="refresh-btn" onclick="location.reload()">Refresh</button>
-        <button class="filter-btn" onclick="toggleArea()">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round">
-                <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
-                <line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
-                <rect x="2" y="10" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"></rect>
-                <rect x="10" y="8" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"></rect>
-                <rect x="18" y="12" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"></rect>
-            </svg>
-        </button>
+        <button class="icon-btn" onclick="toggleFilter()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><rect x="2" y="10" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="10" y="8" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="18" y="12" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/></svg></button>
+        <div class="menu-wrapper">
+            <button class="icon-btn" onclick="toggleSettings()">•••</button>
+            <div class="settings-menu" id="settingsMenu">
+                <div class="setting-title">View Options</div>
+                <div class="setting-row">Show Content Map <label class="switch"><input type="checkbox" id="mapToggle" onchange="applyMapMode()"><span class="slider"></span></label></div>
+                <div class="setting-title">Brand Palette</div>
+                <div class="color-grid">
+                    <input type="color" id="c1" value="#b4b4a5" onchange="setBrandColor(1, this.value)">
+                    <input type="color" id="c2" value="#a5a596" onchange="setBrandColor(2, this.value)">
+                    <input type="color" id="c3" value="#d2c8b4" onchange="setBrandColor(3, this.value)">
+                    <input type="color" id="c4" value="#c0c0c0" onchange="setBrandColor(4, this.value)">
+                    <input type="color" id="c5" value="#4a5043" onchange="setBrandColor(5, this.value)">
+                    <input type="color" id="c6" value="#d9d1bc" onchange="setBrandColor(6, this.value)">
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="filter-area" id="filterArea">
         <div class="dropdown">
             <div class="dropdown-head" onclick="toggleMenu('pMenu')">Platform <span>▾</span></div>
             <div class="dropdown-menu" id="pMenu">
-                <label class="row"><input type="radio" name="p" value="all" checked onchange="doRender()"><div class="indicator is-circle"></div> All Channels <span class="val" id="v-all-p">0</span></label>
-                <label class="row"><input type="radio" name="p" value="instagram" onchange="doRender()"><div class="indicator is-circle"></div> Instagram <span class="val" id="v-ig">0</span></label>
-                <label class="row"><input type="radio" name="p" value="tiktok" onchange="doRender()"><div class="indicator is-circle"></div> Tiktok <span class="val" id="v-tk">0</span></label>
+                <label class="row"><input type="radio" name="p" value="all" checked onchange="render()"><div class="indicator is-circle"></div> All Channels <span class="val" id="v-all-p">0</span></label>
+                <label class="row"><input type="radio" name="p" value="instagram" onchange="render()"><div class="indicator is-circle"></div> Instagram <span class="val" id="v-ig">0</span></label>
+                <label class="row"><input type="radio" name="p" value="tiktok" onchange="render()"><div class="indicator is-circle"></div> Tiktok <span class="val" id="v-tk">0</span></label>
             </div>
         </div>
         <div class="dropdown">
             <div class="dropdown-head" onclick="toggleMenu('sMenu')">Status <span>▾</span></div>
             <div class="dropdown-menu" id="sMenu">
                 <label class="row"><input type="checkbox" id="mS" checked onchange="allStats()"><div class="indicator is-square"></div> All Status <span class="val" id="v-all-s">0</span></label>
-                <label class="row"><input type="checkbox" class="sc" value="Not started" onchange="sync()"><div class="indicator is-square"></div> Not started <span class="val" id="v-ns">0</span></label>
-                <label class="row"><input type="checkbox" class="sc" value="In progress" onchange="sync()"><div class="indicator is-square"></div> In progress <span class="val" id="v-ip">0</span></label>
-                <label class="row"><input type="checkbox" class="sc" value="Done" onchange="sync()"><div class="indicator is-square"></div> Done <span class="val" id="v-dn">0</span></label>
+                <label class="row"><input type="checkbox" class="sc" value="Done" onchange="sync()"><div class="indicator is-square"></div> Published <span class="val" id="v-dn">0</span></label>
             </div>
         </div>
     </div>
@@ -124,69 +149,43 @@
         const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
         let storage = [];
 
-        function toggleArea() { document.getElementById('filterArea').classList.toggle('active'); close(); }
-        function toggleMenu(id) {
-            const m = document.getElementById(id); const wasOpen = m.classList.contains('open');
-            close(); if(!wasOpen) m.classList.add('open');
-        }
-        function close() { document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open')); }
+        function toggleFilter() { document.getElementById('filterArea').classList.toggle('active'); closeAll(); }
+        function toggleSettings() { document.getElementById('settingsMenu').classList.toggle('open'); }
+        function toggleMenu(id) { const m = document.getElementById(id); const wasOpen = m.classList.contains('open'); closeAll(); if(!wasOpen) m.classList.add('open'); }
+        function closeAll() { document.querySelectorAll('.dropdown-menu, .settings-menu').forEach(m => m.classList.remove('open')); }
 
-        function allStats() { document.querySelectorAll('.sc').forEach(c => c.checked = document.getElementById('mS').checked); doRender(); }
-        function sync() { document.getElementById('mS').checked = Array.from(document.querySelectorAll('.sc')).every(c => c.checked); doRender(); }
+        function setBrandColor(i, val) { document.documentElement.style.setProperty(`--map-bg-${i}`, val); localStorage.setItem(`brand-${i}`, val); }
+        function applyMapMode() { const isMap = document.getElementById('mapToggle').checked; document.getElementById('grid').classList.toggle('map-mode', isMap); }
 
         async function init() {
-            try {
-                const r = await fetch(API);
-                storage = await r.json();
-                updateVals();
-                doRender();
-            } catch(e) { doRender(); }
+            for(let i=1; i<=6; i++) { const c = localStorage.getItem(`brand-${i}`); if(c) { setBrandColor(i, c); document.getElementById(`c${i}`).value = c; } }
+            const r = await fetch(API); storage = await r.json();
+            updateCounts(); render();
         }
 
-        function updateVals() {
+        function updateCounts() {
             document.getElementById('v-all-p').innerText = storage.length;
-            document.getElementById('v-ig').innerText = storage.filter(p => p.platforms.includes('instagram')).length;
-            document.getElementById('v-tk').innerText = storage.filter(p => p.platforms.includes('tiktok')).length;
-            document.getElementById('v-all-s').innerText = storage.length;
-            document.getElementById('v-ns').innerText = storage.filter(p => p.status === 'Not started').length;
-            document.getElementById('v-ip').innerText = storage.filter(p => p.status === 'In progress').length;
-            document.getElementById('v-dn').innerText = storage.filter(p => p.status === 'Done').length;
+            document.getElementById('v-ig').innerText = storage.filter(i => i.platforms.includes('instagram')).length;
+            document.getElementById('v-dn').innerText = storage.filter(i => i.status === 'Done').length;
         }
 
-        function doRender() {
+        function render() {
             const grid = document.getElementById('grid');
             const p = document.querySelector('input[name="p"]:checked').value;
-            const s = Array.from(document.querySelectorAll('.sc:checked')).map(c => c.value);
-            const m = document.getElementById('mS').checked;
+            const filtered = storage.filter(i => p === 'all' || i.platforms.includes(p));
 
-            const filtered = storage.filter(i => {
-                const pOk = p === 'all' || i.platforms.includes(p);
-                const sOk = m || s.includes(i.status);
-                return pOk && sOk;
-            });
-
-            let h = '';
-            const list = filtered.length > 0 ? filtered : Array(9).fill(null);
-            list.forEach(i => {
-                if (i && i.imageUrl) {
-                    // Logic: Explicitly using i.name for the Notion 'Name' property
-                    const displayTitle = i.name || "Untitled"; 
-                    h += `<div class="item">
-                        <img src="${i.imageUrl}">
-                        <div class="overlay">
-                            <span class="ov-pillar">${i.pillar || 'General'}</span>
-                            <h3 class="ov-title">${displayTitle}</h3>
-                            <span class="ov-date">${i.date || ''}</span>
-                        </div>
-                    </div>`;
-                } else {
-                    h += `<div class="item"><span class="null-txt">EMPTY</span></div>`;
-                }
-            });
-            grid.innerHTML = h;
+            grid.innerHTML = filtered.map(i => `
+                <div class="item">
+                    <img src="${i.imageUrl}">
+                    <div class="map-text">${i.name || 'Untitled'}</div>
+                    <div class="overlay">
+                        <span class="ov-pillar">${i.pillar || 'General'}</span>
+                        <h3 class="ov-title">${i.name || 'Untitled'}</h3>
+                    </div>
+                </div>`).join('');
         }
 
-        window.onclick = (e) => { if(!e.target.closest('.dropdown')) close(); };
+        window.onclick = (e) => { if(!e.target.closest('.dropdown') && !e.target.closest('.menu-wrapper')) closeAll(); };
         init();
     </script>
 </body>
