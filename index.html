@@ -3,41 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v22 - Content Map Fixed</title>
+    <title>Pro Planner v22 - Restored Design</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; --grey-empty: #efefef; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-        /* Bio & Highlights snaped left */
+        /* Left Aligned Bio Section */
         #bioSection { max-width: 935px; margin: 40px auto 10px; padding: 0 20px; display: none; flex-direction: column; align-items: flex-start; text-align: left; }
+        #bioUser { font-size: 32px; font-weight: 800; margin-bottom: 10px; }
         .pfp-circle { width: 85px; height: 85px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 1px solid #efefef; background: var(--grey-empty); }
 
+        /* Highlights */
         #highRow { max-width: 935px; margin: 0 auto 30px; padding: 0 20px; display: none; gap: 15px; overflow-x: auto; scrollbar-width: none; justify-content: flex-start; }
         .h-circle { width: 64px; height: 64px; border-radius: 50%; border: 1px solid #dbdbdb; padding: 3px; display: flex; align-items: center; justify-content: center; background: #fff; }
-        .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: var(--grey-empty); display: flex; align-items: center; justify-content: center; font-size: 8px; color: #999; text-align: center; font-weight: 600; text-transform: lowercase; }
+        .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: var(--grey-empty); display: flex; align-items: center; justify-content: center; font-size: 8px; color: #999; font-weight: 600; text-transform: lowercase; }
 
-        /* Navigation Bar */
-        .top-bar { max-width: 935px; margin: 20px auto 15px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
-        .refresh-btn { background: #000; color: white; border: none; padding: 11px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; }
-        .icon-btn { background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        /* Top Bar & Filters */
+        .top-bar { max-width: 935px; margin: 20px auto 10px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
+        .refresh-btn { background: #000; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; }
+        .icon-btn { background: var(--surface); border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        /* Filters */
-        .filter-row { display: none; padding: 0 20px; gap: 15px; max-width: 935px; margin: 0 auto 20px; align-items: center; flex-wrap: wrap; }
+        .filter-row { display: none; padding: 0 20px; gap: 15px; max-width: 935px; margin: 0 auto 20px; align-items: center; }
         .filter-row.active { display: flex; }
-        select { padding: 10px; border-radius: 10px; border: 1px solid #ddd; font-family: inherit; font-weight: 600; background: white; cursor: pointer; }
-        .stat-label { font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+        select { padding: 8px 12px; border-radius: 10px; border: 1.5px solid #000; font-family: inherit; font-weight: 600; background: white; cursor: pointer; outline: none; }
+        .stat-label { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer; }
 
-        /* Grid */
+        /* Grid Map */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
         .item { aspect-ratio: 1/1; background: var(--grey-empty); overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
-        .no-content-label { color: #aaaaaa; font-size: 13px; font-weight: 500; text-transform: lowercase; pointer-events: none; }
+        .no-content-label { color: #aaaaaa; font-size: 13px; font-weight: 500; text-transform: lowercase; }
         
         .carousel-track { display: flex; width: 100%; height: 100%; overflow-x: scroll; scroll-snap-type: x mandatory; scrollbar-width: none; }
         .slide { min-width: 100%; height: 100%; scroll-snap-align: start; }
         .slide img, .slide video { width: 100%; height: 100%; object-fit: cover; }
         
-        /* Settings */
+        /* Settings Menu */
         .settings-menu { position: absolute; top: 55px; right: 20px; width: 280px; background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: none; z-index: 2000; padding: 20px; border: 1px solid #ededf0; }
         .settings-menu.open { display: block; }
         .color-item { width: 34px; height: 34px; border-radius: 50%; position: relative; cursor: pointer; border: 2px solid #fff; box-shadow: 0 0 0 1px #ddd; }
@@ -46,16 +47,13 @@
         .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
         input:checked + .slider { background-color: #000; }
         input:checked + .slider:before { transform: translateX(18px); }
-        input[type="checkbox"] { display: none; }
-        .stat-label input[type="checkbox"] { display: block; }
     </style>
 </head>
 <body>
     <div id="bioSection">
-        <img id="bioPfp" class="pfp-circle" src="">
-        <h1 id="bioUser" style="margin:0; font-size:28px; font-weight:800;"></h1>
-        <p id="bioDisplay" style="font-weight:600; margin:5px 0;"></p>
-        <p id="bioDesc" style="font-size:14px; color:#444; max-width:600px; line-height:1.5; margin-bottom:10px; white-space: pre-wrap;"></p>
+        <h1 id="bioUser"></h1>
+        <p id="bioDisplay" style="font-weight:600; margin:0 0 5px;"></p>
+        <p id="bioDesc" style="font-size:14px; color:#1a1a1a; max-width:600px; line-height:1.4; margin-bottom:10px; white-space: pre-wrap;"></p>
         <a id="bioLink" style="font-weight:700; color:#00376b; text-decoration:none;" target="_blank"></a>
     </div>
 
@@ -82,8 +80,7 @@
 
     <div class="filter-row" id="filterArea">
         <select id="platSelect" onchange="doRender()">
-            <option value="all">All Channels</option>
-            <option value="instagram">Instagram</option>
+            <option value="all">Instagram</option>
             <option value="tiktok">TikTok</option>
         </select>
         <div id="statFilters" style="display: flex; gap: 15px;"></div>
@@ -106,6 +103,7 @@
             const g = document.getElementById('paletteGrid');
             g.innerHTML = palette.map((c, i) => `<div class="color-item" style="background:${c}"><input type="color" style="position:absolute; opacity:0; inset:0; cursor:pointer;" value="${c}" onchange="palette[${i}]=this.value; renderPalette(); doRender();"><button onclick="palette.splice(${i},1); renderPalette(); doRender();" style="position:absolute; top:-5px; right:-5px; background:#000; color:#fff; border-radius:50%; width:16px; height:16px; font-size:10px; border:none; cursor:pointer;">×</button></div>`).join('');
         }
+
         function addCol() { palette.push('#cccccc'); renderPalette(); doRender(); }
 
         async function init() {
@@ -114,14 +112,12 @@
                 const r = await fetch(API); const res = await r.json();
                 gridData = res.grid;
                 
-                document.getElementById('bioUser').innerText = res.bio.username || "";
+                document.getElementById('bioUser').innerText = "@" + (res.bio.username || "username");
                 document.getElementById('bioDisplay').innerText = res.bio.displayName || "";
                 document.getElementById('bioDesc').innerText = res.bio.bioText || "";
                 document.getElementById('bioLink').innerText = res.bio.linkDisplay || "";
                 document.getElementById('bioLink').href = res.bio.linkUrl || "#";
-                document.getElementById('bioPfp').src = res.bio.pfp || "";
 
-                // Highlights with "no content" fallback
                 const hData = res.highlights && res.highlights.length > 0 ? res.highlights : Array(4).fill(null);
                 document.getElementById('highRow').innerHTML = hData.map(h => `
                     <div style="text-align:center; min-width:75px; display:flex; flex-direction:column; align-items:center;">
@@ -150,16 +146,15 @@
                 return platMatch && statMatch;
             });
             
-            // Content Map: Always render 9 squares.
             let html = "";
-            for (let i = 0; i < Math.max(9, filtered.length); i++) {
+            const totalSlots = Math.max(9, filtered.length);
+            for (let i = 0; i < totalSlots; i++) {
                 const item = filtered[i];
                 const bg = palette[i % palette.length];
                 if (item) {
                     const slides = item.files.map(f => `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline onclick="this.paused?this.play():this.pause()"></video>` : `<img src="${f.url}">`}</div>`).join('');
                     html += `<div class="item" style="background:${bg}">${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; text-shadow:0 0 4px rgba(0,0,0,0.5);">▢▢</div>` : ''}<div class="carousel-track">${slides}</div></div>`;
                 } else {
-                    // Fallback to "no content"
                     html += `<div class="item" style="background:var(--grey-empty)"><span class="no-content-label">no content</span></div>`;
                 }
             }
