@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner | Dynamic Brand Edition</title>
+    <title>Pro Planner v8</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -17,70 +17,104 @@
 
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-        /* --- Header --- */
+        /* --- Navigation Bar --- */
         .top-bar { max-width: 935px; margin: 40px auto 15px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
         .refresh-btn { background: #000; color: white; border: none; padding: 11px 20px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; }
-        .icon-btn { background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .icon-btn { background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .icon-btn:hover { background: #e5e5ea; }
 
-        /* --- Settings Menu & Dynamic Colors --- */
+        /* --- Filter Drawer --- */
+        .filter-area { max-width: 935px; margin: 0 auto 20px; padding: 0 20px; display: none; gap: 12px; }
+        .filter-area.active { display: flex; }
+        .dropdown { position: relative; }
+        .dropdown-head { background: var(--surface); padding: 11px 18px; border-radius: 12px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; justify-content: space-between; align-items: center; min-width: 160px; }
+        .dropdown-menu { position: absolute; top: 52px; left: 0; width: 250px; background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.08); display: none; z-index: 1000; padding: 8px; border: 1px solid #ededf0; }
+        .dropdown-menu.open { display: block; }
+        
+        .row { display: flex; align-items: center; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 14px; }
+        .row:hover { background: var(--surface); }
+
+        /* Centered Indicators */
+        .indicator { width: 20px; height: 20px; border: 2px solid #d1d1d6; margin-right: 14px; display: grid; place-items: center; flex-shrink: 0; }
+        .is-circle { border-radius: 50%; }
+        .is-square { border-radius: 5px; }
+        input[type="radio"], .sc, #mS { display: none; }
+        input:checked + .indicator { border-color: var(--accent); background: var(--accent); }
+        input:checked + .indicator::after { content: ''; width: 6px; height: 6px; background: white; border-radius: 50%; }
+        input:checked + .is-square::after { content: '✓'; color: white; font-size: 11px; font-weight: 800; }
+
+        /* --- Settings Menu & Toggle --- */
         .menu-wrapper { position: relative; }
-        .settings-menu { 
-            position: absolute; top: 55px; right: 0; width: 260px; background: white; 
-            border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); 
-            display: none; z-index: 2000; padding: 18px; border: 1px solid #ededf0; 
-        }
+        .settings-menu { position: absolute; top: 55px; right: 0; width: 260px; background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: none; z-index: 2000; padding: 20px; border: 1px solid #ededf0; }
         .settings-menu.open { display: block; }
-        .setting-title { font-size: 10px; font-weight: 800; color: var(--secondary); letter-spacing: 1px; margin-bottom: 12px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; font-size: 14px; font-weight: 600; }
 
-        /* Sleek Black Toggle */
-        .switch { position: relative; width: 36px; height: 20px; }
+        /* Black Toggle Switch */
+        .switch { position: relative; width: 40px; height: 22px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e5ea; transition: .3s; border-radius: 20px; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
         input:checked + .slider { background-color: #000; }
-        input:checked + .slider:before { transform: translateX(16px); }
+        input:checked + .slider:before { transform: translateX(18px); }
 
-        /* Color Management UI */
-        .color-list { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 15px 0; padding: 10px; background: #fafafa; border-radius: 12px; }
-        .color-item { position: relative; width: 34px; height: 34px; }
-        input[type="color"] { -webkit-appearance: none; border: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; background: none; display: block; }
-        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        /* Color Palette UI */
+        .palette-section { margin-top: 15px; border-top: 1px solid #f0f0f0; padding-top: 15px; }
+        .color-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start; margin-top: 10px; }
+        .color-item { position: relative; display: grid; place-items: center; }
+        input[type="color"] { -webkit-appearance: none; border: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; background: none; }
         input[type="color"]::-webkit-color-swatch { border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px #ddd; }
         
-        .del-btn { position: absolute; top: -5px; right: -5px; background: #ff3b30; color: white; border: none; border-radius: 50%; width: 14px; height: 14px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-        .add-color-btn { background: #eee; border: 1px dashed #ccc; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 18px; font-weight: bold; color: #666; }
+        .remove-btn { position: absolute; top: -4px; right: -4px; background: #000; color: #fff; border: none; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; cursor: pointer; }
+        .add-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px dashed #ccc; background: none; cursor: pointer; font-size: 20px; color: #999; display: flex; align-items: center; justify-content: center; }
 
-        /* --- Grid Styles --- */
+        /* --- Grid --- */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
         .item { aspect-ratio: 1/1; background: #f9f9fb; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
-        .item img { width: 100%; height: 100%; object-fit: cover; }
+        .item img { width: 100%; height: 100%; object-fit: cover; transition: 0.4s; }
         
-        /* Map Mode Text & Colors */
-        .map-text { display: none; color: white; font-weight: 600; font-size: 13px; padding: 15px; text-align: center; line-height: 1.4; z-index: 2; }
         .map-mode .item img { display: none; }
-        .map-mode .map-text { display: block; }
-        
-        /* Overlay */
+        .map-label { display: none; color: white; font-weight: 600; font-size: 14px; text-align: center; padding: 15px; line-height: 1.4; z-index: 5; }
+        .map-mode .map-label { display: block; }
+
         .overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); color: white; padding: 25px 15px 15px; transform: translateY(102%); transition: 0.3s; text-align: left; }
         .item:hover .overlay { transform: translateY(0); }
         .ov-title { font-size: 13px; font-weight: 600; margin: 0; }
-
-        .empty-tag { color: #d1d1d6; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+        .empty-tag { color: #d1d1d6; font-size: 10px; font-weight: 800; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
         <button class="refresh-btn" onclick="location.reload()">Refresh</button>
+        <button class="icon-btn" onclick="toggleFilters()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><rect x="2" y="10" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="10" y="8" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="18" y="12" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/></svg>
+        </button>
         <div class="menu-wrapper" style="margin-left: auto;">
             <button class="icon-btn" onclick="toggleSettings()">•••</button>
-            <div class="settings-menu" id="settingsMenu">
-                <div class="setting-row">Show Content Map 
-                    <label class="switch"><input type="checkbox" id="mapToggle" onchange="applyMap()"><span class="slider"></span></label>
+            <div class="settings-menu" id="setMenu">
+                <div class="setting-row">Content Map Mode <label class="switch"><input type="checkbox" id="mapT" onchange="applyMode()"><span class="slider"></span></label></div>
+                <div class="palette-section">
+                    <span style="font-size: 10px; font-weight: 800; color: #8e8e93; letter-spacing: 1px;">BRAND PALETTE</span>
+                    <div class="color-grid" id="colorContainer"></div>
                 </div>
-                
-                <div class="setting-title">Brand Palette <button class="add-color-btn" onclick="addColor()">+</button></div>
-                <div class="color-list" id="colorList"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-area" id="filterArea">
+        <div class="dropdown">
+            <div class="dropdown-head" onclick="toggleDrop('pMenu')">Platform <span>▾</span></div>
+            <div class="dropdown-menu" id="pMenu">
+                <label class="row"><input type="radio" name="p" value="all" checked onchange="doRender()"><div class="indicator is-circle"></div> All Channels</label>
+                <label class="row"><input type="radio" name="p" value="instagram" onchange="doRender()"><div class="indicator is-circle"></div> Instagram</label>
+                <label class="row"><input type="radio" name="p" value="tiktok" onchange="doRender()"><div class="indicator is-circle"></div> Tiktok</label>
+            </div>
+        </div>
+        <div class="dropdown">
+            <div class="dropdown-head" onclick="toggleDrop('sMenu')">Status <span>▾</span></div>
+            <div class="dropdown-menu" id="sMenu">
+                <label class="row"><input type="checkbox" id="mS" checked onchange="allS()"><div class="indicator is-square"></div> All Status</label>
+                <label class="row"><input type="checkbox" class="sc" value="Done" onchange="syncS()"><div class="indicator is-square"></div> Published</label>
             </div>
         </div>
     </div>
@@ -89,61 +123,63 @@
 
     <script>
         const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
-        let storage = [];
-        let brandColors = ['#b4b4a5', '#a5a596']; // Default start with 2 colors
+        let data = [];
+        let palette = ['#b4b4a5', '#a5a596'];
 
-        function toggleSettings() { document.getElementById('settingsMenu').classList.toggle('open'); }
-        function applyMap() { document.getElementById('grid').classList.toggle('map-mode', document.getElementById('mapToggle').checked); render(); }
+        function toggleFilters() { document.getElementById('filterArea').classList.toggle('active'); closeAll(); }
+        function toggleSettings() { document.getElementById('setMenu').classList.toggle('open'); }
+        function toggleDrop(id) { const m = document.getElementById(id); const open = m.classList.contains('open'); closeAll(); if(!open) m.classList.add('open'); }
+        function closeAll() { document.querySelectorAll('.dropdown-menu, .settings-menu').forEach(m => m.classList.remove('open')); }
 
-        // --- Brand Color Management ---
-        function renderColorPickers() {
-            const list = document.getElementById('colorList');
-            list.innerHTML = brandColors.map((col, i) => `
+        function applyMode() { document.getElementById('grid').classList.toggle('map-mode', document.getElementById('mapT').checked); doRender(); }
+
+        function renderColors() {
+            const container = document.getElementById('colorContainer');
+            container.innerHTML = palette.map((c, i) => `
                 <div class="color-item">
-                    <input type="color" value="${col}" onchange="updateColor(${i}, this.value)">
-                    ${brandColors.length > 1 ? `<button class="del-btn" onclick="removeColor(${i})">×</button>` : ''}
-                </div>
-            `).join('') + `<button class="add-color-btn" onclick="addColor()">+</button>`;
-            localStorage.setItem('savedColors', JSON.stringify(brandColors));
-            render(); // Refresh grid colors
+                    <input type="color" value="${c}" onchange="updCol(${i}, this.value)">
+                    ${palette.length > 1 ? `<button class="remove-btn" onclick="remCol(${i})">×</button>` : ''}
+                </div>`).join('') + `<button class="add-btn" onclick="addCol()">+</button>`;
+            localStorage.setItem('userPalette', JSON.stringify(palette));
+            doRender();
         }
+        function addCol() { palette.push('#dddddd'); renderColors(); }
+        function remCol(i) { palette.splice(i, 1); renderColors(); }
+        function updCol(i, v) { palette[i] = v; renderColors(); }
 
-        function addColor() { brandColors.push('#cccccc'); renderColorPickers(); }
-        function removeColor(i) { brandColors.splice(i, 1); renderColorPickers(); }
-        function updateColor(i, val) { brandColors[i] = val; renderColorPickers(); }
+        function allS() { document.querySelectorAll('.sc').forEach(c => c.checked = document.getElementById('mS').checked); doRender(); }
+        function syncS() { document.getElementById('mS').checked = Array.from(document.querySelectorAll('.sc')).every(c => c.checked); doRender(); }
 
         async function init() {
-            const saved = localStorage.getItem('savedColors');
-            if(saved) brandColors = JSON.parse(saved);
-            renderColorPickers();
-            
-            try {
-                const r = await fetch(API);
-                storage = await r.json();
-            } catch(e) { console.error("Fetch failed"); }
-            render();
+            const saved = localStorage.getItem('userPalette');
+            if(saved) palette = JSON.parse(saved);
+            renderColors();
+            try { const r = await fetch(API); data = await r.json(); } catch(e) {}
+            doRender();
         }
 
-        function render() {
+        function doRender() {
             const grid = document.getElementById('grid');
-            let itemsToRender = storage.length > 0 ? storage : Array(12).fill(null);
-            
-            grid.innerHTML = itemsToRender.map((i, index) => {
-                const bgColor = brandColors[index % brandColors.length];
+            const p = document.querySelector('input[name="p"]:checked').value;
+            const s = Array.from(document.querySelectorAll('.sc:checked')).map(c => c.value);
+            const m = document.getElementById('mS').checked;
+
+            const filtered = data.filter(i => (p === 'all' || i.platforms.includes(p)) && (m || s.includes(i.status)));
+            let items = filtered.length > 0 ? filtered : Array(9).fill(null);
+
+            grid.innerHTML = items.map((i, idx) => {
+                const bg = palette[idx % palette.length];
                 if (i && i.imageUrl) {
-                    return `
-                    <div class="item" style="background-color: ${bgColor}">
-                        <img src="${i.imageUrl}">
-                        <div class="map-text">${i.name || 'Untitled'}</div>
+                    return `<div class="item" style="background-color:${bg}">
+                        <img src="${i.imageUrl}"><div class="map-label">${i.name || 'Untitled'}</div>
                         <div class="overlay"><p class="ov-title">${i.name || 'Untitled'}</p></div>
                     </div>`;
-                } else {
-                    return `<div class="item"><span class="empty-tag">NO CONTENT</span></div>`;
                 }
+                return `<div class="item"><span class="empty-tag">EMPTY</span></div>`;
             }).join('');
         }
 
-        window.onclick = (e) => { if(!e.target.closest('.menu-wrapper')) document.getElementById('settingsMenu').classList.remove('open'); };
+        window.onclick = (e) => { if(!e.target.closest('.dropdown') && !e.target.closest('.menu-wrapper')) closeAll(); };
         init();
     </script>
 </body>
