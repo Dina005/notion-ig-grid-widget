@@ -9,45 +9,31 @@
         :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-        /* Updated Header for Left Alignment */
-.profile-header { 
-    max-width: 935px; 
-    margin: 40px auto 30px; 
-    padding: 0 20px; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: flex-start; /* Shifts PFP and containers to the left */
-    text-align: left; /* Aligns all text lines to the left */
-}
-
-/* Bio Section Alignment */
-#bioSection { 
-    display: flex; 
-    flex-direction: column; 
-    align-items: flex-start; /* Ensures name and text stack on the left */
-    width: 100%; 
-    margin-bottom: 25px; 
-}
-
-/* Highlights Row Alignment */
-#highRow { 
-    display: flex; 
-    width: 100%;
-    justify-content: flex-start; /* Starts the circle row from the left margin */
-    gap: 15px; 
-    overflow-x: auto; 
-    padding: 10px 0 20px;
-    scrollbar-width: none; 
-}
-
-/* Individual Highlight Item */
-.h-item { 
-    flex: 0 0 85px; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; /* Keeps the label centered under the circle itself */
-}
-
+            /* 1. Shift the main container and its contents to the left */
+            .profile-header {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start; /* This moves the PFP and containers to the left edge */
+                text-align: left;        /* This ensures all text starts at the left margin */
+                max-width: 935px;        /* Keeps it aligned with your grid width */
+                margin: 40px auto;       /* 'auto' keeps the whole block centered, but content stays left */
+                padding: 0 20px;
+            }
+            
+            /* 2. Make sure the bio section doesn't try to center itself internally */
+            #bioSection {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start; 
+            }
+            
+            /* 3. Shift the highlights row to start from the left */
+            #highRow {
+                display: flex;
+                justify-content: flex-start; /* Changed from 'center' to 'flex-start' */
+                gap: 15px;
+                width: 100%;
+            }
         /* Top Bar */
         .top-bar { max-width: 935px; margin: 20px auto 15px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
         .refresh-btn { background: #000; color: white; border: none; padding: 11px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; }
