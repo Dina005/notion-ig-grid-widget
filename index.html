@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v22 - Left Aligned</title>
+    <title>Pro Planner v22 - Final Left</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; }
@@ -20,9 +20,9 @@
             text-align: left; 
         }
         
-        .pfp-circle { width: 85px; height: 85px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 1px solid #efefef; }
+        .pfp-circle { width: 85px; height: 85px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 1px solid #efefef; background: #eee; }
 
-        /* Highlights Row - Smaller sizing */
+        /* Highlights - Smaller sizing */
         #highRow { 
             max-width: 935px; 
             margin: 0 auto 30px; 
@@ -35,15 +35,15 @@
         }
         #highRow::-webkit-scrollbar { display: none; }
         
-        /* Reduced circle size from 77px to 64px */
         .h-circle { width: 64px; height: 64px; border-radius: 50%; border: 1px solid #dbdbdb; padding: 3px; display: flex; align-items: center; justify-content: center; background: #fff; }
+        .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #fafafa; }
 
         /* Top Bar */
         .top-bar { max-width: 935px; margin: 20px auto 15px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
         .refresh-btn { background: #000; color: white; border: none; padding: 11px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; }
         .icon-btn { background: var(--surface); border: none; width: 44px; height: 44px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        /* Filter Menus */
+        /* Dropdowns */
         .filter-area { max-width: 935px; margin: 0 auto 20px; padding: 0 20px; display: none; gap: 12px; }
         .filter-area.active { display: flex; }
         .dropdown { position: relative; background: var(--surface); padding: 11px 18px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; min-width: 140px; }
@@ -56,7 +56,7 @@
         input:checked + .box::after { content: '✓'; color: white; position: absolute; left: 3px; top: -1px; font-size: 11px; font-weight: 900; }
         input[type="checkbox"], input[type="radio"] { display: none; }
 
-        /* Grid */
+        /* Grid - Empty Content Fix */
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
         .item { aspect-ratio: 1/1; background: #f9f9fb; overflow: hidden; position: relative; }
         .carousel-track { display: flex; width: 100%; height: 100%; overflow-x: scroll; scroll-snap-type: x mandatory; scrollbar-width: none; }
@@ -153,21 +153,22 @@
             try {
                 const r = await fetch(API); const res = await r.json();
                 gridData = res.grid;
-                document.getElementById('bioUser').innerText = res.bio.username;
-                document.getElementById('bioDisplay').innerText = res.bio.displayName;
-                document.getElementById('bioDesc').innerText = res.bio.bioText;
-                document.getElementById('bioLink').innerText = res.bio.linkDisplay;
-                document.getElementById('bioLink').href = res.bio.linkUrl;
-                document.getElementById('bioPfp').src = res.bio.pfp;
+                document.getElementById('bioUser').innerText = res.bio.username || "";
+                document.getElementById('bioDisplay').innerText = res.bio.displayName || "";
+                document.getElementById('bioDesc').innerText = res.bio.bioText || "";
+                document.getElementById('bioLink').innerText = res.bio.linkDisplay || "";
+                document.getElementById('bioLink').href = res.bio.linkUrl || "#";
+                document.getElementById('bioPfp').src = res.bio.pfp || "";
 
                 const uniqueStats = [...new Set(gridData.map(i => i.status))];
                 document.getElementById('statusCheckboxes').innerHTML = uniqueStats.map(s => `
                     <label class="f-row"><input type="checkbox" class="stat-check" value="${s}" checked onchange="updateAllStatCheck()"><div class="box"></div> ${s}</label>
                 `).join('');
 
+                // Highlights Fallback for missing images
                 document.getElementById('highRow').innerHTML = (res.highlights || []).map(h => `
                     <div style="text-align:center; min-width:75px; display:flex; flex-direction:column; align-items:center;">
-                        <div class="h-circle"><img src="${h.image}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;"></div>
+                        <div class="h-circle">${h.image ? `<img src="${h.image}" class="h-img">` : `<div class="h-img" style="background:#eee"></div>`}</div>
                         <span style="font-size:11px; font-weight:600; margin-top:6px;">${h.name}</span>
                     </div>
                 `).join('');
@@ -182,8 +183,6 @@
             doRender();
         }
 
-        function togglePlay(vid, e) { e.stopPropagation(); if(vid.paused) { vid.play(); } else { vid.pause(); } }
-
         function doRender() {
             const grid = document.getElementById('grid');
             const plat = document.querySelector('input[name="plat"]:checked').value;
@@ -195,10 +194,11 @@
                 return platMatch && statMatch;
             });
             
+            // Empty view fallback: uses palette colors instead of white pages
             grid.innerHTML = (filtered.length ? filtered : Array(9).fill(null)).map((item, idx) => {
                 const bg = palette[idx % palette.length];
                 if(!item) return `<div class="item" style="background:${bg}"></div>`;
-                const slides = item.files.map(f => `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline onclick="togglePlay(this, event)"></video>` : `<img src="${f.url}">`}</div>`).join('');
+                const slides = item.files.map(f => `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop playsinline onclick="this.paused ? this.play() : this.pause()"></video>` : `<img src="${f.url}">`}</div>`).join('');
                 return `<div class="item" style="background:${bg}">${item.files.length > 1 ? `<div class="indicator-icon">▢▢</div>` : ''}<div class="carousel-track">${slides}</div><div class="overlay">${item.name}</div></div>`;
             }).join('');
         }
