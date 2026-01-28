@@ -1,113 +1,118 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Social Media Grid Planner</title>
-    <style>
-        body { margin: 0; font-family: -apple-system, sans-serif; background: #fff; color: #333; }
-        
-        /* Filters & Tabs */
-        .controls { max-width: 935px; margin: 20px auto; padding: 0 10px; display: flex; flex-direction: column; gap: 15px; }
-        .tabs { display: flex; gap: 20px; border-bottom: 1px solid #dbdbdb; }
-        .tab { padding: 10px 0; cursor: pointer; font-weight: bold; color: #8e8e8e; text-transform: uppercase; font-size: 12px; transition: 0.2s; }
-        .tab.active { color: #000; border-bottom: 2px solid #000; }
-        
-        .filter-row { display: flex; align-items: center; gap: 10px; font-size: 14px; }
-        select { padding: 6px 12px; border: 1px solid #dbdbdb; border-radius: 4px; background: #fff; }
+<style>
+    :root {
+        --bg-color: #fcfcfc;
+        --text-main: #333;
+        --text-sub: #888;
+        --border-color: #efefef;
+        --accent-color: #444;
+    }
 
-        /* Grid Logic */
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; max-width: 935px; margin: 0 auto; padding-bottom: 50px; }
-        .post { position: relative; aspect-ratio: 1/1; background: #f8f8f8; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .post img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .no-content-label { color: #bbb; font-size: 11px; font-weight: bold; text-transform: uppercase; }
-        
-        /* Hover Overlay */
-        .overlay { position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); color:#fff; opacity:0; transition:0.3s; padding:15px; box-sizing:border-box; display:flex; flex-direction:column; justify-content:center; pointer-events:none; }
-        .post:hover .overlay { opacity: 1; }
-        .overlay-date { position: absolute; top: 10px; right: 10px; font-size: 11px; }
-    </style>
-</head>
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-color); }
+
+    /* Modern Header Controls */
+    .dashboard-header {
+        max-width: 935px;
+        margin: 30px auto 10px;
+        padding: 0 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    /* Aesthetic Buttons & Dropdowns */
+    .btn-refresh {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #333;
+        color: white;
+        padding: 10px 18px;
+        border-radius: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        font-size: 14px;
+        transition: transform 0.2s ease;
+    }
+    .btn-refresh:hover { transform: scale(1.02); }
+
+    .dropdown-pill {
+        background: #f1f1f1;
+        padding: 10px 16px;
+        border-radius: 12px;
+        border: none;
+        font-size: 14px;
+        font-weight: 500;
+        color: #444;
+        cursor: pointer;
+        outline: none;
+        appearance: none;
+        min-width: 140px;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 14px;
+    }
+
+    .icon-btn {
+        background: #f1f1f1;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: none;
+    }
+
+    /* Grid Layout Tuning */
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
+        max-width: 935px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .post {
+        position: relative;
+        aspect-ratio: 1/1;
+        background: #fff;
+        border-radius: 4px; /* Optional: very slight rounding like the screenshots */
+        overflow: hidden;
+    }
+
+    /* ... overlay styles remain same ... */
+</style>
+
 <body>
+    <div class="dashboard-header">
+        <button class="btn-refresh" onclick="location.reload()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+            Refresh
+        </button>
 
-    <div class="controls">
-        <div class="tabs">
-            <div class="tab active" onclick="setTab('all', this)">All Channels</div>
-            <div class="tab" onclick="setTab('instagram', this)">Instagram</div>
-            <div class="tab" onclick="setTab('tiktok', this)">TikTok</div>
-        </div>
-        
-        <div class="filter-row">
-            <label>Status:</label>
-            <select id="statusFilter" onchange="render()">
-                <option value="all">All Statuses</option>
-                <option value="In progress">In Progress</option>
-                <option value="Done">Done</option>
-                <option value="Not started">Not Started</option>
-            </select>
-        </div>
+        <button class="icon-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+        </button>
+
+        <select id="platformFilter" class="dropdown-pill" onchange="render()">
+            <option value="all">All Platforms</option>
+            <option value="instagram">Instagram</option>
+            <option value="tiktok">Tiktok</option>
+            <option value="pinterest">Pinterest</option>
+            <option value="youtube">Youtube</option>
+        </select>
+
+        <select id="statusFilter" class="dropdown-pill" onchange="render()">
+            <option value="all">All Status</option>
+            <option value="Not started">Not started</option>
+            <option value="In progress">In progress</option>
+            <option value="Done">Done</option>
+            <option value="Published">Published</option>
+        </select>
     </div>
 
     <div id="grid" class="grid"></div>
-
-    <script>
-        const WORKER_URL = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
-        let posts = [];
-        let currentTab = 'all';
-
-        async function init() {
-            try {
-                const res = await fetch(WORKER_URL);
-                posts = await res.json();
-                render();
-            } catch (e) { console.error("Data failed to load", e); }
-        }
-
-        function setTab(tab, el) {
-            currentTab = tab.toLowerCase();
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            el.classList.add('active');
-            render();
-        }
-
-        function render() {
-            const container = document.getElementById('grid');
-            const statusVal = document.getElementById('statusFilter').value;
-            
-            // Filter posts based on current Tab and Status dropdown
-            let filtered = posts.filter(p => {
-                const platformMatch = (currentTab === 'all') || (p.platforms.includes(currentTab));
-                const statusMatch = (statusVal === 'all') || (p.status === statusVal);
-                return platformMatch && statusMatch;
-            });
-
-            // "No Content" Filler: Always show at least 12 slots to maintain the grid
-            const targetCount = Math.max(Math.ceil(filtered.length / 3) * 3, 12);
-            
-            let html = '';
-            for (let i = 0; i < targetCount; i++) {
-                const p = filtered[i];
-                if (p && p.imageUrl) {
-                    const d = p.date ? new Date(p.date).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : '';
-                    html += `
-                        <div class="post">
-                            <img src="${p.imageUrl}">
-                            <div class="overlay">
-                                <div class="overlay-date">${d}</div>
-                                <strong>${p.name}</strong>
-                                <div style="font-size:11px; margin-top:5px;">Pillar: ${p.pillar}</div>
-                                <div style="font-size:10px; color:#ddd;">Status: ${p.status}</div>
-                            </div>
-                        </div>`;
-                } else {
-                    html += `<div class="post"><span class="no-content-label">NO CONTENT</span></div>`;
-                }
-            }
-            container.innerHTML = html;
-        }
-
-        init();
-    </script>
-</body>
-</html>
