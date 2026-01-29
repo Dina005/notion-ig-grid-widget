@@ -152,21 +152,23 @@
     opacity: 0.7; 
     transform: scale(1.1); 
 }
-/* Drag and Drop Styles */
+/* Optimized Drag Styles */
 .item.dragging {
-    opacity: 0.5;
-    transform: scale(0.95);
-    outline: 2px solid white;
+    opacity: 0.4;
+    transform: scale(0.9);
+    filter: grayscale(1);
     z-index: 100;
 }
 
-.item {
-    transition: transform 0.2s ease, opacity 0.2s ease;
-    cursor: grab; /* Shows the hand icon */
+/* Fix: Prevents iframe from blocking the drag movement */
+.item.dragging iframe {
+    pointer-events: none;
 }
 
-.item:active {
-    cursor: grabbing;
+.item {
+    transition: transform 0.1s ease; /* Snappier transition */
+    cursor: grab;
+    touch-action: none; /* Better for mobile/tablet dragging */
 }
     </style>
 </head>
@@ -254,7 +256,9 @@
     <div id="lightboxContent" style="width:90%; height:90%; display:flex; align-items:center; justify-content:center;"></div>
 </div>
 </div>
-
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600; border-top: 1px solid #eee; padding-top: 15px;">
+    Custom Layout <label class="switch"><input type="checkbox" id="customOrderT" onchange="toggleOrder()"><span class="slider"></span></label>
+</div>
     <script>
        const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [];
@@ -409,44 +413,51 @@ function toggleStat(s) {
     doRender(); 
 }
 
-// Rendering Logic
-// 1. Updated Render with Order Memory
+// Toggle between Custom Order and Notion Date
+function toggleOrder() {
+    const isCustom = document.getElementById('customOrderT').checked;
+    if (!isCustom) {
+        if(confirm("Switch back to Notion date sorting? Your manual order will be saved but hidden.")) {
+            doRender();
+        } else {
+            document.getElementById('customOrderT').checked = true;
+        }
+    } else {
+        doRender();
+    }
+}
+
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
     const canvaOn = document.getElementById('canvaT').checked;
+    const isCustom = document.getElementById('customOrderT').checked;
     
-    // Initial Filter
     let filtered = gridData.filter(i => (currentPlat === 'all' || i.platforms.includes(currentPlat)) && activeStats.includes(i.status));
 
-    // APPLY CUSTOM ORDER (if it exists)
-    const savedOrder = localStorage.getItem('customGridOrder');
-    if (savedOrder) {
-        const orderIds = JSON.parse(savedOrder);
-        filtered.sort((a, b) => {
-            // Using the 'id' property or 'url' as a unique fingerprint
-            let indexA = orderIds.indexOf(a.files[0].url);
-            let indexB = orderIds.indexOf(b.files[0].url);
-            return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
-        });
-    }
-
-    if (filtered.length === 0) {
-        grid.innerHTML = '<p style="grid-column: span 3; text-align:center; padding:50px; color:#999;">no content</p>';
-        return;
+    // Only apply custom order if the toggle is ON
+    if (isCustom) {
+        const savedOrder = localStorage.getItem('customGridOrder');
+        if (savedOrder) {
+            const orderIds = JSON.parse(savedOrder);
+            filtered.sort((a, b) => {
+                let indexA = orderIds.indexOf(a.files[0].url);
+                let indexB = orderIds.indexOf(b.files[0].url);
+                return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+            });
+        }
     }
 
     grid.innerHTML = filtered.map((item, i) => {
         const dataIdx = gridData.indexOf(item);
-        const uniqueId = item.files[0].url; // Using URL as a unique key
+        const uniqueId = item.files[0].url;
 
-        // Basic Grid Item with draggable="true"
         return `<div class="item" 
-                     draggable="true" 
+                     draggable="${isCustom}" 
                      data-id="${uniqueId}" 
-                     onclick="openPreview(${dataIdx})" 
-                     style="cursor:grab; position:relative;">
-            ${item.files.length > 1 ? `<div style="position:absolute; top:10px; right:10px; color:white; z-index:10; font-weight:bold; text-shadow:0 0 4px rgba(0,0,0,0.5)">▢▢</div>` : ''}
+                     onclick="isDragging ? null : openPreview(${dataIdx})" 
+                     style="position:relative;">
+            ${item.files.length > 1 ? `<div style="position:absolute; top:10px; right:10px; color:white; z-index:10; font-weight:bold;">▢▢</div>` : ''}
             <div class="carousel-track">
                 ${item.files.map(f => {
                     if (canvaOn && f.url.includes('canva.com')) {
@@ -458,51 +469,62 @@ function doRender() {
         </div>`;
     }).join('');
 
-    initDragging(); // Initialize the drag listeners after rendering
+    if (isCustom) initDragging();
 }
 
-// 2. Drag and Drop Engine
+let isDragging = false; // Flag to prevent preview opening while dragging
+
 function initDragging() {
     const grid = document.getElementById('grid');
     const items = grid.querySelectorAll('.item');
 
     items.forEach(item => {
         item.addEventListener('dragstart', () => {
-            setTimeout(() => item.classList.add('dragging'), 0);
+            isDragging = true;
+            item.classList.add('dragging');
         });
 
         item.addEventListener('dragend', () => {
+            isDragging = false;
             item.classList.remove('dragging');
-            saveCurrentOrder(); // Save to local storage when dropped
+            saveCurrentOrder();
         });
     });
 
     grid.addEventListener('dragover', e => {
         e.preventDefault();
         const draggingItem = document.querySelector('.dragging');
-        const siblings = [...grid.querySelectorAll('.item:not(.dragging)')];
-        
-        const nextSibling = siblings.find(sibling => {
-            const box = sibling.getBoundingClientRect();
-            // Check if mouse is past the midpoint of the sibling
-            return e.clientX <= box.left + box.width / 2 && e.clientY <= box.top + box.height / 2;
-        });
-
-        grid.insertBefore(draggingItem, nextSibling);
+        const afterElement = getDragAfterElement(grid, e.clientX, e.clientY);
+        if (afterElement == null) {
+            grid.appendChild(draggingItem);
+        } else {
+            grid.insertBefore(draggingItem, afterElement);
+        }
     });
 }
 
-// 3. Save the new order to the browser
+// More accurate "Drop Zone" calculation
+function getDragAfterElement(container, x, y) {
+    const draggableElements = [...container.querySelectorAll('.item:not(.dragging)')];
+
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = x - box.left - box.width / 2; 
+        const verticalOffset = y - box.top - box.height / 2;
+        
+        if (offset < 0 && verticalOffset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
 function saveCurrentOrder() {
     const items = [...document.querySelectorAll('.item')];
     const orderIds = items.map(item => item.getAttribute('data-id'));
     localStorage.setItem('customGridOrder', JSON.stringify(orderIds));
-}
-
-// 4. Helper to reset if needed
-function resetOrder() {
-    localStorage.removeItem('customGridOrder');
-    location.reload();
+    document.getElementById('customOrderT').checked = true; // Ensure toggle stays on
 }
 // Global click handler to close menus
 window.onclick = function(event) {
