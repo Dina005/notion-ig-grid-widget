@@ -28,17 +28,17 @@ body {
     -webkit-font-smoothing: antialiased; overflow-x: hidden;
 }
 
-/* --- Initialization States --- */
+/* --- Initialization --- */
 #bioSection, #highRow, #colorManagerUI { display: none; }
 
 /* --- Bio Section --- */
 #bioSection { 
     max-width: 935px; margin: 40px auto 20px; padding: 0 20px; 
-    flex-direction: column; align-items: flex-start; text-align: left;
+    display: flex; flex-direction: column; align-items: flex-start;
 }
 .pfp-container { 
     width: 150px; height: 150px; border-radius: 50%; overflow: hidden; 
-    background: var(--grey-empty); border: 1px solid var(--border); margin-bottom: 25px;
+    background: var(--grey-empty); border: 1px solid var(--border); margin-bottom: 20px;
 }
 .pfp-img { width: 100%; height: 100%; object-fit: cover; }
 #bioUser { font-size: 32px; font-weight: 800; margin: 0 0 10px 0; }
@@ -50,103 +50,68 @@ body {
 }
 .h-circle { 
     width: 64px; height: 64px; border-radius: 50%; border: 1px solid #dbdbdb; 
-    padding: 3px; background: #fff; display: flex; align-items: center; justify-content: center;
-    transition: transform 0.2s ease;
+    padding: 3px; background: #fff; flex-shrink: 0; cursor: pointer;
 }
-.h-circle:active { transform: scale(0.92); }
 .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
-/* --- Top Bar & Controls --- */
+/* --- Top Bar & Settings --- */
 .top-bar { max-width: 935px; margin: 20px auto 10px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
 .refresh-btn { background: #000; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
 .icon-btn { background: var(--surface); border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-/* --- Settings Menu --- */
 .settings-menu { 
-    position: absolute; top: 55px; right: 20px; width: 280px; 
-    background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); 
-    display: none; z-index: 2000; padding: 20px; border: 1px solid #ededf0; 
+    position: absolute; top: 55px; right: 20px; width: 260px; 
+    background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+    display: none; z-index: 2000; padding: 20px; border: 1px solid var(--border); 
 }
 .settings-menu.open { display: block; }
-.setting-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-weight: 600; }
-.border-top { border-top: 1px solid #eee; padding-top: 15px; }
+.setting-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: 600; font-size: 14px; }
 
-/* --- Toggles --- */
-.switch { position: relative; width: 40px; height: 22px; display: inline-block; }
-.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e5ea; transition: .3s; border-radius: 20px; }
-.slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
-input:checked + .slider { background-color: #000; }
-input:checked + .slider:before { transform: translateX(18px); }
+/* --- Switches --- */
+.switch { position: relative; width: 36px; height: 20px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #e5e5ea; border-radius: 20px; transition: .3s; }
+.slider:before { content: ""; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
+input:checked + .slider { background: #000; }
+input:checked + .slider:before { transform: translateX(16px); }
 
 /* --- Filters --- */
-.filter-row { display: none; padding: 15px 20px; gap: 12px; max-width: 935px; margin: 0 auto; border-top: 1px solid #f0f0f2; align-items: center; }
+.filter-row { display: none; padding: 15px 20px; gap: 10px; max-width: 935px; margin: 0 auto; border-top: 1px solid #f0f0f2; }
 .filter-row.active { display: flex; }
-.dropdown-container { position: relative; font-size: 14px; font-weight: 600; }
-.dropdown-trigger { padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border); background: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px; min-width: 140px; justify-content: space-between; }
-.dropdown-menu { position: absolute; top: 110%; left: 0; background: white; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); z-index: 3000; min-width: 220px; display: none; padding: 8px; }
+.dropdown-container { position: relative; }
+.dropdown-trigger { padding: 8px 15px; border-radius: 10px; border: 1px solid var(--border); background: #fff; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+.dropdown-menu { position: absolute; top: 110%; left: 0; background: white; border: 1px solid var(--border); border-radius: 12px; display: none; padding: 8px; z-index: 3000; box-shadow: 0 5px 15px rgba(0,0,0,0.05); min-width: 160px; }
 .dropdown-menu.show { display: block; }
-.dropdown-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 8px; cursor: pointer; }
-.dropdown-item:hover { background: var(--surface); }
 
 /* --- The Grid --- */
-.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; contain: layout; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
 .item { aspect-ratio: 1/1; background: var(--grey-empty); position: relative; cursor: pointer; overflow: hidden; }
-.item.dragging { opacity: 0.2; transform: scale(0.95); }
-.item.empty { background-color: #f0f0f2; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; }
 
-/* --- Carousel Indicator --- */
-.carousel-indicator {
-    position: absolute; top: 10px; right: 10px; 
-    background: rgba(0, 0, 0, 0.4); color: white; 
-    padding: 5px; border-radius: 4px; z-index: 6; pointer-events: none;
-}
+/* FIX: Image aspect ratio and cropping */
+.carousel-track { display: flex; width: 100%; height: 100%; transition: transform 0.3s ease; }
+.slide { min-width: 100%; height: 100%; position: relative; }
+.slide img, .slide video { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-/* --- Navigation Buttons (Grid Hover Only) --- */
-.nav-btn {
-    position: absolute; top: 50%; transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.8); border: none; border-radius: 50%;
-    width: 24px; height: 24px; cursor: pointer; display: flex;
-    align-items: center; justify-content: center; font-size: 14px;
-    z-index: 5; opacity: 0; transition: opacity 0.2s;
-}
-.item:hover .nav-btn { opacity: 1; }
-.prev-btn { left: 8px; }
-.next-btn { right: 8px; }
+.item.dragging { opacity: 0.4; transform: scale(0.95); z-index: 10; border: 2px solid var(--accent); }
 
-/* --- Lightbox / Preview --- */
-#previewLightbox { 
-    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(0,0,0,0.95); z-index: 9999; justify-content: center; align-items: center; 
-}
-#lightboxContent { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+/* --- Carousel UI --- */
+.carousel-indicator { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); padding: 4px; border-radius: 4px; z-index: 5; pointer-events: none; }
+.nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.9); border: none; width: 28px; height: 28px; border-radius: 50%; display: none; z-index: 5; cursor: pointer; font-weight: bold; }
+.item:hover .nav-btn { display: flex; align-items: center; justify-content: center; }
+.prev-btn { left: 8px; } .next-btn { right: 8px; }
 
-/* Lightbox Track & Scroll-Snap */
-.lb-track {
-    display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
-    scroll-behavior: smooth; width: 100%; height: 100%; scrollbar-width: none;
-}
+/* --- Lightbox --- */
+#previewLightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; justify-content: center; align-items: center; }
+#lightboxContent { width: 100%; height: 100%; }
+.lb-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; height: 100%; scrollbar-width: none; }
 .lb-track::-webkit-scrollbar { display: none; }
+.lb-slide { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; scroll-snap-align: start; }
+.lb-slide img, .lb-slide video { max-width: 90%; max-height: 85vh; object-fit: contain; }
+.close-preview { position: absolute; top: 20px; right: 20px; color: white; font-size: 35px; cursor: pointer; z-index: 10001; }
 
-.lb-slide {
-    min-width: 100%; height: 100%; display: flex;
-    align-items: center; justify-content: center; scroll-snap-align: start;
-}
-.lb-slide img, .lb-slide video { max-width: 90%; max-height: 90vh; object-fit: contain; }
-
-/* Lightbox Navigation (Always Visible) */
-.active-lb-btn {
-    opacity: 1 !important; display: flex !important;
-    background: rgba(255, 255, 255, 0.2) !important; color: white !important;
-    width: 50px !important; height: 50px !important; font-size: 30px !important;
-}
-.close-preview { position: fixed; top: 20px; right: 20px; color: white; font-size: 40px; cursor: pointer; z-index: 10001; }
-
-/* --- Color Manager Palette --- */
-.palette-label { font-size: 11px; font-weight: 800; color: #888; margin-bottom: 10px; text-transform: uppercase; }
-.color-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-.color-picker-wrapper { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); position: relative; overflow: hidden; }
-.color-picker { position: absolute; top: -10px; left: -10px; width: 50px; height: 50px; cursor: pointer; }
-.add-btn { width: 100%; padding: 8px; background: #f0f0f2; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+/* --- Brand Palette --- */
+#colorList { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+#colorList input[type="color"] { border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; background: none; }
         
     </style>
 </head>
@@ -212,15 +177,15 @@ input:checked + .slider:before { transform: translateX(18px); }
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 9l-7 7-7-7"/></svg>
             </div>
             <div class="dropdown-menu" id="platMenu">
-                <div class="dropdown-item" onclick="setPlat('all')">All Platforms <span class="count-pill" id="cnt-all">0</span></div>
-                <div class="dropdown-item" onclick="setPlat('instagram')">Instagram <span class="count-pill" id="cnt-ig">0</span></div>
-                <div class="dropdown-item" onclick="setPlat('tiktok')">TikTok <span class="count-pill" id="cnt-tt">0</span></div>
+                <div class="dropdown-item" onclick="setPlat('all')">All Platforms</div>
+                <div class="dropdown-item" onclick="setPlat('instagram')">Instagram</div>
+                <div class="dropdown-item" onclick="setPlat('tiktok')">TikTok</div>
             </div>
         </div>
 
         <div class="dropdown-container">
             <div class="dropdown-trigger" onclick="toggleMenu('statMenu', event)">
-                <span>Status</span>
+                <span>Status Filters</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 9l-7 7-7-7"/></svg>
             </div>
             <div class="dropdown-menu" id="statMenu" style="padding: 12px;">
@@ -237,19 +202,16 @@ input:checked + .slider:before { transform: translateX(18px); }
     </div>
     <script>
 const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
-let gridData = [], highlightsData = [], currentPlat = 'all', activeStats = [], isDragging = false;
+let gridData = [], currentPlat = 'all', activeStats = [], dragItem = null;
 
 // --- 1. INITIALIZATION ---
 async function init() {
-    const toggleIds = ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'];
-    toggleIds.forEach(id => {
-        const savedState = localStorage.getItem(id);
+    // Load toggle states
+    ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'].forEach(id => {
+        const saved = localStorage.getItem(id);
         const el = document.getElementById(id);
-        if (savedState !== null && el) el.checked = savedState === 'true';
+        if (saved !== null && el) el.checked = saved === 'true';
     });
-
-    const savedPlat = localStorage.getItem('currentPlat');
-    if (savedPlat) currentPlat = savedPlat;
 
     updateUI(); 
 
@@ -257,7 +219,6 @@ async function init() {
         const res = await fetch(API);
         const data = await res.json();
         gridData = data.grid || [];
-        highlightsData = data.highlights || [];
         
         renderProfile(data);
         setupStatusFilters();
@@ -267,215 +228,186 @@ async function init() {
     } catch (e) { console.error("Init Failed:", e); }
 }
 
-// --- 2. GRID RENDERING (Excluding Stories) ---
+// --- 2. GRID RENDERING ---
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
     const isCustom = document.getElementById('customOrderT').checked;
     const canvaOn = document.getElementById('canvaT').checked;
 
-    // FILTER: Hide "Story" types from the main grid
-    let filtered = [...gridData].filter(i => {
-        const isNotStory = i.type !== "Story"; 
-        const platMatch = (currentPlat === 'all' || i.platforms.includes(currentPlat));
+    // Filter logic
+    let filtered = gridData.filter(i => {
+        const isPost = i.type !== "Story"; 
+        const platMatch = (currentPlat === 'all' || i.platforms.includes(currentPlat.toLowerCase()));
         const statMatch = activeStats.includes(i.status);
-        return isNotStory && platMatch && statMatch;
+        return isPost && platMatch && statMatch;
     });
 
+    // Custom Layout Sort
     if (isCustom) {
-        const savedOrder = JSON.parse(localStorage.getItem('customGridOrder') || "[]");
+        const savedOrder = JSON.parse(localStorage.getItem('gridOrder') || "[]");
         filtered.sort((a, b) => {
-            const indexA = savedOrder.indexOf(a.files?.[0]?.url);
-            const indexB = savedOrder.indexOf(b.files?.[0]?.url);
+            const indexA = savedOrder.indexOf(a.files[0]?.url);
+            const indexB = savedOrder.indexOf(b.files[0]?.url);
             return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
         });
     }
 
-    let displayList = [...filtered];
-    while (displayList.length < 9 || displayList.length % 3 !== 0) displayList.push({ isPlaceholder: true });
-
-    grid.innerHTML = displayList.map((item, i) => {
-        if (item.isPlaceholder) return `<div class="item empty"><span class="empty-text">No Content</span></div>`;
+    grid.innerHTML = filtered.map((item, idx) => {
         const dataIdx = gridData.indexOf(item);
         const files = item.files || [];
-        const hasMultiple = files.length > 1;
+        const hasMult = files.length > 1;
 
+        // Content Map Mode
         if (isMap) {
-            const color = window.brandColors[window.shuffledIndices[i % window.shuffledIndices.length] % window.brandColors.length];
-            return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; text-align:center; padding:10px;">${item.name}</div>`;
+            const color = window.brandColors[window.shuffledIndices[idx % window.shuffledIndices.length] % window.brandColors.length];
+            return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; text-align:center; padding:15px; font-size:11px; line-height:1.2;">${item.name.toUpperCase()}</div>`;
         }
 
-        const slidesHtml = files.map(file => {
-            const content = (canvaOn && file.url.includes('canva.com')) ? `<iframe src="${getCanvaEmbedUrl(file.url)}"></iframe>` : (file.isVideo ? `<video src="${file.url}" muted loop playsinline autoplay></video>` : `<img src="${file.url}">`);
+        // Standard Grid Mode
+        const slidesHtml = files.map(f => {
+            const content = (canvaOn && f.url.includes('canva.com')) 
+                ? `<iframe src="${f.url.split('?')[0]}/view?embed" style="width:100%;height:100%;border:none;"></iframe>` 
+                : (f.isVideo ? `<video src="${f.url}" muted loop playsinline autoplay></video>` : `<img src="${f.url}">`);
             return `<div class="slide">${content}</div>`;
         }).join('');
 
         return `
-            <div class="item ${hasMultiple ? 'has-multiple' : ''}" draggable="${isCustom}" data-id="${files[0]?.url}" onclick="if(!isDragging) openPreview(${dataIdx})">
-                ${hasMultiple ? `<div class="carousel-indicator"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M19,2H9C7.9,2,7,2.9,7,4v11c0,1.1,0.9,2,2,2h10c1.1,0,2-0.9,2-2V4C21,2.9,20.1,2,19,2z M19,15H9V4h10V15z M5,7H3v11 c0,1.1,0.9,2,2,2h11v-2H5V7z"/></svg></div>` : ''}
+            <div class="item" 
+                 draggable="${isCustom}" 
+                 ondragstart="handleDragStart(event, '${files[0]?.url}')" 
+                 ondragover="event.preventDefault()" 
+                 ondrop="handleDrop(event, '${files[0]?.url}')" 
+                 onclick="openPreview(${dataIdx})">
+                ${hasMult ? `<div class="carousel-indicator"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M19,2H9C7.9,2,7,2.9,7,4v11c0,1.1,0.9,2,2,2h10c1.1,0,2-0.9,2-2V4C21,2.9,20.1,2,19,2z M19,15H9V4h10V15z M5,7H3v11 c0,1.1,0.9,2,2,2h11v-2H5V7z"/></svg></div>` : ''}
                 <div class="carousel-track" id="track-${dataIdx}">${slidesHtml}</div>
-                ${hasMultiple ? `<button class="nav-btn prev-btn" onclick="moveSlide(${dataIdx}, -1, event)">‹</button><button class="nav-btn next-btn" onclick="moveSlide(${dataIdx}, 1, event)">›</button>` : ''}
-                <div class="overlay"><div class="ov-title">${item.name || "Content"}</div></div>
+                ${hasMult ? `<button class="nav-btn prev-btn" onclick="moveSlide(${dataIdx}, -1, event)">‹</button><button class="nav-btn next-btn" onclick="moveSlide(${dataIdx}, 1, event)">›</button>` : ''}
             </div>`;
     }).join('');
-
-    if (isCustom) initDragging();
 }
 
-// --- 3. STORY VIEWER (Links Highlight to DB Stories) ---
-function openStory(highlightName) {
-    // We now look for 'highlightGroup' which the Worker populates from the Rollup
-    const relatedStories = gridData.filter(item => 
-        item.type === "Story" && 
-        item.highlightGroup === highlightName
-    );
-    
-    if (relatedStories.length === 0) {
-        console.log("No stories found for highlight:", highlightName);
-        return;
-    }
-
-    const lightbox = document.getElementById('previewLightbox');
-    const content = document.getElementById('lightboxContent');
-    const allFiles = relatedStories.flatMap(s => s.files);
-
-    const storiesHtml = allFiles.map(file => {
-        const media = file.isVideo 
-            ? `<video src="${file.url}" controls autoplay loop></video>` 
-            : `<img src="${file.url}">`;
-        return `<div class="lb-slide">${media}</div>`;
-    }).join('');
-
-    content.innerHTML = `<div class="lb-track" id="lbTrack">${storiesHtml}</div>`;
-    
-    // UI logic for lightbox navigation
-    document.querySelectorAll('.lb-nav').forEach(a => a.remove());
-    if (allFiles.length > 1) {
-        lightbox.insertAdjacentHTML('beforeend', `
-            <button class="nav-btn lb-nav prev-btn active-lb-btn" onclick="scrollLB(-1)">‹</button>
-            <button class="nav-btn lb-nav next-btn active-lb-btn" onclick="scrollLB(1)">›</button>
-        `);
-    }
-    lightbox.style.display = 'flex';
+// --- 3. CUSTOM LAYOUT (DRAG & DROP) ---
+function handleDragStart(e, id) {
+    dragItem = id;
+    e.target.classList.add('dragging');
 }
-// --- 4. PREVIEW & NAVIGATION ---
+
+function handleDrop(e, id) {
+    e.preventDefault();
+    let order = JSON.parse(localStorage.getItem('gridOrder') || "[]");
+    const allUrls = gridData.filter(i => i.type !== "Story").map(i => i.files[0]?.url);
+    
+    if (order.length === 0) order = allUrls;
+
+    const fromIdx = order.indexOf(dragItem);
+    const toIdx = order.indexOf(id);
+
+    order.splice(toIdx, 0, order.splice(fromIdx, 1)[0]);
+    localStorage.setItem('gridOrder', JSON.stringify(order));
+    doRender();
+}
+
+// --- 4. NAVIGATION & PREVIEWS ---
 function openPreview(idx) {
     const item = gridData[idx];
-    const lightbox = document.getElementById('previewLightbox');
-    const content = document.getElementById('lightboxContent');
-    const canvaOn = document.getElementById('canvaT').checked;
-
-    const slidesHtml = item.files.map(file => {
-        const media = (canvaOn && file.url.includes('canva.com')) ? `<iframe src="${getCanvaEmbedUrl(file.url)}" allowfullscreen></iframe>` : (file.isVideo ? `<video src="${file.url}" controls autoplay loop></video>` : `<img src="${file.url}">`);
-        return `<div class="lb-slide">${media}</div>`;
-    }).join('');
-
-    content.innerHTML = `<div class="lb-track" id="lbTrack">${slidesHtml}</div>`;
-    document.querySelectorAll('.lb-nav').forEach(a => a.remove());
-    if (item.files.length > 1) {
-        lightbox.insertAdjacentHTML('beforeend', `<button class="nav-btn lb-nav prev-btn active-lb-btn" onclick="scrollLB(-1)">‹</button><button class="nav-btn lb-nav next-btn active-lb-btn" onclick="scrollLB(1)">›</button>`);
-    }
-    lightbox.style.display = 'flex';
+    const lb = document.getElementById('previewLightbox');
+    document.getElementById('lightboxContent').innerHTML = `
+        <div class="lb-track">
+            ${item.files.map(f => `<div class="lb-slide">${f.isVideo ? `<video src="${f.url}" controls autoplay></video>` : `<img src="${f.url}">`}</div>`).join('')}
+        </div>`;
+    lb.style.display = 'flex';
 }
 
-function scrollLB(dir) {
-    const track = document.getElementById('lbTrack');
-    if (track) track.scrollBy({ left: track.clientWidth * dir, behavior: 'smooth' });
+function openStory(name) {
+    const stories = gridData.filter(i => i.type === "Story" && i.highlightGroup === name);
+    if (!stories.length) return;
+    const lb = document.getElementById('previewLightbox');
+    const allFiles = stories.flatMap(s => s.files);
+    document.getElementById('lightboxContent').innerHTML = `
+        <div class="lb-track">
+            ${allFiles.map(f => `<div class="lb-slide">${f.isVideo ? `<video src="${f.url}" controls autoplay loop></video>` : `<img src="${f.url}">`}</div>`).join('')}
+        </div>`;
+    lb.style.display = 'flex';
 }
 
-function moveSlide(dataIdx, dir, event) {
-    if (event) event.stopPropagation();
-    const track = document.getElementById(`track-${dataIdx}`);
+function moveSlide(idx, dir, e) {
+    e.stopPropagation();
+    const track = document.getElementById(`track-${idx}`);
     const slides = track.querySelectorAll('.slide');
-    let idx = (parseInt(track.dataset.idx || 0) + dir + slides.length) % slides.length;
-    track.dataset.idx = idx;
-    track.style.transform = `translateX(-${idx * 100}%)`;
+    let current = parseInt(track.dataset.idx || 0);
+    current = (current + dir + slides.length) % slides.length;
+    track.dataset.idx = current;
+    track.style.transform = `translateX(-${current * 100}%)`;
 }
 
-// --- 5. UI & PROFILE ---
+// --- 5. UI HELPERS ---
 function renderProfile(data) {
     const b = data.bio;
     document.getElementById('pfpImg').src = b.profilePicture || "";
-    document.getElementById('bioUser').innerText = "@" + (b.username || "user");
+    document.getElementById('bioUser').innerText = b.username || "";
     document.getElementById('bioDisplay').innerText = b.displayName || "";
     document.getElementById('bioDesc').innerText = b.bioText || "";
     document.getElementById('bioLink').innerText = b.linkDisplay || "";
     document.getElementById('bioLink').href = b.linkUrl || "#";
 
-    document.getElementById('highRow').innerHTML = (data.highlights || []).map(h => `
-        <div style="text-align:center; min-width:75px; cursor:pointer;" onclick="openStory('${h.name}')">
+    document.getElementById('highRow').innerHTML = data.highlights.map(h => `
+        <div onclick="openStory('${h.name}')" style="text-align:center; flex-shrink:0; cursor:pointer;">
             <div class="h-circle"><img src="${h.image}" class="h-img"></div>
-            <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h.name}</span>
+            <div style="font-size:11px; font-weight:700; margin-top:6px;">${h.name}</div>
         </div>`).join('');
 }
 
-function updateUI() {
-    const ids = ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'];
-    ids.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) localStorage.setItem(id, el.checked);
-    });
-    document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none';
-    document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none';
-    document.getElementById('colorManagerUI').style.display = document.getElementById('mapT').checked ? 'block' : 'none';
-    if(gridData.length) doRender();
-}
-
-// --- DRAG, FILTERS & UTILS ---
 function setupStatusFilters() {
     const stats = [...new Set(gridData.map(i => i.status))];
-    const saved = localStorage.getItem('activeStats');
-    activeStats = saved ? JSON.parse(saved) : [...stats];
+    activeStats = stats;
     document.getElementById('statusOptions').innerHTML = stats.map(s => `
-        <label class="dropdown-item" onclick="event.stopPropagation()">
-            <div class="item-left">
-                <input type="checkbox" ${activeStats.includes(s) ? 'checked' : ''} onchange="toggleStat('${s}')">
-                <div class="check-box"></div>
-                <span style="font-weight:600; font-size:13px;">${s}</span>
-            </div>
+        <label style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:13px; font-weight:600; cursor:pointer;">
+            <input type="checkbox" checked onchange="toggleStat('${s}')"> ${s}
         </label>`).join('');
 }
 
 function toggleStat(s) {
     activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s];
-    localStorage.setItem('activeStats', JSON.stringify(activeStats));
     doRender();
 }
 
 function setPlat(p) {
     currentPlat = p;
-    localStorage.setItem('currentPlat', p);
-    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
+    document.getElementById('platCurrent').innerText = p.charAt(0).toUpperCase() + p.slice(1);
     doRender();
 }
 
-function toggleMenu(id, e) {
-    if (e) e.stopPropagation();
-    document.getElementById(id).classList.toggle('show');
+function updateUI() {
+    ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'].forEach(id => {
+        localStorage.setItem(id, document.getElementById(id).checked);
+    });
+    document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none';
+    document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none';
+    document.getElementById('colorManagerUI').style.display = document.getElementById('mapT').checked ? 'block' : 'none';
+    if (gridData.length) doRender();
 }
 
-function toggleSettings(e) {
-    if (e) e.stopPropagation();
-    document.getElementById('setMenu').classList.toggle('open');
-}
-
-function getCanvaEmbedUrl(u) {
-    const m = u.match(/design\/([A-Za-z0-9_-]+)/);
-    return m ? `https://www.canva.com/design/${m[1]}/view?embed` : u;
-}
-
-window.brandColors = ["#FFD1DC", "#AEEEEE"];
-window.generateRandomMap = () => { window.shuffledIndices = Array.from({ length: 300 }, () => Math.floor(Math.random() * window.brandColors.length)); };
-window.updateColor = (idx, val) => { window.brandColors[idx] = val; doRender(); };
-window.renderColorControls = () => {
-    const container = document.getElementById('colorList');
-    if (!container) return;
-    container.innerHTML = window.brandColors.map((color, idx) => `
-        <div class="color-row">
-            <div class="color-picker-wrapper"><input type="color" class="color-picker" value="${color}" onchange="window.updateColor(${idx}, this.value)"></div>
-            <button class="remove-btn" onclick="window.brandColors.splice(${idx},1); window.renderColorControls(); doRender();" style="background:none; border:none; cursor:pointer;">×</button>
-        </div>`).join('');
+// --- 6. COLOR MANAGER & UTILS ---
+window.brandColors = ["#FFD1DC", "#AEEEEE", "#E0BBE4"];
+window.generateRandomMap = () => {
+    window.shuffledIndices = Array.from({ length: 200 }, () => Math.floor(Math.random() * 100));
 };
+
+window.renderColorControls = () => {
+    document.getElementById('colorList').innerHTML = window.brandColors.map((c, i) => `
+        <input type="color" value="${c}" onchange="window.brandColors[${i}]=this.value; doRender();">
+    `).join('');
+};
+
+window.addColor = (e) => {
+    e.stopPropagation();
+    window.brandColors.push("#cccccc");
+    window.renderColorControls();
+    doRender();
+};
+
+function toggleMenu(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
+function toggleSettings(e) { e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
 
 window.onclick = () => {
     document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
