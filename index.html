@@ -455,28 +455,50 @@ function initDragging() {
     });
 
     grid.addEventListener('dragover', e => {
-        e.preventDefault();
-        const draggingItem = document.querySelector('.dragging');
-        if (!draggingItem) return;
-        const afterElement = getDragAfterElement(grid, e.clientX, e.clientY);
-        if (afterElement == null) {
-            grid.appendChild(draggingItem);
+    e.preventDefault();
+    const draggingItem = document.querySelector('.dragging');
+    if (!draggingItem) return;
+    
+    const afterElement = getDragAfterElement(grid, e.clientX, e.clientY);
+    
+    if (afterElement) {
+        grid.insertBefore(draggingItem, afterElement);
+    } else {
+        // If no 'after' element is found, it means we are at the very end 
+        // but before the empty placeholders.
+        const firstEmpty = grid.querySelector('.item.empty');
+        if (firstEmpty) {
+            grid.insertBefore(draggingItem, firstEmpty);
         } else {
-            grid.insertBefore(draggingItem, afterElement);
+            grid.appendChild(draggingItem);
         }
-    });
-}
+    }
+});
 
 function getDragAfterElement(container, x, y) {
     const draggableElements = [...container.querySelectorAll('.item:not(.dragging):not(.empty)')];
+
     return draggableElements.reduce((closest, child) => {
         const box = child.getBoundingClientRect();
-        const centerX = box.left + box.width / 2;
-        const centerY = box.top + box.height / 2;
-        const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
-        if (distance < closest.distance) return { distance: distance, element: child };
-        else return closest;
-    }, { distance: Number.POSITIVE_INFINITY }).element;
+        
+        // Check if the mouse is currently within the vertical bounds of this row
+        const inRow = y > box.top && y < box.bottom;
+        // Check if the mouse is to the left of the center of this specific box
+        const toLeft = x < box.left + box.width / 2;
+
+        if (inRow) {
+            // If we are in the same row, only care about horizontal distance
+            const offset = x - (box.left + box.width / 2);
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            }
+        } else if (y < box.top && closest.offset === Number.NEGATIVE_INFINITY) {
+            // If we haven't found anything in our row yet, look for the first element in the row below
+            return { offset: Number.NEGATIVE_INFINITY, element: child };
+        }
+
+        return closest;
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
 function saveCurrentOrder() {
