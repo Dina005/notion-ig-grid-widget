@@ -248,14 +248,14 @@ input:checked + .check-box::after { content: '✓'; color: white; font-size: 10p
         <div id="lightboxContent"></div>
     </div>
     <script>
- const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
+const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [], isDragging = false;
 let dragTimeout;
 
-// --- UPDATED INITIALIZATION ---
+// --- INITIALIZATION ---
 async function init() {
     try {
-        // 1. First, restore toggle states from localStorage if they exist
+        // 1. Restore toggle states from localStorage first
         const toggleIds = ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'];
         toggleIds.forEach(id => {
             const savedState = localStorage.getItem(id);
@@ -285,12 +285,26 @@ async function init() {
                 <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h.name}</span>
             </div>`).join('');
 
-        // Populate Filters... (keep your existing statusOptions code here)
+        // Fix: Properly initialize Status and Platform Counts
+        document.getElementById('cnt-all').innerText = gridData.length;
+        document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
+        document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
+
+        const stats = [...new Set(gridData.map(i => i.status))];
+        activeStats = [...stats]; // Default all active
+        document.getElementById('statusOptions').innerHTML = stats.map(s => `
+            <label class="dropdown-item" onclick="event.stopPropagation()">
+                <div class="item-left">
+                    <input type="checkbox" checked onchange="toggleStat('${s}')">
+                    <div class="check-box"></div><span style="font-weight:600; font-size:13px;">${s}</span>
+                </div>
+                <span class="count-pill">${gridData.filter(i => i.status === s).length}</span>
+            </label>`).join('');
 
         window.generateRandomMap();
         window.renderColorControls();
         
-        // 2. Final Step: Run updateUI to apply the hidden/visible logic based on toggles
+        // Apply UI visibility states before rendering grid
         updateUI(); 
     } catch (e) { console.error("Initialization Failed:", e); }
 }
@@ -302,7 +316,12 @@ function doRender() {
     const isCustom = document.getElementById('customOrderT').checked;
     const canvaOn = document.getElementById('canvaT').checked;
 
-    let filtered = [...gridData].filter(i => (currentPlat === 'all' || i.platforms.includes(currentPlat)) && activeStats.includes(i.status));
+    // Filter Logic
+    let filtered = [...gridData].filter(i => {
+        const platMatch = (currentPlat === 'all' || i.platforms.includes(currentPlat));
+        const statMatch = activeStats.includes(i.status);
+        return platMatch && statMatch;
+    });
 
     // Apply Custom Layout Order
     if (isCustom) {
@@ -317,7 +336,7 @@ function doRender() {
         }
     }
 
-    // Min 9 squares / Grid Completion
+    // Grid Completion (Multiples of 3)
     let displayList = [...filtered];
     while (displayList.length < 9 || displayList.length % 3 !== 0) {
         displayList.push({ isPlaceholder: true });
@@ -330,19 +349,16 @@ function doRender() {
         const title = (item.name && isNaN(item.name)) ? item.name : "Content Item";
         const pillar = item["Content Pillar"] || "General";
         const date = item["Publish Date"] ? new Date(item["Publish Date"]).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : "";
+        const file = item.files[0];
 
         if (isMap) {
             const color = window.brandColors[window.shuffledIndices[i % window.shuffledIndices.length] % window.brandColors.length];
             return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; padding:15px; color:white; font-weight:700; text-align:center;">${title}</div>`;
         }
 
-        const file = item.files[0];
-        let mediaHtml = '';
-        if (canvaOn && file.url.includes('canva.com')) {
-            mediaHtml = `<div class="slide"><iframe src="${getCanvaEmbedUrl(file.url)}"></iframe></div>`;
-        } else {
-            mediaHtml = `<div class="slide">${file.isVideo ? `<video src="${file.url}" loop muted playsinline autoplay></video>` : `<img src="${file.url}">`}</div>`;
-        }
+        let mediaHtml = (canvaOn && file.url.includes('canva.com')) 
+            ? `<div class="slide"><iframe src="${getCanvaEmbedUrl(file.url)}"></iframe></div>`
+            : `<div class="slide">${file.isVideo ? `<video src="${file.url}" loop muted playsinline autoplay></video>` : `<img src="${file.url}">`}</div>`;
 
         return `
             <div class="item" draggable="${isCustom}" data-id="${file.url}" onclick="if(!isDragging) openPreview(${dataIdx})">
@@ -363,75 +379,41 @@ function initDragging() {
     const items = grid.querySelectorAll('.item:not(.empty)');
 
     items.forEach(item => {
-        item.addEventListener('dragstart', (e) => { 
-            isDragging = true; 
-            item.classList.add('dragging'); 
-        });
-
+        item.addEventListener('dragstart', () => { isDragging = true; item.classList.add('dragging'); });
         item.addEventListener('dragend', () => {
             item.classList.remove('dragging');
             saveCurrentOrder();
             setTimeout(() => { isDragging = false; }, 50);
         });
-
         item.addEventListener('dragover', (e) => {
             e.preventDefault();
             const draggingItem = document.querySelector('.dragging');
             if (!draggingItem || draggingItem === item) return;
-
             const rect = item.getBoundingClientRect();
-            const relX = e.clientX - rect.left;
-            const relY = e.clientY - rect.top;
-            
-            clearTimeout(dragTimeout);
-            dragTimeout = setTimeout(() => {
-                const isAfter = relX > rect.width / 2 || relY > rect.height / 2;
-                grid.insertBefore(draggingItem, isAfter ? item.nextSibling : item);
-            }, 0);
+            const isAfter = (e.clientX - rect.left) > rect.width / 2 || (e.clientY - rect.top) > rect.height / 2;
+            grid.insertBefore(draggingItem, isAfter ? item.nextSibling : item);
         });
     });
-
-    grid.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        const draggingItem = document.querySelector('.dragging');
-        if (draggingItem && e.target.classList.contains('empty')) {
-            grid.insertBefore(draggingItem, grid.querySelector('.item.empty'));
-        }
-    });
 }
 
-// --- LIGHTBOX PREVIEW ---
-function openPreview(idx) {
-    const item = gridData[idx];
-    if (!item || isDragging) return;
-    
-    const content = document.getElementById('lightboxContent');
-    const file = item.files[0];
-    const canvaOn = document.getElementById('canvaT').checked;
-    
-    content.innerHTML = ''; // Reset
+// --- UI & STATE MANAGEMENT ---
+function updateUI() { 
+    const states = {
+        bioT: document.getElementById('bioT').checked,
+        highT: document.getElementById('highT').checked,
+        mapT: document.getElementById('mapT').checked,
+        canvaT: document.getElementById('canvaT').checked,
+        customOrderT: document.getElementById('customOrderT').checked
+    };
 
-    if (canvaOn && file.url.includes('canva.com')) {
-        content.innerHTML = `<iframe src="${getCanvaEmbedUrl(file.url)}" allowfullscreen style="width:80vw; height:80vh; border:none; border-radius:8px;"></iframe>`;
-    } else if (file.isVideo) {
-        content.innerHTML = `<video src="${file.url}" controls autoplay loop></video>`;
-    } else {
-        content.innerHTML = `<img src="${file.url}" alt="Preview">`;
-    }
+    // Save states
+    Object.keys(states).forEach(key => localStorage.setItem(key, states[key]));
+
+    document.getElementById('bioSection').style.display = states.bioT ? 'flex' : 'none'; 
+    document.getElementById('highRow').style.display = states.highT ? 'flex' : 'none'; 
+    document.getElementById('colorManagerUI').style.display = states.mapT ? 'block' : 'none';
     
-    document.getElementById('previewLightbox').style.display = 'flex';
-}
-
-// --- HELPERS ---
-function getCanvaEmbedUrl(url) {
-    const match = url.match(/design\/([A-Za-z0-9_-]+)/);
-    return match ? `https://www.canva.com/design/${match[1]}/view?embed` : url.split('?')[0] + '/view?embed';
-}
-
-function saveCurrentOrder() {
-    const items = [...document.querySelectorAll('.item:not(.empty)')];
-    const orderIds = items.map(item => item.getAttribute('data-id'));
-    localStorage.setItem('customGridOrder', JSON.stringify(orderIds));
+    doRender(); 
 }
 
 function toggleStat(s) { 
@@ -445,47 +427,39 @@ function setPlat(p) {
     doRender(); 
 }
 
-function toggleOrder() { doRender(); }
-
-function toggleSettings(e) { 
-    if (e) e.stopPropagation(); 
-    document.getElementById('setMenu').classList.toggle('open'); 
+// --- PREVIEW & HELPERS ---
+function openPreview(idx) {
+    const item = gridData[idx];
+    if (!item || isDragging) return;
+    const content = document.getElementById('lightboxContent');
+    const file = item.files[0];
+    content.innerHTML = '';
+    if (document.getElementById('canvaT').checked && file.url.includes('canva.com')) {
+        content.innerHTML = `<iframe src="${getCanvaEmbedUrl(file.url)}" allowfullscreen style="width:80vw; height:80vh; border:none; border-radius:8px;"></iframe>`;
+    } else {
+        content.innerHTML = file.isVideo ? `<video src="${file.url}" controls autoplay loop></video>` : `<img src="${file.url}" alt="Preview">`;
+    }
+    document.getElementById('previewLightbox').style.display = 'flex';
 }
 
-function toggleMenu(id, e) { 
-    if (e) e.stopPropagation(); 
-    document.querySelectorAll('.dropdown-menu').forEach(m => {
-        if(m.id !== id) m.classList.remove('show');
-    });
-    document.getElementById(id).classList.toggle('show'); 
+function getCanvaEmbedUrl(url) {
+    const match = url.match(/design\/([A-Za-z0-9_-]+)/);
+    return match ? `https://www.canva.com/design/${match[1]}/view?embed` : url.split('?')[0] + '/view?embed';
 }
 
-// --- UPDATED updateUI ---
-function updateUI() { 
-    const bioOn = document.getElementById('bioT').checked;
-    const highOn = document.getElementById('highT').checked;
-    const mapOn = document.getElementById('mapT').checked;
-
-    // Save states so they persist after refresh
-    localStorage.setItem('bioT', bioOn);
-    localStorage.setItem('highT', highOn);
-    localStorage.setItem('mapT', mapOn);
-    localStorage.setItem('canvaT', document.getElementById('canvaT').checked);
-    localStorage.setItem('customOrderT', document.getElementById('customOrderT').checked);
-
-    document.getElementById('bioSection').style.display = bioOn ? 'flex' : 'none'; 
-    document.getElementById('highRow').style.display = highOn ? 'flex' : 'none'; 
-    document.getElementById('colorManagerUI').style.display = mapOn ? 'block' : 'none';
-    
-    doRender(); 
+function saveCurrentOrder() {
+    const items = [...document.querySelectorAll('.item:not(.empty)')];
+    const orderIds = items.map(item => item.getAttribute('data-id'));
+    localStorage.setItem('customGridOrder', JSON.stringify(orderIds));
 }
 
-// Brand Color Methods
+function toggleSettings(e) { if (e) e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
+function toggleMenu(id, e) { if (e) e.stopPropagation(); document.querySelectorAll('.dropdown-menu').forEach(m => m.id !== id && m.classList.remove('show')); document.getElementById(id).classList.toggle('show'); }
+
+// Brand Color Logic
 window.brandColors = ["#FFD1DC", "#AEEEEE"];
 window.generateRandomMap = () => { window.shuffledIndices = Array.from({ length: 300 }, () => Math.floor(Math.random() * window.brandColors.length)); };
 window.updateColor = (idx, val) => { window.brandColors[idx] = val; doRender(); };
-window.addColor = (e) => { if(e) e.stopPropagation(); window.brandColors.push("#E5E5E5"); window.generateRandomMap(); window.renderColorControls(); doRender(); };
-window.removeColor = (idx, e) => { if(e) e.stopPropagation(); window.brandColors.splice(idx, 1); window.renderColorControls(); doRender(); };
 window.renderColorControls = () => {
     const container = document.getElementById('colorList');
     if (!container) return;
