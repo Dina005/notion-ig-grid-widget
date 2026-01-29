@@ -13,15 +13,14 @@
     <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-/* --- ROOT & THEME --- */
+/* --- GLOBAL STYLES & VARIABLES --- */
 :root {
   --bg: #ffffff;
   --text: #262626;
   --text-muted: #8e8e8e;
   --border: #dbdbdb;
   --accent: #0095f6;
-  --white: #ffffff;
-  --radius: 8px;
+  --fb-gray: #fafafa;
 }
 
 body {
@@ -29,36 +28,32 @@ body {
   background-color: var(--bg);
   color: var(--text);
   margin: 0;
-  padding: 20px;
-  line-height: 1.5;
+  padding: 0;
+  overflow-x: hidden;
 }
 
-/* --- NAVIGATION & DROPDOWNS --- */
+/* --- NAVIGATION & DROPDOWN --- */
 .top-bar {
+  max-width: 935px;
+  margin: 0 auto;
+  padding: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 935px;
-  margin: 0 auto 20px auto;
 }
 
 .icon-btn {
-  background: #000000;
-  color: white;
-  border: none;
-  border-radius: var(--radius);
-  padding: 8px 16px;
-  cursor: pointer;
-  font-weight: 700;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 5px 12px;
+  font-weight: 600;
   font-size: 14px;
-  transition: opacity 0.2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
-
-.icon-btn:hover {
-  opacity: 0.8;
-}
-
-.dropdown { position: relative; display: inline-block; }
 
 .dropdown-menu {
   position: absolute;
@@ -66,38 +61,158 @@ body {
   left: 0;
   background: white;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   display: none;
   z-index: 1000;
-  min-width: 160px;
-  margin-top: 5px;
+  min-width: 170px;
+  margin-top: 8px;
 }
 
 .dropdown-menu.show { display: block; }
 
 .dropdown-item {
-  padding: 10px 15px;
+  padding: 10px 16px;
   cursor: pointer;
   font-size: 14px;
+  transition: background 0.2s;
+}
+
+.dropdown-item:hover { background: var(--fb-gray); }
+
+/* --- BIO SECTION (Original Professional Layout) --- */
+.profile-container {
+  max-width: 935px;
+  margin: 0 auto 44px auto;
   display: flex;
+  padding: 0 20px;
+  gap: 60px; /* Space between PFP and Text */
   align-items: center;
 }
 
-.dropdown-item:hover { background: #fafafa; }
+#pfpImg {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.profile-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+#bioUser {
+  font-size: 28px;
+  font-weight: 300;
+  margin: 0 0 15px 0;
+}
+
+#bioDisplay {
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 2px;
+}
+
+#bioDesc {
+  font-size: 16px;
+  margin: 0;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+#bioLink {
+  color: #00376b;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+/* --- HIGHLIGHTS --- */
+#highRow {
+  max-width: 935px;
+  margin: 0 auto 44px auto;
+  padding: 0 20px;
+  display: flex;
+  gap: 25px;
+  overflow-x: auto;
+  scrollbar-width: none; /* Hide scrollbar Firefox */
+}
+#highRow::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome/Safari */
+
+.h-item {
+  flex-shrink: 0;
+  text-align: center;
+  width: 85px;
+}
+
+.h-circle {
+  width: 77px;
+  height: 77px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  padding: 3px;
+  background: white;
+  margin: 0 auto;
+}
+
+.h-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.h-name {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- THE GRID --- */
+#grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  max-width: 935px;
+  margin: 0 auto;
+  padding: 0 20px 50px 20px;
+}
+
+.item {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--fb-gray);
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.item img, .item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
 /* --- SETTINGS MENU --- */
 .settings-menu {
-  position: absolute;
+  position: fixed;
   top: 70px;
   right: 20px;
   width: 300px;
-  background: var(--white);
+  background: white;
   border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
   padding: 20px;
-  display: none; 
+  display: none;
   z-index: 2000;
 }
 
@@ -108,12 +223,39 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
-  font-weight: 600;
+  border-bottom: 1px solid var(--fb-gray);
 }
 
-/* --- BRAND PALETTE STYLING --- */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #dbdbdb;
+  transition: .3s;
+  border-radius: 34px;
+}
+input:checked + .slider { background-color: #4cd964; }
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+input:checked + .slider:before { transform: translateX(18px); }
+
+/* --- BRAND PALETTE --- */
 #colorList {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -125,169 +267,79 @@ body {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  border: 2px solid #eee;
+  border: 2px solid white;
+  box-shadow: 0 0 0 1px var(--border);
   position: relative;
-  overflow: visible; /* Show the delete X */
   cursor: pointer;
 }
 
 .color-swatch-wrapper input[type="color"] {
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  border: none;
-  padding: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
   cursor: pointer;
-  background: none;
 }
 
 .delete-color {
   position: absolute;
-  top: -5px;
-  right: -5px;
+  top: -6px;
+  right: -6px;
   background: #ff4d4d;
   color: white;
-  border-radius: 50%;
   width: 18px;
   height: 18px;
+  border-radius: 50%;
   font-size: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  z-index: 5;
   border: 2px solid white;
 }
 
-/* --- TOGGLE SWITCHES --- */
-.switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider {
-  position: absolute;
-  cursor: pointer;
-  inset: 0;
-  background-color: #ccc;
-  transition: .4s;
-  border-radius: 24px;
-}
-input:checked + .slider { background-color: #4cd964; }
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 18px;
-  width: 18px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: .4s;
-  border-radius: 50%;
-}
-input:checked + .slider:before { transform: translateX(20px); }
-
-/* --- MAIN GRID --- */
-#grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 3px;
-  max-width: 935px;
-  margin: 0 auto;
-}
-
-.item {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  background: #f0f0f0;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.item[draggable="true"]:active {
-  cursor: grabbing;
-  transform: scale(0.95);
-  z-index: 10;
-}
-
-.item-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  transition: opacity 0.2s;
-  z-index: 5;
-  padding: 10px;
-  text-align: center;
-}
-
-.item:hover .item-overlay { opacity: 1; }
-
-.ov-pillar { font-size: 10px; font-weight: 900; letter-spacing: 1px; margin-bottom: 5px; }
-.ov-title { font-size: 12px; font-weight: 600; line-height: 1.2; }
-
-/* --- CAROUSEL --- */
-.carousel-track { display: flex; width: 100%; height: 100%; }
-.slide { min-width: 100%; height: 100%; }
-.slide img, .slide video { width: 100%; height: 100%; object-fit: cover; }
-.slide iframe { width: 100%; height: 100%; border: none; }
-
-/* --- BIO & HIGHLIGHTS --- */
-#bioSection { margin-bottom: 40px; }
-#highRow {
-  display: flex;
-  gap: 15px;
-  overflow-x: auto;
-  padding: 10px 0;
-  scrollbar-width: none;
-}
-.h-item { flex-shrink: 0; width: 75px; text-align: center; cursor: pointer; }
-.h-circle {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  border: 1px solid var(--border);
-  padding: 3px;
-  margin: 0 auto;
-}
-.h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-.h-name { font-size: 12px; font-weight: 600; margin-top: 8px; overflow: hidden; text-overflow: ellipsis; }
-
-/* --- LIGHTBOX --- */
+/* --- LIGHTBOX & OVERLAYS --- */
 #previewLightbox {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.9);
+  background: rgba(0,0,0,0.85);
   display: none;
   justify-content: center;
   align-items: center;
   z-index: 3000;
 }
-.lb-content { width: 90%; max-width: 450px; }
+
+.lb-content {
+  width: 100%;
+  max-width: 400px;
+  background: black;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* --- DRAG FEEDBACK --- */
+.item[draggable="true"]:active {
+  opacity: 0.6;
+  transform: scale(0.98);
+}
         
     </style>
 </head>
 <body>
-<div class="top-bar">
+
+    <div class="top-bar">
+        <div class="dropdown">
+            <button class="icon-btn" onclick="window.toggleMenu('platMenu', event)">
+                <span id="platCurrent">All Platforms</span> <span style="font-size: 10px; margin-left: 5px;">▼</span>
+            </button>
+            <div id="platMenu" class="dropdown-menu">
+                </div>
+        </div>
+        
         <div style="display: flex; gap: 10px;">
             <button class="icon-btn" onclick="location.reload()">Refresh</button>
-            
-            <div class="dropdown">
-                <button class="icon-btn" onclick="window.toggleMenu('platMenu', event)">
-                    <span id="platCurrent">All Platforms</span>
-                </button>
-                <div id="platMenu" class="dropdown-menu">
-                    </div>
-            </div>
+            <button class="icon-btn" onclick="window.toggleSettings(event)">Settings •••</button>
         </div>
-
-        <button class="icon-btn" onclick="window.toggleSettings(event)" style="border-radius: 50%; width: 40px; height: 40px; padding: 0;">•••</button>
     </div>
 
     <div class="settings-menu" id="setMenu" onclick="event.stopPropagation()">
@@ -330,24 +382,29 @@ input:checked + .slider:before { transform: translateX(20px); }
         <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px;">
             <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Brand Palette</div>
             
-            <div id="colorList"></div>
+            <div id="colorList">
+                </div>
             
-            <button class="icon-btn" style="width: 100%; background: #f0f0f0; color: black; margin-top: 5px;" onclick="window.addColor(event)">+ Add Color</button>
+            <button class="icon-btn" style="width: 100%; justify-content: center; margin-top: 10px;" onclick="window.addColor(event)">+ Add Color</button>
             
-            <button id="resetOrderBtn" class="icon-btn" style="width: 100%; margin-top: 10px; background: #ffebeb; color: #ff4d4d; display: none;" onclick="window.resetGridOrder()">Reset Custom Order</button>
+            <button id="resetOrderBtn" class="icon-btn" style="width: 100%; margin-top: 10px; background: #ffebeb; color: #ff4d4d; border-color: #ffcccc; justify-content: center; display: none;" onclick="window.resetGridOrder()">Reset Grid Order</button>
         </div>
     </div>
 
-    <div id="bioSection" style="display: none; flex-direction: column; align-items: center; text-align: center; margin-bottom: 30px; padding: 0 20px;">
+    <div id="bioSection" class="profile-container" style="display: none;">
         <img id="pfpImg" src="" alt="Profile Picture">
-        <h2 id="bioUser"></h2>
-        <div id="bioDisplay"></div>
-        <p id="bioDesc"></p>
-        <a id="bioLink" href="#" target="_blank"></a>
+        <div class="profile-info">
+            <h2 id="bioUser"></h2>
+            <div id="bioDisplay"></div>
+            <p id="bioDesc"></p>
+            <a id="bioLink" href="#" target="_blank"></a>
+        </div>
     </div>
 
-    <div id="highRow" style="display: none; margin: 0 auto 30px auto; max-width: 935px; padding: 0 10px;">
+    <div id="highRow" style="display: none;">
         </div>
+
+    <hr style="max-width: 935px; border: 0; border-top: 1px solid var(--border); margin: 0 auto 20px auto;">
 
     <div id="grid">
         </div>
@@ -380,7 +437,7 @@ async function init() {
         const data = await res.json();
         gridData = data.grid || [];
         
-        // Initial status filter setup
+        // Setup Filter Logic
         activeStats = [...new Set(gridData.map(i => i.status))];
         
         // Apply Custom Drag Order
@@ -399,17 +456,17 @@ async function init() {
         renderColorControls(); 
         updateUI(); 
     } catch (e) { 
-        console.error("Init Failed:", e); 
+        console.error("Initialization Failed:", e); 
     }
 }
 
-// --- 2. COLOR PALETTE LOGIC ---
+// --- 2. COLOR PALETTE MANAGER ---
 window.renderColorControls = () => {
     const list = document.getElementById('colorList');
     if (!list) return;
 
     list.innerHTML = window.brandColors.map((color, idx) => `
-        <div class="color-swatch-wrapper">
+        <div class="color-swatch-wrapper" style="background-color: ${color}">
             <input type="color" value="${color}" onchange="window.updateColor(${idx}, this.value)">
             <div class="delete-color" onclick="window.removeColor(${idx}, event)">×</div>
         </div>
@@ -440,7 +497,7 @@ window.removeColor = (idx, e) => {
     }
 };
 
-// --- 3. GRID RENDERING ---
+// --- 3. GRID & MAP RENDERING ---
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
@@ -463,8 +520,9 @@ function doRender() {
             return `<div class="item" ${dragAttrs} style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; text-align:center; padding:15px; font-size:11px; text-transform:uppercase;">${item.name}</div>`;
         }
 
-        const slidesHtml = (item.files || []).map(f => {
-            if (canvaOn && f.url?.includes('canva.com')) {
+        const files = item.files || [];
+        const slidesHtml = files.map(f => {
+            if (canvaOn && f.url && f.url.includes('canva.com')) {
                 const embedUrl = f.url.split('?')[0].replace('/design/', '/view?embed=');
                 return `<div class="slide"><iframe src="${embedUrl}" allowfullscreen></iframe></div>`;
             }
@@ -474,23 +532,21 @@ function doRender() {
         return `
             <div class="item" ${dragAttrs} onclick="openPreview(${dataIdx})">
                 <div class="item-overlay">
-                    <div class="ov-pillar">${item.pillar}</div>
+                    <div class="ov-pillar">${item.pillar || 'POST'}</div>
                     <div class="ov-title">${item.name}</div>
                 </div>
                 <div class="carousel-track">${slidesHtml || '<div class="slide" style="background:#eee;"></div>'}</div>
             </div>`;
     }).join('');
-    
-    renderStatusOptions();
 }
 
-// --- 4. DRAG & DROP ---
+// --- 4. DRAG & DROP LOGIC ---
 window.handleDragStart = (e, index) => { draggedIdx = index; e.dataTransfer.effectAllowed = 'move'; };
 window.handleDrop = (e, targetIdx) => {
     e.preventDefault();
     if (draggedIdx === null || draggedIdx === targetIdx) return;
-    const item = gridData.splice(draggedIdx, 1)[0];
-    gridData.splice(targetIdx, 0, item);
+    const movedItem = gridData.splice(draggedIdx, 1)[0];
+    gridData.splice(targetIdx, 0, movedItem);
     localStorage.setItem('customGridOrder', JSON.stringify(gridData.map(i => i.name)));
     doRender();
 };
@@ -503,22 +559,26 @@ window.resetGridOrder = () => {
 // --- 5. UI UTILS ---
 function updateUI() {
     ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'].forEach(id => {
-        localStorage.setItem(id, document.getElementById(id).checked);
+        const el = document.getElementById(id);
+        if (el) localStorage.setItem(id, el.checked);
     });
+    
     document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none';
     document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none';
     document.getElementById('resetOrderBtn').style.display = document.getElementById('customOrderT').checked ? 'block' : 'none';
+    
     doRender();
 }
 
 function renderProfile(data) {
     const b = data.bio;
-    document.getElementById('pfpImg').src = b.profilePicture;
-    document.getElementById('bioUser').innerText = b.username;
-    document.getElementById('bioDisplay').innerText = b.displayName;
-    document.getElementById('bioDesc').innerText = b.bioText;
-    document.getElementById('bioLink').innerText = b.linkDisplay;
-    document.getElementById('bioLink').href = b.linkUrl;
+    if (!b) return;
+    document.getElementById('pfpImg').src = b.profilePicture || "";
+    document.getElementById('bioUser').innerText = b.username || "";
+    document.getElementById('bioDisplay').innerText = b.displayName || "";
+    document.getElementById('bioDesc').innerText = b.bioText || "";
+    document.getElementById('bioLink').innerText = b.linkDisplay || "";
+    document.getElementById('bioLink').href = b.linkUrl || "#";
 
     if (data.highlights) {
         document.getElementById('highRow').innerHTML = data.highlights.map(h => `
@@ -529,7 +589,33 @@ function renderProfile(data) {
     }
 }
 
-function openStory(groupName) {
+function renderPlatformFilter() {
+    const plats = [...new Set(gridData.flatMap(i => i.platforms))];
+    const menu = document.getElementById('platMenu');
+    if (menu) {
+        menu.innerHTML = `<div class="dropdown-item" onclick="setPlat('all')">All Platforms</div>` + 
+            plats.map(p => `<div class="dropdown-item" onclick="setPlat('${p}')">${p.toUpperCase()}</div>`).join('');
+    }
+}
+
+window.setPlat = (p) => {
+    currentPlat = p;
+    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.toUpperCase();
+    doRender();
+};
+
+window.openPreview = (idx) => {
+    const item = gridData[idx];
+    const content = document.getElementById('lightboxContent');
+    content.innerHTML = `<div class="lb-track" style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory;">
+        ${item.files.map(f => `<div class="lb-slide" style="min-width:100%; scroll-snap-align:start;">
+            ${f.isVideo ? `<video src="${f.url}" controls autoplay style="width:100%"></video>` : `<img src="${f.url}" style="width:100%">`}
+        </div>`).join('')}
+    </div>`;
+    document.getElementById('previewLightbox').style.display = 'flex';
+};
+
+window.openStory = (groupName) => {
     const stories = gridData.filter(i => i.type === "Story" && i.highlightGroup === groupName);
     const allFiles = stories.flatMap(s => s.files);
     const content = document.getElementById('lightboxContent');
@@ -539,30 +625,16 @@ function openStory(groupName) {
         </div>`).join('')}
     </div>`;
     document.getElementById('previewLightbox').style.display = 'flex';
-}
-
-function renderPlatformFilter() {
-    const plats = [...new Set(gridData.flatMap(i => i.platforms))];
-    document.getElementById('platMenu').innerHTML = `<div class="dropdown-item" onclick="setPlat('all')">All Platforms</div>` + 
-        plats.map(p => `<div class="dropdown-item" onclick="setPlat('${p}')">${p.toUpperCase()}</div>`).join('');
-}
-
-window.setPlat = (p) => {
-    currentPlat = p;
-    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.toUpperCase();
-    doRender();
 };
-
-function renderStatusOptions() {
-    const stats = [...new Set(gridData.map(i => i.status))];
-    document.getElementById('statusOptions')?.remove(); // Avoid duplicates
-    // This part assumes a status menu exists; adding a simple version
-}
 
 window.toggleSettings = (e) => { e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); };
 window.toggleMenu = (id, e) => { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); };
 window.closeLightbox = () => { document.getElementById('previewLightbox').style.display = 'none'; };
-window.onclick = () => { document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show')); document.getElementById('setMenu').classList.remove('open'); };
+
+window.onclick = () => {
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+    document.getElementById('setMenu').classList.remove('open');
+};
 
 init();
     </script>
