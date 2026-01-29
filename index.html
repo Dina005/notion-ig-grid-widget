@@ -591,22 +591,24 @@ window.onclick = () => {
 window.generateRandomMap = () => { window.shuffledIndices = Array.from({length: 100}, () => Math.floor(Math.random() * 50)); };
 // Add this to the bottom of your script
 function openStory(groupName) {
-    console.log("Attempting to open highlight:", groupName);
+    console.log("Looking for stories in group:", groupName);
     
-    // Filter stories
+    // Filter the gridData for items where Type is 'Story' 
+    // AND the highlightGroup matches the name of the circle clicked
     const stories = gridData.filter(i => 
         i.type === "Story" && 
         String(i.highlightGroup).trim() === String(groupName).trim()
     );
-    
+
     if (stories.length === 0) {
-        alert("No stories found for " + groupName + ". Check if 'Type' is 'Story' in Notion.");
+        alert("No stories found for '" + groupName + "'. Make sure 'Type' is set to 'Story' in Notion for these items.");
         return;
     }
 
     const lb = document.getElementById('previewLightbox');
     const content = document.getElementById('lightboxContent');
     
+    // Combine all files from all matching stories
     const allFiles = stories.flatMap(s => s.files);
 
     content.innerHTML = `
@@ -623,7 +625,7 @@ function openStory(groupName) {
     lb.style.display = 'flex';
 }
 
-// Crucial: Make sure the browser can find it
+// Make it global so the HTML onclick can find it
 window.openStory = openStory;
 init();
     </script>
