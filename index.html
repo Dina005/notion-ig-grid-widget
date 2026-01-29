@@ -351,9 +351,8 @@ const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [], isDragging = false;
 let currentLightboxItemIdx = 0, currentSlideIdx = 0;
 
-// --- 1. INITIALIZATION (Flicker-Free & Persistent) ---
+// --- 1. INITIALIZATION ---
 async function init() {
-    // A. Restore Visual Toggles (Bio, Highlights, etc.)
     const toggleIds = ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'];
     toggleIds.forEach(id => {
         const savedState = localStorage.getItem(id);
@@ -361,12 +360,10 @@ async function init() {
         if (savedState !== null && el) el.checked = savedState === 'true';
     });
 
-    // B. Restore Filter Bar Visibility preference
     if (localStorage.getItem('filterRowActive') === 'true') {
         document.getElementById('filterRow').classList.add('active');
     }
 
-    // C. Restore Filter Choices
     const savedPlat = localStorage.getItem('currentPlat');
     if (savedPlat) {
         currentPlat = savedPlat;
@@ -376,7 +373,6 @@ async function init() {
         }
     }
 
-    // D. Apply UI visibility immediately to stop flicker
     updateUI(); 
 
     try {
@@ -384,10 +380,8 @@ async function init() {
         const data = await res.json();
         gridData = data.grid || [];
         
-        // E. Populate Profile & Counts
         renderProfile(data);
 
-        // F. Restore Status Filter choices
         const stats = [...new Set(gridData.map(i => i.status))];
         const savedStats = localStorage.getItem('activeStats');
         activeStats = savedStats ? JSON.parse(savedStats) : [...stats];
@@ -411,7 +405,7 @@ async function init() {
     } catch (e) { console.error("Initialization Failed:", e); }
 }
 
-// --- 2. CORE RENDERING ENGINE ---
+// --- 2. CORE RENDERING ---
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
@@ -482,7 +476,7 @@ function doRender() {
     if (isCustom) initDragging();
 }
 
-// --- 3. CAROUSEL & SLIDE LOGIC ---
+// --- 3. GRID SLIDE MOVEMENT ---
 function moveSlide(dataIdx, dir, event) {
     if (event) event.stopPropagation();
     const track = document.getElementById(`track-${dataIdx}`);
@@ -497,7 +491,7 @@ function moveSlide(dataIdx, dir, event) {
     track.style.transform = `translateX(-${idx * 100}%)`;
 }
 
-// --- 4. PREVIEW & LIGHTBOX CAROUSEL ---
+// --- 4. PREVIEW LIGHTBOX WITH SCROLL & KEYS ---
 function openPreview(idx) {
     const item = gridData[idx];
     if (!item || isDragging) return;
@@ -506,9 +500,7 @@ function openPreview(idx) {
     currentSlideIdx = 0;
     const lightbox = document.getElementById('previewLightbox');
     
-    // Clean up existing lightbox navigation arrows
     document.querySelectorAll('.lb-nav').forEach(a => a.remove());
-
     renderLightboxSlide();
     lightbox.style.display = 'flex';
 }
@@ -537,13 +529,37 @@ function renderLightboxSlide() {
 
 function moveLightbox(dir) {
     const item = gridData[currentLightboxItemIdx];
+    if (!item || item.files.length <= 1) return;
     currentSlideIdx += dir;
     if (currentSlideIdx >= item.files.length) currentSlideIdx = 0;
     if (currentSlideIdx < 0) currentSlideIdx = item.files.length - 1;
     renderLightboxSlide();
 }
 
-// --- 5. UI, FILTERS & UTILITIES ---
+// NEW: Add Event Listeners for Scroll and Keys in Preview
+window.addEventListener('keydown', (e) => {
+    if (document.getElementById('previewLightbox').style.display === 'flex') {
+        if (e.key === 'ArrowRight') moveLightbox(1);
+        if (e.key === 'ArrowLeft') moveLightbox(-1);
+        if (e.key === 'Escape') document.getElementById('previewLightbox').style.display = 'none';
+    }
+});
+
+let lastScrollTime = 0;
+window.addEventListener('wheel', (e) => {
+    const lightbox = document.getElementById('previewLightbox');
+    if (lightbox.style.display === 'flex') {
+        const now = Date.now();
+        if (now - lastScrollTime < 600) return; // Debounce scroll speed
+        
+        if (Math.abs(e.deltaX) > 30 || Math.abs(e.deltaY) > 30) {
+            moveLightbox(e.deltaX > 0 || e.deltaY > 0 ? 1 : -1);
+            lastScrollTime = now;
+        }
+    }
+}, { passive: true });
+
+// --- 5. UI & PERSISTENCE (REST OF SCRIPT) ---
 function updateUI() { 
     const states = {
         bioT: document.getElementById('bioT').checked,
@@ -553,11 +569,9 @@ function updateUI() {
         customOrderT: document.getElementById('customOrderT').checked
     };
     Object.keys(states).forEach(key => localStorage.setItem(key, states[key]));
-
     document.getElementById('bioSection').style.display = states.bioT ? 'flex' : 'none'; 
     document.getElementById('highRow').style.display = states.highT ? 'flex' : 'none'; 
     document.getElementById('colorManagerUI').style.display = states.mapT ? 'block' : 'none';
-    
     if(gridData.length > 0) doRender(); 
 }
 
@@ -610,7 +624,6 @@ function renderProfile(data) {
     document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
 }
 
-// --- 6. DRAG & DROP ENGINE ---
 function initDragging() {
     const grid = document.getElementById('grid');
     const items = grid.querySelectorAll('.item:not(.empty)');
@@ -645,7 +658,6 @@ function getCanvaEmbedUrl(url) {
 
 function toggleSettings(e) { if (e) e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
 
-// Brand Color Mapping
 window.brandColors = ["#FFD1DC", "#AEEEEE"];
 window.generateRandomMap = () => { window.shuffledIndices = Array.from({ length: 300 }, () => Math.floor(Math.random() * window.brandColors.length)); };
 window.updateColor = (idx, val) => { window.brandColors[idx] = val; doRender(); };
