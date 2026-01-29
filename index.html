@@ -152,6 +152,22 @@
     opacity: 0.7; 
     transform: scale(1.1); 
 }
+/* Drag and Drop Styles */
+.item.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+    outline: 2px solid white;
+    z-index: 100;
+}
+
+.item {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    cursor: grab; /* Shows the hand icon */
+}
+
+.item:active {
+    cursor: grabbing;
+}
     </style>
 </head>
 <body>
@@ -394,12 +410,27 @@ function toggleStat(s) {
 }
 
 // Rendering Logic
+// 1. Updated Render with Order Memory
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
     const canvaOn = document.getElementById('canvaT').checked;
-    const filtered = gridData.filter(i => (currentPlat === 'all' || i.platforms.includes(currentPlat)) && activeStats.includes(i.status));
     
+    // Initial Filter
+    let filtered = gridData.filter(i => (currentPlat === 'all' || i.platforms.includes(currentPlat)) && activeStats.includes(i.status));
+
+    // APPLY CUSTOM ORDER (if it exists)
+    const savedOrder = localStorage.getItem('customGridOrder');
+    if (savedOrder) {
+        const orderIds = JSON.parse(savedOrder);
+        filtered.sort((a, b) => {
+            // Using the 'id' property or 'url' as a unique fingerprint
+            let indexA = orderIds.indexOf(a.files[0].url);
+            let indexB = orderIds.indexOf(b.files[0].url);
+            return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+        });
+    }
+
     if (filtered.length === 0) {
         grid.innerHTML = '<p style="grid-column: span 3; text-align:center; padding:50px; color:#999;">no content</p>';
         return;
@@ -407,30 +438,72 @@ function doRender() {
 
     grid.innerHTML = filtered.map((item, i) => {
         const dataIdx = gridData.indexOf(item);
-        if (isMap) {
-            const color = brandColors[shuffledIndices[i % brandColors.length]];
-            return `<div class="item" onclick="openPreview(${dataIdx})" style="background:${color}; cursor:pointer; display:flex; align-items:center; justify-content:center;">
-                        <span style="color:white; font-weight:800; font-size:12px; text-transform:uppercase; text-align:center;">${item.status}</span>
-                    </div>`;
-        }
+        const uniqueId = item.files[0].url; // Using URL as a unique key
 
-        const slides = item.files.map(f => {
-            if (canvaOn && f.url.includes('canva.com')) {
-                let base = getCanvaEmbedUrl(f.url);
-                return `<div class="slide"><iframe src="${base}" referrerpolicy="no-referrer"></iframe></div>`;
-            }
-            return `<div class="slide">
-                ${f.isVideo ? `<video src="${f.url}" loop muted playsinline autoplay></video>` : `<img src="${f.url}">`}
-            </div>`;
-        }).join('');
-
-        return `<div class="item" onclick="openPreview(${dataIdx})" style="cursor:pointer;">
+        // Basic Grid Item with draggable="true"
+        return `<div class="item" 
+                     draggable="true" 
+                     data-id="${uniqueId}" 
+                     onclick="openPreview(${dataIdx})" 
+                     style="cursor:grab; position:relative;">
             ${item.files.length > 1 ? `<div style="position:absolute; top:10px; right:10px; color:white; z-index:10; font-weight:bold; text-shadow:0 0 4px rgba(0,0,0,0.5)">▢▢</div>` : ''}
-            <div class="carousel-track">${slides}</div>
+            <div class="carousel-track">
+                ${item.files.map(f => {
+                    if (canvaOn && f.url.includes('canva.com')) {
+                        return `<div class="slide"><iframe src="${getCanvaEmbedUrl(f.url)}" referrerpolicy="no-referrer"></iframe></div>`;
+                    }
+                    return `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop muted playsinline autoplay></video>` : `<img src="${f.url}">`}</div>`;
+                }).join('')}
+            </div>
         </div>`;
     }).join('');
+
+    initDragging(); // Initialize the drag listeners after rendering
 }
 
+// 2. Drag and Drop Engine
+function initDragging() {
+    const grid = document.getElementById('grid');
+    const items = grid.querySelectorAll('.item');
+
+    items.forEach(item => {
+        item.addEventListener('dragstart', () => {
+            setTimeout(() => item.classList.add('dragging'), 0);
+        });
+
+        item.addEventListener('dragend', () => {
+            item.classList.remove('dragging');
+            saveCurrentOrder(); // Save to local storage when dropped
+        });
+    });
+
+    grid.addEventListener('dragover', e => {
+        e.preventDefault();
+        const draggingItem = document.querySelector('.dragging');
+        const siblings = [...grid.querySelectorAll('.item:not(.dragging)')];
+        
+        const nextSibling = siblings.find(sibling => {
+            const box = sibling.getBoundingClientRect();
+            // Check if mouse is past the midpoint of the sibling
+            return e.clientX <= box.left + box.width / 2 && e.clientY <= box.top + box.height / 2;
+        });
+
+        grid.insertBefore(draggingItem, nextSibling);
+    });
+}
+
+// 3. Save the new order to the browser
+function saveCurrentOrder() {
+    const items = [...document.querySelectorAll('.item')];
+    const orderIds = items.map(item => item.getAttribute('data-id'));
+    localStorage.setItem('customGridOrder', JSON.stringify(orderIds));
+}
+
+// 4. Helper to reset if needed
+function resetOrder() {
+    localStorage.removeItem('customGridOrder');
+    location.reload();
+}
 // Global click handler to close menus
 window.onclick = function(event) {
     if (!event.target.closest('.dropdown-container') && !event.target.closest('.settings-menu') && !event.target.closest('.icon-btn')) {
