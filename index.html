@@ -277,6 +277,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [], dragItem = null;
 
+// --- 1. INITIALIZATION ---
 async function init() {
     ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'].forEach(id => {
         const saved = localStorage.getItem(id);
@@ -284,23 +285,32 @@ async function init() {
         if (saved !== null && el) el.checked = saved === 'true';
     });
 
+    window.addEventListener('scroll', () => {
+        const topBar = document.getElementById('stickyTopBar');
+        if (window.scrollY > 20) topBar.classList.add('scrolled');
+        else topBar.classList.remove('scrolled');
+    });
+
     try {
         const res = await fetch(API);
         const data = await res.json();
         gridData = data.grid || [];
         
-        renderProfile(data);
-        // Initialize active stats so filters work immediately
+        // Ensure all statuses are active by default on first load
         activeStats = [...new Set(gridData.map(i => i.status))];
         
+        renderProfile(data);
         window.generateRandomMap();
         window.renderColorControls();
-        doRender(); 
+        updateUI(); // Calls doRender internally
     } catch (e) { console.error("Init Failed:", e); }
 }
 
+// --- 2. GRID RENDERING ---
 function doRender() {
     const grid = document.getElementById('grid');
+    if (!grid) return;
+
     const isMap = document.getElementById('mapT').checked;
     const isCustom = document.getElementById('customOrderT').checked;
     const canvaOn = document.getElementById('canvaT').checked;
@@ -312,15 +322,25 @@ function doRender() {
         return isPost && platMatch && statMatch;
     });
 
+    if (isCustom) {
+        const savedOrder = JSON.parse(localStorage.getItem('gridOrder') || "[]");
+        if (savedOrder.length > 0) {
+            filtered.sort((a, b) => {
+                const indexA = savedOrder.indexOf(a.files[0]?.url);
+                const indexB = savedOrder.indexOf(b.files[0]?.url);
+                return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+            });
+        }
+        if(document.getElementById('resetOrderBtn')) document.getElementById('resetOrderBtn').style.display = 'block';
+    }
+
     let html = filtered.map((item, idx) => {
         const dataIdx = gridData.indexOf(item);
         const files = item.files || [];
         const hasMult = files.length > 1;
         const mainUrl = files[0]?.url;
-        
-        // Formatting Date for Hover
         const dateStr = item.date ? new Date(item.date).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : 'Draft';
-        const pillarStr = item.pillar || 'General';
+        const pillarStr = item.pillar || 'Content';
 
         if (isMap) {
             const color = window.brandColors[window.shuffledIndices[idx % window.shuffledIndices.length] % window.brandColors.length];
@@ -328,16 +348,19 @@ function doRender() {
         }
 
         const slidesHtml = files.map(f => {
-            // CANVA RENDERING ENGINE
+            // FIX: Canva Embed Transformation
             if (canvaOn && f.url.includes('canva.com')) {
                 const embedUrl = f.url.split('?')[0].replace('/design/', '/view?embed=');
-                return `<div class="slide"><iframe src="${embedUrl}" allowfullscreen></iframe></div>`;
+                return `<div class="slide"><iframe src="${embedUrl}" allowfullscreen style="border:none; width:100%; height:100%;"></iframe></div>`;
             }
             return `<div class="slide">${f.isVideo ? `<video src="${f.url}" muted loop playsinline autoplay></video>` : `<img src="${f.url}">`}</div>`;
         }).join('');
 
         return `
             <div class="item" draggable="${isCustom}" 
+                 ondragstart="handleDragStart(event, '${mainUrl}')" 
+                 ondrop="handleDrop(event, '${mainUrl}')" 
+                 ondragover="event.preventDefault()" 
                  onclick="openPreview(${dataIdx})">
                 
                 <div class="item-overlay">
@@ -347,7 +370,6 @@ function doRender() {
                 </div>
 
                 <div class="carousel-track" id="track-${dataIdx}" data-idx="0">${slidesHtml}</div>
-                
                 ${hasMult ? `
                     <button class="nav-btn prev-btn" onclick="moveSlide(${dataIdx}, -1, event)">‹</button>
                     <button class="nav-btn next-btn" onclick="moveSlide(${dataIdx}, 1, event)">›</button>
@@ -360,24 +382,28 @@ function doRender() {
     renderStatusOptions();
 }
 
-// --- Status Filter as Checkbox ---
+// --- 3. STATUS FILTER AS CHECKBOX ---
 function renderStatusOptions() {
     const stats = [...new Set(gridData.map(i => i.status))];
     const container = document.getElementById('statusOptions');
+    if (!container) return;
+
     container.innerHTML = stats.map(s => {
         const isActive = activeStats.includes(s);
+        const count = gridData.filter(item => item.status === s && item.type !== 'Story').length;
         return `
-        <div class="dropdown-item" onclick="toggleStat('${s}', event)">
-            <div style="display:flex; align-items:center; gap:10px;">
+        <div class="dropdown-item ${isActive ? 'active' : ''}" onclick="toggleStat('${s}', event)">
+            <div style="display:flex; align-items:center; gap:8px;">
                 <input type="checkbox" ${isActive ? 'checked' : ''} style="pointer-events:none;">
                 <span class="status-indicator" style="background:${getStatusColor(s)}"></span>
                 <span>${s}</span>
             </div>
+            <span class="count-badge">${count}</span>
         </div>`;
     }).join('');
 }
 
-// --- Preview & Story Fix ---
+// --- 4. PREVIEW & HIGHLIGHT FIX ---
 function openPreview(idx) {
     const item = gridData[idx];
     const lb = document.getElementById('previewLightbox');
@@ -408,7 +434,7 @@ function openStory(groupName) {
 }
 
 function moveSlide(idx, dir, e) {
-    e.stopPropagation(); // Stops the preview from opening when clicking arrows
+    e.stopPropagation(); // Prevents preview from opening
     const track = document.getElementById(`track-${idx}`);
     const slides = track.querySelectorAll('.slide');
     let current = parseInt(track.dataset.idx || 0);
@@ -417,11 +443,72 @@ function moveSlide(idx, dir, e) {
     track.style.transform = `translateX(-${current * 100}%)`;
 }
 
-// Global functions needed for HTML buttons
+// --- 5. DRAG, COLOR, UI HELPERS (Unchanged but validated) ---
+function handleDragStart(e, url) {
+    dragItem = url;
+    e.dataTransfer.effectAllowed = "move";
+    e.target.closest('.item').classList.add('dragging');
+}
+
+function handleDrop(e, targetUrl) {
+    e.preventDefault();
+    document.querySelectorAll('.item').forEach(i => i.classList.remove('dragging'));
+    if (dragItem === targetUrl) return;
+    let currentOrder = JSON.parse(localStorage.getItem('gridOrder') || "[]");
+    if (currentOrder.length === 0) currentOrder = gridData.filter(i => i.type !== "Story").map(i => i.files[0]?.url);
+    const draggedIdx = currentOrder.indexOf(dragItem);
+    const targetIdx = currentOrder.indexOf(targetUrl);
+    if (draggedIdx > -1 && targetIdx > -1) {
+        currentOrder.splice(draggedIdx, 1);
+        currentOrder.splice(targetIdx, 0, dragItem);
+        localStorage.setItem('gridOrder', JSON.stringify(currentOrder));
+        doRender();
+    }
+}
+
+function updateUI() {
+    ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) localStorage.setItem(id, el.checked);
+    });
+    const bioS = document.getElementById('bioSection');
+    const highS = document.getElementById('highRow');
+    const colS = document.getElementById('colorManagerUI');
+    
+    if(bioS) bioS.style.display = document.getElementById('bioT').checked ? 'flex' : 'none';
+    if(highS) highS.style.display = document.getElementById('highT').checked ? 'flex' : 'none';
+    if(colS) colS.style.display = document.getElementById('mapT').checked ? 'block' : 'none';
+    doRender();
+}
+
+function getStatusColor(s) {
+    const sL = s.toLowerCase();
+    if (sL.includes('done') || sL.includes('post')) return '#34c759';
+    if (sL.includes('progress') || sL.includes('edit')) return '#0095f6';
+    if (sL.includes('idea') || sL.includes('draft')) return '#ffcc00';
+    return '#8e8e93';
+}
+
+function toggleStat(s, e) {
+    e.stopPropagation();
+    activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s];
+    doRender();
+}
+
+function setPlat(p) {
+    currentPlat = p;
+    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
+    doRender();
+}
+
+// Global functions for HTML
 window.toggleStat = toggleStat;
 window.moveSlide = moveSlide;
 window.openPreview = openPreview;
 window.openStory = openStory;
+window.setPlat = setPlat;
+window.toggleSettings = (e) => { e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); };
+window.toggleMenu = (id, e) => { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); };
 
 init();
     </script>
