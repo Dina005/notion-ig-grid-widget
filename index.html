@@ -176,6 +176,23 @@ input:checked + .slider:before { transform: translateX(20px); }
 @keyframes slideUp {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
+
+}
+        .lb-track { 
+    display: flex; 
+    overflow-x: auto; 
+    scroll-snap-type: x mandatory; 
+    -webkit-overflow-scrolling: touch;
+}
+.lb-slide { 
+    min-width: 100%; 
+    scroll-snap-align: start; 
+    display: flex; 
+    justify-content: center; 
+}
+#previewLightbox video, #previewLightbox img {
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
         
     </style>
