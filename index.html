@@ -292,10 +292,11 @@ input:checked + .slider:before { transform: translateX(20px); }
 </html>
     <script>
 const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
-let gridData = [], currentPlat = 'all', activeStats = [], dragItem = null;
+let gridData = [], currentPlat = 'all', activeStats = [], draggedIdx = null;
 
 // --- 1. INITIALIZATION ---
 async function init() {
+    // Load Toggle States
     ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'].forEach(id => {
         const saved = localStorage.getItem(id);
         const el = document.getElementById(id);
@@ -307,14 +308,29 @@ async function init() {
         const data = await res.json();
         gridData = data.grid || [];
         
-        // Set default active statuses
+        // 1. Set default active statuses from Notion data
         activeStats = [...new Set(gridData.map(i => i.status))];
         
+        // 2. Load Custom Order if it exists
+        const savedOrder = localStorage.getItem('customGridOrder');
+        if (savedOrder) {
+            const orderMap = JSON.parse(savedOrder);
+            gridData.sort((a, b) => {
+                const indexA = orderMap.indexOf(a.name);
+                const indexB = orderMap.indexOf(b.name);
+                return (indexA > -1 ? indexA : 999) - (indexB > -1 ? indexB : 999);
+            });
+        }
+
+        // 3. Setup Brand Colors for Map
+        window.brandColors = ['#E9C46A', '#F4A261', '#E76F51', '#264653', '#2A9D8F'];
+
         renderProfile(data);
-        renderPlatformFilter(); // FIX: Initialize platform dropdown
-        window.generateRandomMap();
+        renderPlatformFilter();
         updateUI(); 
-    } catch (e) { console.error("Init Failed:", e); }
+    } catch (e) { 
+        console.error("Initialization Failed:", e); 
+    }
 }
 
 // --- 2. PROFILE & HIGHLIGHTS ---
@@ -339,36 +355,32 @@ function renderProfile(data) {
     }
 }
 
-// FIX 1: Story Content Loading
 function openStory(groupName) {
     const stories = gridData.filter(i => i.type === "Story" && i.highlightGroup === groupName);
     if (stories.length === 0) return;
 
     const lb = document.getElementById('previewLightbox');
     const content = document.getElementById('lightboxContent');
-    
-    // Flatten all files from all stories in this group
     const allFiles = stories.flatMap(s => s.files);
 
     content.innerHTML = `
-        <div class="lb-track" style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory;">
+        <div class="lb-track" style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:10px;">
             ${allFiles.map(f => `
                 <div class="lb-slide" style="min-width:100%; display:flex; justify-content:center; scroll-snap-align:start;">
                     ${f.isVideo ? 
-                        `<video src="${f.url}" controls autoplay style="max-height:80vh; border-radius:12px;"></video>` : 
+                        `<video src="${f.url}" controls autoplay style="max-height:80vh; border-radius:12px; width:auto;"></video>` : 
                         `<img src="${f.url}" style="max-height:80vh; border-radius:12px; object-fit:contain;">`
                     }
                 </div>`).join('')}
         </div>`;
-    
     lb.style.display = 'flex';
 }
 
-// --- 3. FILTERING & GRID ---
-// FIX 2: Platform Filter Logic
+// --- 3. FILTERING & RENDER ---
 function renderPlatformFilter() {
     const plats = [...new Set(gridData.flatMap(i => i.platforms))];
     const menu = document.getElementById('platMenu');
+    if(!menu) return;
     menu.innerHTML = `<div class="dropdown-item" onclick="setPlat('all')">All Platforms</div>` + 
         plats.map(p => `<div class="dropdown-item" onclick="setPlat('${p}')">${p.toUpperCase()}</div>`).join('');
 }
@@ -376,15 +388,14 @@ function renderPlatformFilter() {
 window.setPlat = (p) => {
     currentPlat = p;
     document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.toUpperCase();
-    document.getElementById('platMenu').classList.remove('show');
     doRender();
 };
 
-// FIX 3: Toggles for Canva and Map
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
     const canvaOn = document.getElementById('canvaT').checked;
+    const isCustom = document.getElementById('customOrderT').checked;
 
     let filtered = gridData.filter(i => {
         const isPost = i.type !== "Story";
@@ -398,13 +409,18 @@ function doRender() {
         const files = item.files || [];
         const dateStr = item.date ? new Date(item.date).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : 'Draft';
 
+        // Base attributes for Drag & Drop
+        const dragAttrs = isCustom ? `draggable="true" ondragstart="handleDragStart(event, ${dataIdx})" ondragover="event.preventDefault()" ondrop="handleDrop(event, ${dataIdx})"` : '';
+
         if (isMap) {
-            const color = window.brandColors ? window.brandColors[idx % window.brandColors.length] : '#0095f6';
-            return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; text-align:center; padding:15px; font-size:11px; text-transform:uppercase;">${item.name}</div>`;
+            const color = window.brandColors[idx % window.brandColors.length];
+            return `
+                <div class="item" ${dragAttrs} style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; text-align:center; padding:15px; font-size:11px; text-transform:uppercase;">
+                    ${item.name}
+                </div>`;
         }
 
         const slidesHtml = files.map(f => {
-            // Check if it's a Canva link and the toggle is ON
             if (canvaOn && f.url && f.url.includes('canva.com')) {
                 const embedUrl = f.url.split('?')[0].replace('/design/', '/view?embed=');
                 return `<div class="slide"><iframe src="${embedUrl}" allowfullscreen style="border:none; width:100%; height:100%;"></iframe></div>`;
@@ -413,7 +429,7 @@ function doRender() {
         }).join('');
 
         return `
-            <div class="item" onclick="openPreview(${dataIdx})">
+            <div class="item" ${dragAttrs} onclick="openPreview(${dataIdx})">
                 <div class="item-overlay">
                     <div class="ov-pillar">${item.pillar || 'CONTENT'}</div>
                     <div class="ov-title">${item.name}</div>
@@ -426,14 +442,43 @@ function doRender() {
     renderStatusOptions();
 }
 
-// --- 4. UI HELPERS ---
+// --- 4. DRAG & DROP LOGIC ---
+window.handleDragStart = (e, index) => {
+    draggedIdx = index;
+    e.dataTransfer.effectAllowed = 'move';
+};
+
+window.handleDrop = (e, targetIdx) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === targetIdx) return;
+
+    const movedItem = gridData.splice(draggedIdx, 1)[0];
+    gridData.splice(targetIdx, 0, movedItem);
+
+    // Persist order
+    localStorage.setItem('customGridOrder', JSON.stringify(gridData.map(i => i.name)));
+    doRender();
+};
+
+window.resetGridOrder = () => {
+    localStorage.removeItem('customGridOrder');
+    location.reload();
+};
+
+// --- 5. UI CONTROLS ---
 function updateUI() {
     ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'].forEach(id => {
         const el = document.getElementById(id);
         if (el) localStorage.setItem(id, el.checked);
     });
+    
     document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none';
     document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none';
+    
+    // Show/Hide Reset button if Custom Order is active
+    const resetBtn = document.getElementById('resetOrderBtn');
+    if(resetBtn) resetBtn.style.display = document.getElementById('customOrderT').checked ? 'block' : 'none';
+
     doRender();
 }
 
@@ -456,12 +501,23 @@ function toggleStat(s, e) {
     doRender();
 }
 
+function openPreview(idx) {
+    const item = gridData[idx];
+    const lb = document.getElementById('previewLightbox');
+    document.getElementById('lightboxContent').innerHTML = `
+        <div class="lb-track" style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory;">
+            ${item.files.map(f => `<div class="lb-slide" style="min-width:100%; scroll-snap-align:start;">
+                ${f.isVideo ? `<video src="${f.url}" controls autoplay style="width:100%"></video>` : `<img src="${f.url}" style="width:100%">`}
+            </div>`).join('')}
+        </div>`;
+    lb.style.display = 'flex';
+}
+
 window.closeLightbox = () => { document.getElementById('previewLightbox').style.display = 'none'; };
 window.toggleSettings = (e) => { e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); };
 window.toggleMenu = (id, e) => { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); };
-window.generateRandomMap = () => { window.brandColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD']; };
 
-// Close menus on outside click
+// Close dropdowns when clicking outside
 window.onclick = () => {
     document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
     document.getElementById('setMenu').classList.remove('open');
