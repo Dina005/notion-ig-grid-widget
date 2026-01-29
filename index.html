@@ -273,7 +273,7 @@ input:checked + .check-box::after { content: '✓'; color: white; font-size: 10p
         <div id="lightboxContent"></div>
     </div>
     <script>
-     const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
+ const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [], isDragging = false;
 
 // Color State
@@ -292,6 +292,13 @@ function toggleMenu(id, e) {
         if(m.id !== id) m.classList.remove('show');
     });
     document.getElementById(id).classList.toggle('show'); 
+}
+
+// New function to handle the Custom Layout toggle specifically
+function toggleOrder() {
+    // If turning OFF, we don't necessarily clear storage, 
+    // but doRender will ignore it because isCustom will be false.
+    doRender();
 }
 
 function updateUI() { 
@@ -340,7 +347,8 @@ window.updateColor = function(idx, val) {
     window.brandColors[idx] = val;
     doRender();
 };
-        // --- CORE RENDERING ---
+
+// --- CORE RENDERING ---
 function getCanvaEmbedUrl(url) {
     if (!url || !url.includes('canva.com')) return url;
     const match = url.match(/design\/([A-Za-z0-9_-]+)/);
@@ -353,41 +361,42 @@ function doRender() {
     const canvaOn = document.getElementById('canvaT').checked;
     const isCustom = document.getElementById('customOrderT').checked;
     
-    // 1. Filter data FIRST (to keep counts accurate)
+    // 1. Filter data (Platform + Status)
     let filtered = [...gridData].filter(i => (currentPlat === 'all' || i.platforms.includes(currentPlat)) && activeStats.includes(i.status));
 
-    // 2. Apply Custom Layout to REAL data only
+    // 2. Apply Custom Layout ONLY if toggled on
     if (isCustom) {
         const savedOrder = localStorage.getItem('customGridOrder');
         if (savedOrder) {
             const orderIds = JSON.parse(savedOrder);
             filtered.sort((a, b) => {
-                let indexA = orderIds.indexOf(a.files?.[0]?.url);
-                let indexB = orderIds.indexOf(b.files?.[0]?.url);
+                let urlA = a.files?.[0]?.url;
+                let urlB = b.files?.[0]?.url;
+                let indexA = orderIds.indexOf(urlA);
+                let indexB = orderIds.indexOf(urlB);
+                // Items not in the saved list go to the end
                 return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
             });
         }
+    } else {
+        // When OFF: Default sorting (e.g., by date if your API provides it sorted)
+        // If your API isn't sorted, add a .sort() here based on item['Publish Date']
     }
 
-    // 3. Create display list with placeholders
+    // 3. Create display list with placeholders to complete the row
     let displayList = [...filtered];
-    const minRows = 1; // At least one row of 3
     while (displayList.length < 3 || displayList.length % 3 !== 0) {
         displayList.push({ isPlaceholder: true });
     }
 
     grid.innerHTML = displayList.map((item, i) => {
-        // Placeholder Render
         if (item.isPlaceholder) {
             return `<div class="item empty"><span class="empty-text">No Content</span></div>`;
         }
 
         const dataIdx = gridData.indexOf(item);
-        
-        // Property Mapping Logic
         const contentTitle = (item.name && item.name.trim() !== "" && isNaN(item.name)) 
-            ? item.name 
-            : (item.name && !isNaN(item.name) ? "Content Item " + item.name : "No Content");
+            ? item.name : "Content Item";
         
         const pillar = item["Content Pillar"] || "General";
         const rawDate = item["Publish Date"] || "";
@@ -397,17 +406,13 @@ function doRender() {
             if (!isNaN(d.getTime())) postDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         }
 
-        // CONTENT MAP MODE
         if (isMap) {
-            const rawIdx = window.shuffledIndices[i % window.shuffledIndices.length];
-            const safeIdx = rawIdx % window.brandColors.length;
-            const color = window.brandColors[safeIdx];
-            return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; padding:12px; box-sizing:border-box;">
+            const color = window.brandColors[window.shuffledIndices[i % window.shuffledIndices.length] % window.brandColors.length];
+            return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; padding:12px;">
                         <span style="color:white; font-weight:700; font-size:13px; text-align:center;">${contentTitle}</span>
                     </div>`;
         }
 
-        // STANDARD GRID MODE
         const slides = (item.files || []).map(f => {
             if (canvaOn && f.url.includes('canva.com')) return `<div class="slide"><iframe src="${getCanvaEmbedUrl(f.url)}" referrerpolicy="no-referrer"></iframe></div>`;
             return `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop muted playsinline autoplay></video>` : `<img src="${f.url}">`}</div>`;
@@ -426,19 +431,26 @@ function doRender() {
             </div>`;
     }).join('');
     
+    // Always re-init dragging if mode is active after rendering HTML
     if (isCustom) initDragging();
 }
-        // --- DRAG & DROP ---
+
+// --- DRAG & DROP ---
 function initDragging() {
     const grid = document.getElementById('grid');
     const items = grid.querySelectorAll('.item:not(.empty)');
 
     items.forEach(item => {
-        item.addEventListener('dragstart', () => { isDragging = true; item.classList.add('dragging'); });
+        item.addEventListener('dragstart', (e) => { 
+            isDragging = true; 
+            item.classList.add('dragging'); 
+            e.dataTransfer.effectAllowed = 'move';
+        });
         item.addEventListener('dragend', () => {
-            setTimeout(() => { isDragging = false; }, 100);
             item.classList.remove('dragging');
             saveCurrentOrder();
+            // Small delay to prevent accidental click-previews after drop
+            setTimeout(() => { isDragging = false; }, 100);
         });
     });
 
@@ -447,8 +459,11 @@ function initDragging() {
         const draggingItem = document.querySelector('.dragging');
         if (!draggingItem) return;
         const afterElement = getDragAfterElement(grid, e.clientX, e.clientY);
-        if (afterElement == null) grid.appendChild(draggingItem);
-        else grid.insertBefore(draggingItem, afterElement);
+        if (afterElement == null) {
+            grid.appendChild(draggingItem);
+        } else {
+            grid.insertBefore(draggingItem, afterElement);
+        }
     });
 }
 
@@ -477,12 +492,10 @@ async function init() {
         const data = await res.json();
         gridData = data.grid || [];
         
-        // Accurate Counts
         document.getElementById('cnt-all').innerText = gridData.length;
         document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
         document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
 
-        // Bio
         document.getElementById('pfpImg').src = data.bio.profilePicture || "";
         document.getElementById('bioUser').innerText = "@" + (data.bio.username || "user");
         document.getElementById('bioDisplay').innerText = data.bio.displayName || "";
@@ -490,7 +503,6 @@ async function init() {
         document.getElementById('bioLink').innerText = data.bio.linkDisplay || "";
         document.getElementById('bioLink').href = data.bio.linkUrl || "#";
 
-        // Highlights
         document.getElementById('highRow').innerHTML = (data.highlights || []).map(h => {
             const hasImage = h.image && h.image !== null;
             return `
