@@ -285,6 +285,41 @@ input:checked + .slider:before { transform: translateX(18px); }
     border-radius: 8px;
     object-fit: contain;
 }
+        /* Ensure lightbox navigation buttons are always visible in preview */
+.active-lb-btn {
+    opacity: 1 !important;
+    display: flex !important;
+    background: rgba(255, 255, 255, 0.4) !important;
+    color: white !important;
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 24px !important;
+}
+
+.active-lb-btn:hover {
+    background: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Lightbox Track Setup */
+.lb-track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    width: 100%;
+    height: 100%;
+    scrollbar-width: none; /* Hide scrollbar Firefox */
+}
+.lb-track::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome/Safari */
+
+.lb-slide {
+    min-width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    scroll-snap-align: start;
+}
         
     </style>
 </head>
