@@ -258,6 +258,33 @@ input:checked + .slider:before { transform: translateX(18px); }
     height: 100%;
     width: 100%;
 }
+        /* Lightbox Scrollable Track */
+.lb-track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    width: 100%;
+    height: 100%;
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
+}
+.lb-track::-webkit-scrollbar { display: none; } /* Hide scrollbar for Chrome/Safari */
+
+.lb-slide {
+    min-width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    scroll-snap-align: start;
+}
+
+.lb-slide img, .lb-slide video {
+    max-width: 90%;
+    max-height: 90vh;
+    border-radius: 8px;
+    object-fit: contain;
+}
         
     </style>
 </head>
@@ -349,9 +376,9 @@ input:checked + .slider:before { transform: translateX(18px); }
     <script>
 const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [], isDragging = false;
-let currentLightboxItemIdx = 0, currentSlideIdx = 0;
+let currentLightboxItemIdx = 0;
 
-// --- 1. INITIALIZATION ---
+// --- 1. INITIALIZATION (Flicker-Free & Persistent) ---
 async function init() {
     const toggleIds = ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'];
     toggleIds.forEach(id => {
@@ -405,7 +432,7 @@ async function init() {
     } catch (e) { console.error("Initialization Failed:", e); }
 }
 
-// --- 2. CORE RENDERING ---
+// --- 2. CORE RENDERING (Grid + Carousel Indicators) ---
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
@@ -419,15 +446,12 @@ function doRender() {
     });
 
     if (isCustom) {
-        const savedOrder = localStorage.getItem('customGridOrder');
-        if (savedOrder) {
-            const orderIds = JSON.parse(savedOrder);
-            filtered.sort((a, b) => {
-                const indexA = orderIds.indexOf(a.files?.[0]?.url);
-                const indexB = orderIds.indexOf(b.files?.[0]?.url);
-                return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
-            });
-        }
+        const savedOrder = JSON.parse(localStorage.getItem('customGridOrder') || "[]");
+        filtered.sort((a, b) => {
+            const indexA = savedOrder.indexOf(a.files?.[0]?.url);
+            const indexB = savedOrder.indexOf(b.files?.[0]?.url);
+            return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+        });
     }
 
     let displayList = [...filtered];
@@ -444,7 +468,7 @@ function doRender() {
 
         if (isMap) {
             const color = window.brandColors[window.shuffledIndices[i % window.shuffledIndices.length] % window.brandColors.length];
-            return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; padding:15px; color:white; font-weight:700; text-align:center;">${item.name || "Content"}</div>`;
+            return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:700;">${item.name || "Content"}</div>`;
         }
 
         const slidesHtml = files.map(file => {
@@ -456,111 +480,73 @@ function doRender() {
 
         return `
             <div class="item ${hasMultiple ? 'has-multiple' : ''}" draggable="${isCustom}" data-id="${files[0]?.url}" onclick="if(!isDragging) openPreview(${dataIdx})">
-                ${hasMultiple ? `
-                    <div class="carousel-indicator">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M19,2H9C7.9,2,7,2.9,7,4v11c0,1.1,0.9,2,2,2h10c1.1,0,2-0.9,2-2V4C21,2.9,20.1,2,19,2z M19,15H9V4h10V15z M5,7H3v11 c0,1.1,0.9,2,2,2h11v-2H5V7z"/></svg>
-                    </div>
-                ` : ''}
+                ${hasMultiple ? `<div class="carousel-indicator"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M19,2H9C7.9,2,7,2.9,7,4v11c0,1.1,0.9,2,2,2h10c1.1,0,2-0.9,2-2V4C21,2.9,20.1,2,19,2z M19,15H9V4h10V15z M5,7H3v11 c0,1.1,0.9,2,2,2h11v-2H5V7z"/></svg></div>` : ''}
                 <div class="carousel-track" id="track-${dataIdx}">${slidesHtml}</div>
                 ${hasMultiple ? `
                     <button class="nav-btn prev-btn" onclick="moveSlide(${dataIdx}, -1, event)">‹</button>
                     <button class="nav-btn next-btn" onclick="moveSlide(${dataIdx}, 1, event)">›</button>
                 ` : ''}
-                <div class="overlay">
-                    <div class="ov-title">${item.name || "Content"}</div>
-                    <div class="ov-meta"><span>${item["Content Pillar"] || "General"}</span></div>
-                </div>
+                <div class="overlay"><div class="ov-title">${item.name || "Content"}</div></div>
             </div>`;
     }).join('');
 
     if (isCustom) initDragging();
 }
 
-// --- 3. GRID SLIDE MOVEMENT ---
 function moveSlide(dataIdx, dir, event) {
     if (event) event.stopPropagation();
     const track = document.getElementById(`track-${dataIdx}`);
     const slides = track.querySelectorAll('.slide');
     if (!track.dataset.idx) track.dataset.idx = 0;
-    
-    let idx = parseInt(track.dataset.idx) + dir;
-    if (idx >= slides.length) idx = 0;
-    if (idx < 0) idx = slides.length - 1;
-
+    let idx = (parseInt(track.dataset.idx) + dir + slides.length) % slides.length;
     track.dataset.idx = idx;
     track.style.transform = `translateX(-${idx * 100}%)`;
 }
 
-// --- 4. PREVIEW LIGHTBOX WITH SCROLL & KEYS ---
+// --- 3. PREVIEW LIGHTBOX (True Horizontal Scroll-Snap) ---
 function openPreview(idx) {
     const item = gridData[idx];
     if (!item || isDragging) return;
     
     currentLightboxItemIdx = idx;
-    currentSlideIdx = 0;
     const lightbox = document.getElementById('previewLightbox');
-    
-    document.querySelectorAll('.lb-nav').forEach(a => a.remove());
-    renderLightboxSlide();
-    lightbox.style.display = 'flex';
-}
-
-function renderLightboxSlide() {
-    const item = gridData[currentLightboxItemIdx];
-    const file = item.files[currentSlideIdx];
     const content = document.getElementById('lightboxContent');
     const canvaOn = document.getElementById('canvaT').checked;
 
-    content.innerHTML = '';
-    if (canvaOn && file.url.includes('canva.com')) {
-        content.innerHTML = `<iframe src="${getCanvaEmbedUrl(file.url)}" allowfullscreen style="width:80vw; height:80vh; border:none; border-radius:8px;"></iframe>`;
-    } else {
-        content.innerHTML = file.isVideo ? `<video src="${file.url}" controls autoplay loop></video>` : `<img src="${file.url}">`;
-    }
+    const slidesHtml = item.files.map(file => {
+        const media = (canvaOn && file.url.includes('canva.com')) 
+            ? `<iframe src="${getCanvaEmbedUrl(file.url)}" allowfullscreen></iframe>`
+            : (file.isVideo ? `<video src="${file.url}" controls autoplay loop></video>` : `<img src="${file.url}">`);
+        return `<div class="lb-slide">${media}</div>`;
+    }).join('');
 
-    if (item.files.length > 1 && !document.querySelector('.lb-nav')) {
-        const lb = document.getElementById('previewLightbox');
-        lb.insertAdjacentHTML('beforeend', `
-            <button class="nav-btn lb-nav prev-btn" onclick="moveLightbox(-1)">‹</button>
-            <button class="nav-btn lb-nav next-btn" onclick="moveLightbox(1)">›</button>
+    content.innerHTML = `<div class="lb-track" id="lbTrack">${slidesHtml}</div>`;
+    
+    document.querySelectorAll('.lb-nav').forEach(a => a.remove());
+    if (item.files.length > 1) {
+        lightbox.insertAdjacentHTML('beforeend', `
+            <button class="nav-btn lb-nav prev-btn" onclick="scrollLB(-1)">‹</button>
+            <button class="nav-btn lb-nav next-btn" onclick="scrollLB(1)">›</button>
         `);
     }
+    lightbox.style.display = 'flex';
 }
 
-function moveLightbox(dir) {
-    const item = gridData[currentLightboxItemIdx];
-    if (!item || item.files.length <= 1) return;
-    currentSlideIdx += dir;
-    if (currentSlideIdx >= item.files.length) currentSlideIdx = 0;
-    if (currentSlideIdx < 0) currentSlideIdx = item.files.length - 1;
-    renderLightboxSlide();
+function scrollLB(dir) {
+    const track = document.getElementById('lbTrack');
+    if (track) track.scrollBy({ left: track.clientWidth * dir, behavior: 'smooth' });
 }
 
-// NEW: Add Event Listeners for Scroll and Keys in Preview
 window.addEventListener('keydown', (e) => {
     if (document.getElementById('previewLightbox').style.display === 'flex') {
-        if (e.key === 'ArrowRight') moveLightbox(1);
-        if (e.key === 'ArrowLeft') moveLightbox(-1);
+        if (e.key === 'ArrowRight') scrollLB(1);
+        if (e.key === 'ArrowLeft') scrollLB(-1);
         if (e.key === 'Escape') document.getElementById('previewLightbox').style.display = 'none';
     }
 });
 
-let lastScrollTime = 0;
-window.addEventListener('wheel', (e) => {
-    const lightbox = document.getElementById('previewLightbox');
-    if (lightbox.style.display === 'flex') {
-        const now = Date.now();
-        if (now - lastScrollTime < 600) return; // Debounce scroll speed
-        
-        if (Math.abs(e.deltaX) > 30 || Math.abs(e.deltaY) > 30) {
-            moveLightbox(e.deltaX > 0 || e.deltaY > 0 ? 1 : -1);
-            lastScrollTime = now;
-        }
-    }
-}, { passive: true });
-
-// --- 5. UI & PERSISTENCE (REST OF SCRIPT) ---
-function updateUI() { 
+// --- 4. FILTERS & UI LOGIC ---
+function updateUI() {
     const states = {
         bioT: document.getElementById('bioT').checked,
         highT: document.getElementById('highT').checked,
@@ -568,7 +554,7 @@ function updateUI() {
         canvaT: document.getElementById('canvaT').checked,
         customOrderT: document.getElementById('customOrderT').checked
     };
-    Object.keys(states).forEach(key => localStorage.setItem(key, states[key]));
+    Object.keys(states).forEach(k => localStorage.setItem(k, states[k]));
     document.getElementById('bioSection').style.display = states.bioT ? 'flex' : 'none'; 
     document.getElementById('highRow').style.display = states.highT ? 'flex' : 'none'; 
     document.getElementById('colorManagerUI').style.display = states.mapT ? 'block' : 'none';
@@ -597,25 +583,22 @@ function toggleStat(s) {
 
 function toggleMenu(id, e) { 
     if (e) e.stopPropagation(); 
-    const menu = document.getElementById(id);
-    const wasOpen = menu.classList.contains('show');
-    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
-    if (!wasOpen) menu.classList.add('show');
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.id !== id && m.classList.remove('show'));
+    document.getElementById(id).classList.toggle('show');
 }
 
 function renderProfile(data) {
-    document.getElementById('pfpImg').src = data.bio.profilePicture || "";
-    document.getElementById('bioUser').innerText = "@" + (data.bio.username || "user");
-    document.getElementById('bioDisplay').innerText = data.bio.displayName || "";
-    document.getElementById('bioDesc').innerText = data.bio.bioText || "";
-    document.getElementById('bioLink').innerText = data.bio.linkDisplay || "";
-    document.getElementById('bioLink').href = data.bio.linkUrl || "#";
+    const b = data.bio;
+    document.getElementById('pfpImg').src = b.profilePicture || "";
+    document.getElementById('bioUser').innerText = "@" + (b.username || "user");
+    document.getElementById('bioDisplay').innerText = b.displayName || "";
+    document.getElementById('bioDesc').innerText = b.bioText || "";
+    document.getElementById('bioLink').innerText = b.linkDisplay || "";
+    document.getElementById('bioLink').href = b.linkUrl || "#";
 
     document.getElementById('highRow').innerHTML = (data.highlights || []).map(h => `
         <div style="text-align:center; min-width:75px;">
-            <div class="h-circle ${h.image ? '' : 'empty'}">
-                ${h.image ? `<img src="${h.image}" class="h-img">` : '<span class="empty-text" style="font-size:8px">N/A</span>'}
-            </div>
+            <div class="h-circle"><img src="${h.image}" class="h-img"></div>
             <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h.name}</span>
         </div>`).join('');
     
@@ -653,7 +636,7 @@ function saveCurrentOrder() {
 
 function getCanvaEmbedUrl(url) {
     const match = url.match(/design\/([A-Za-z0-9_-]+)/);
-    return match ? `https://www.canva.com/design/${match[1]}/view?embed` : url.split('?')[0] + '/view?embed';
+    return match ? `https://www.canva.com/design/${match[1]}/view?embed` : url;
 }
 
 function toggleSettings(e) { if (e) e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
@@ -668,7 +651,7 @@ window.renderColorControls = () => {
         <div class="color-row">
             <div class="color-picker-wrapper"><input type="color" class="color-picker" value="${color}" onchange="window.updateColor(${idx}, this.value)"></div>
             <span style="font-size:12px; font-weight:700; flex:1;">Color ${idx + 1}</span>
-            <button class="remove-btn" onclick="window.removeColor(${idx}, event)">×</button>
+            <button class="remove-btn" onclick="window.brandColors.splice(${idx},1); window.renderColorControls(); doRender();">×</button>
         </div>`).join('');
 };
 
