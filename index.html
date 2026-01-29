@@ -28,10 +28,15 @@ body {
     -webkit-font-smoothing: antialiased; overflow-x: hidden;
 }
 
-/* --- Bio Section (Left Aligned Stack) --- */
+/* --- FIX: Default Hidden to prevent flickering on refresh --- */
+#bioSection, #highRow, #colorManagerUI { 
+    display: none; 
+}
+
+/* --- Bio Section --- */
 #bioSection { 
     max-width: 935px; margin: 40px auto 20px; padding: 0 20px; 
-    display: flex; flex-direction: column; align-items: flex-start; text-align: left;
+    flex-direction: column; align-items: flex-start; text-align: left;
 }
 .pfp-container { 
     width: 150px; height: 150px; border-radius: 50%; overflow: hidden; 
@@ -43,20 +48,20 @@ body {
 /* --- Highlights --- */
 #highRow { 
     max-width: 935px; margin: 0 auto 30px; padding: 0 20px; 
-    display: flex; gap: 15px; overflow-x: auto; scrollbar-width: none; 
+    gap: 15px; overflow-x: auto; scrollbar-width: none; 
 }
 .h-circle { 
     width: 64px; height: 64px; border-radius: 50%; border: 1px solid #dbdbdb; 
     padding: 3px; background: #fff; display: flex; align-items: center; justify-content: center;
 }
-.h-circle.empty { background: var(--grey-empty); border: 1px dashed #ccc; }
 .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
-/* --- Top Bar & Settings Menu --- */
+/* --- Top Bar & Controls --- */
 .top-bar { max-width: 935px; margin: 20px auto 10px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
 .refresh-btn { background: #000; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
 .icon-btn { background: var(--surface); border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
+/* --- Settings Menu --- */
 .settings-menu { 
     position: absolute; top: 55px; right: 20px; width: 280px; 
     background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); 
@@ -64,67 +69,66 @@ body {
 }
 .settings-menu.open { display: block; }
 
-/* --- Toggles & Switches --- */
+/* --- Toggles --- */
 .switch { position: relative; width: 40px; height: 22px; display: inline-block; }
 .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e5ea; transition: .3s; border-radius: 20px; }
 .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
 input:checked + .slider { background-color: #000; }
 input:checked + .slider:before { transform: translateX(18px); }
 
-/* --- Filters & Dropdowns --- */
-.filter-row { display: none; padding: 15px 20px; gap: 12px; max-width: 935px; margin: 0 auto; border-top: 1px solid #f0f0f2; }
-.filter-row.active { display: flex; }
+/* --- Filters & Checkbox Correction --- */
+.filter-row { display: flex; padding: 15px 20px; gap: 12px; max-width: 935px; margin: 0 auto; border-top: 1px solid #f0f0f2; }
 .dropdown-container { position: relative; font-size: 14px; font-weight: 600; }
 .dropdown-trigger { padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border); background: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px; min-width: 140px; justify-content: space-between; }
 .dropdown-menu { position: absolute; top: 110%; left: 0; background: white; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); z-index: 3000; min-width: 220px; display: none; padding: 8px; }
 .dropdown-menu.show { display: block; }
-.dropdown-item { padding: 10px 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+
+.dropdown-item {
+    display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 8px; cursor: pointer;
+}
 .dropdown-item:hover { background: var(--surface); }
 
-/* --- The Grid (Performance Optimized) --- */
+.item-left { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.item-left input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; }
+
+.check-box { 
+    width: 18px; height: 18px; border: 2px solid #ddd; border-radius: 4px; 
+    background-color: #fff; flex-shrink: 0; position: relative; transition: 0.2s;
+}
+.item-left input:checked ~ .check-box { background-color: #000; border-color: #000; }
+.item-left input:checked ~ .check-box::after { 
+    content: "✓"; position: absolute; color: white; font-size: 12px; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+}
+
+/* --- The Grid --- */
 .grid { 
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; 
     max-width: 935px; margin: 0 auto 50px; padding: 0 20px;
-    contain: layout; /* Helps with lag during dragging */
+    contain: layout;
 }
-
 .item { 
     aspect-ratio: 1/1; background: var(--grey-empty); position: relative; 
-    cursor: pointer; overflow: hidden; will-change: transform;
-    transition: transform 0.2s ease;
+    cursor: pointer; overflow: hidden; will-change: transform; transition: transform 0.2s ease;
 }
+.item.dragging { opacity: 0.2; transform: scale(0.95); z-index: 10; transition: none; }
+.item.empty { background-color: #f0f0f2; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; }
 
-/* No-Lag Dragging State */
-.item.dragging { 
-    opacity: 0.2; 
-    transform: scale(0.95);
-    transition: none; 
-    z-index: 10;
-}
-
-.item.empty { 
-    background-color: #f0f0f2 !important; 
-    border: 1px dashed #ccc !important; 
-    display: flex; align-items: center; justify-content: center; cursor: default;
-}
-.empty-text { color: #999; font-size: 11px; font-weight: 800; text-transform: uppercase; }
-
-/* --- Media Containers --- */
+/* --- Media Handling --- */
 .carousel-track { display: flex; width: 100%; height: 100%; pointer-events: none; }
 .slide { min-width: 100%; height: 100%; position: relative; }
 .slide img, .slide video { width: 100%; height: 100%; object-fit: cover; }
 .slide iframe { position: absolute; top: 50%; left: 50%; width: 150%; height: 150%; border: none; transform: translate(-50%, -50%); }
 
-/* --- Hover Overlay --- */
+/* --- Hover Overlays --- */
 .overlay {
     position: absolute; bottom: 0; left: 0; right: 0;
     background: linear-gradient(transparent, rgba(0,0,0,0.85));
     color: white; padding: 15px; opacity: 0;
-    transform: translateY(10px); transition: all 0.3s ease;
+    transform: translateY(10px); transition: 0.3s ease;
     display: flex; flex-direction: column; gap: 4px; pointer-events: none;
 }
 .item:hover .overlay { opacity: 1; transform: translateY(0); }
-.ov-title { font-size: 13px; font-weight: 700; line-height: 1.2; }
+.ov-title { font-size: 13px; font-weight: 700; }
 .ov-meta { font-size: 10px; display: flex; justify-content: space-between; align-items: center; }
 
 /* --- Color Manager (Edge-to-Edge) --- */
@@ -138,7 +142,6 @@ input:checked + .slider:before { transform: translateX(18px); }
     position: absolute; top: -10px; left: -10px; width: 50px; height: 50px; 
     border: none; cursor: pointer; background: none; 
 }
-.color-picker::-webkit-color-swatch-wrapper { padding: 0; }
 .color-picker::-webkit-color-swatch { border: none; border-radius: 50%; }
 
 /* --- Lightbox (Fixed Zoom) --- */
@@ -153,12 +156,7 @@ input:checked + .slider:before { transform: translateX(18px); }
     max-width: 100%; max-height: 100%; width: auto; height: auto; 
     object-fit: contain; box-shadow: 0 0 40px rgba(0,0,0,0.5); 
 }
-.close-preview { position: fixed; top: 30px; right: 30px; color: white; font-size: 40px; cursor: pointer; z-index: 10002; }
-
-/* Custom Checkbox for Status */
-.check-box { width: 18px; height: 18px; border: 2px solid #ddd; border-radius: 4px; position: relative; }
-input:checked + .check-box { background: #000; border-color: #000; }
-input:checked + .check-box::after { content: '✓'; color: white; font-size: 10px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.close-preview { position: fixed; top: 30px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
         
     </style>
 </head>
@@ -252,18 +250,22 @@ const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [], isDragging = false;
 let dragTimeout;
 
-// --- INITIALIZATION ---
+// --- 1. INITIALIZATION (Instant Logic) ---
 async function init() {
-    try {
-        // 1. Restore toggle states from localStorage first
-        const toggleIds = ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'];
-        toggleIds.forEach(id => {
-            const savedState = localStorage.getItem(id);
-            if (savedState !== null) {
-                document.getElementById(id).checked = savedState === 'true';
-            }
-        });
+    // Apply saved toggle states BEFORE fetching data to prevent flickering
+    const toggleIds = ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'];
+    toggleIds.forEach(id => {
+        const savedState = localStorage.getItem(id);
+        const el = document.getElementById(id);
+        if (savedState !== null && el) {
+            el.checked = savedState === 'true';
+        }
+    });
 
+    // Set initial visibility based on toggles
+    updateUI(); 
+
+    try {
         const res = await fetch(API);
         const data = await res.json();
         gridData = data.grid || [];
@@ -280,50 +282,48 @@ async function init() {
         document.getElementById('highRow').innerHTML = (data.highlights || []).map(h => `
             <div style="text-align:center; min-width:75px;">
                 <div class="h-circle ${h.image ? '' : 'empty'}">
-                    ${h.image ? `<img src="${h.image}" class="h-img">` : '<span class="empty-text" style="font-size:8px">No Img</span>'}
+                    ${h.image ? `<img src="${h.image}" class="h-img">` : '<span class="empty-text" style="font-size:8px">N/A</span>'}
                 </div>
                 <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h.name}</span>
             </div>`).join('');
 
-        // Fix: Properly initialize Status and Platform Counts
+        // Populate Platform Counts
         document.getElementById('cnt-all').innerText = gridData.length;
         document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
         document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
 
+        // Populate Status Filters
         const stats = [...new Set(gridData.map(i => i.status))];
-        activeStats = [...stats]; // Default all active
+        activeStats = [...stats];
         document.getElementById('statusOptions').innerHTML = stats.map(s => `
             <label class="dropdown-item" onclick="event.stopPropagation()">
                 <div class="item-left">
                     <input type="checkbox" checked onchange="toggleStat('${s}')">
-                    <div class="check-box"></div><span style="font-weight:600; font-size:13px;">${s}</span>
+                    <div class="check-box"></div>
+                    <span style="font-weight:600; font-size:13px;">${s}</span>
                 </div>
                 <span class="count-pill">${gridData.filter(i => i.status === s).length}</span>
             </label>`).join('');
 
         window.generateRandomMap();
         window.renderColorControls();
-        
-        // Apply UI visibility states before rendering grid
-        updateUI(); 
+        doRender(); 
     } catch (e) { console.error("Initialization Failed:", e); }
 }
 
-// --- CORE RENDERING ---
+// --- 2. CORE RENDERING ---
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
     const isCustom = document.getElementById('customOrderT').checked;
     const canvaOn = document.getElementById('canvaT').checked;
 
-    // Filter Logic
     let filtered = [...gridData].filter(i => {
         const platMatch = (currentPlat === 'all' || i.platforms.includes(currentPlat));
         const statMatch = activeStats.includes(i.status);
         return platMatch && statMatch;
     });
 
-    // Apply Custom Layout Order
     if (isCustom) {
         const savedOrder = localStorage.getItem('customGridOrder');
         if (savedOrder) {
@@ -336,7 +336,6 @@ function doRender() {
         }
     }
 
-    // Grid Completion (Multiples of 3)
     let displayList = [...filtered];
     while (displayList.length < 9 || displayList.length % 3 !== 0) {
         displayList.push({ isPlaceholder: true });
@@ -373,11 +372,31 @@ function doRender() {
     if (isCustom) initDragging();
 }
 
-// --- DRAG & DROP ENGINE ---
+// --- 3. UI & STATE MANAGEMENT ---
+function updateUI() { 
+    const bioOn = document.getElementById('bioT').checked;
+    const highOn = document.getElementById('highT').checked;
+    const mapOn = document.getElementById('mapT').checked;
+    const customOn = document.getElementById('customOrderT').checked;
+    const canvaOn = document.getElementById('canvaT').checked;
+
+    localStorage.setItem('bioT', bioOn);
+    localStorage.setItem('highT', highOn);
+    localStorage.setItem('mapT', mapOn);
+    localStorage.setItem('canvaT', canvaOn);
+    localStorage.setItem('customOrderT', customOn);
+
+    document.getElementById('bioSection').style.display = bioOn ? 'flex' : 'none'; 
+    document.getElementById('highRow').style.display = highOn ? 'flex' : 'none'; 
+    document.getElementById('colorManagerUI').style.display = mapOn ? 'block' : 'none';
+    
+    if(gridData.length > 0) doRender(); 
+}
+
+// --- 4. DRAG & DROP ---
 function initDragging() {
     const grid = document.getElementById('grid');
     const items = grid.querySelectorAll('.item:not(.empty)');
-
     items.forEach(item => {
         item.addEventListener('dragstart', () => { isDragging = true; item.classList.add('dragging'); });
         item.addEventListener('dragend', () => {
@@ -396,38 +415,7 @@ function initDragging() {
     });
 }
 
-// --- UI & STATE MANAGEMENT ---
-function updateUI() { 
-    const states = {
-        bioT: document.getElementById('bioT').checked,
-        highT: document.getElementById('highT').checked,
-        mapT: document.getElementById('mapT').checked,
-        canvaT: document.getElementById('canvaT').checked,
-        customOrderT: document.getElementById('customOrderT').checked
-    };
-
-    // Save states
-    Object.keys(states).forEach(key => localStorage.setItem(key, states[key]));
-
-    document.getElementById('bioSection').style.display = states.bioT ? 'flex' : 'none'; 
-    document.getElementById('highRow').style.display = states.highT ? 'flex' : 'none'; 
-    document.getElementById('colorManagerUI').style.display = states.mapT ? 'block' : 'none';
-    
-    doRender(); 
-}
-
-function toggleStat(s) { 
-    activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s]; 
-    doRender(); 
-}
-
-function setPlat(p) { 
-    currentPlat = p; 
-    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
-    doRender(); 
-}
-
-// --- PREVIEW & HELPERS ---
+// --- 5. LIGHTBOX & HELPERS ---
 function openPreview(idx) {
     const item = gridData[idx];
     if (!item || isDragging) return;
@@ -442,17 +430,19 @@ function openPreview(idx) {
     document.getElementById('previewLightbox').style.display = 'flex';
 }
 
-function getCanvaEmbedUrl(url) {
-    const match = url.match(/design\/([A-Za-z0-9_-]+)/);
-    return match ? `https://www.canva.com/design/${match[1]}/view?embed` : url.split('?')[0] + '/view?embed';
-}
-
 function saveCurrentOrder() {
     const items = [...document.querySelectorAll('.item:not(.empty)')];
     const orderIds = items.map(item => item.getAttribute('data-id'));
     localStorage.setItem('customGridOrder', JSON.stringify(orderIds));
 }
 
+function getCanvaEmbedUrl(url) {
+    const match = url.match(/design\/([A-Za-z0-9_-]+)/);
+    return match ? `https://www.canva.com/design/${match[1]}/view?embed` : url.split('?')[0] + '/view?embed';
+}
+
+function toggleStat(s) { activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s]; doRender(); }
+function setPlat(p) { currentPlat = p; document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1); doRender(); }
 function toggleSettings(e) { if (e) e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
 function toggleMenu(id, e) { if (e) e.stopPropagation(); document.querySelectorAll('.dropdown-menu').forEach(m => m.id !== id && m.classList.remove('show')); document.getElementById(id).classList.toggle('show'); }
 
@@ -460,6 +450,8 @@ function toggleMenu(id, e) { if (e) e.stopPropagation(); document.querySelectorA
 window.brandColors = ["#FFD1DC", "#AEEEEE"];
 window.generateRandomMap = () => { window.shuffledIndices = Array.from({ length: 300 }, () => Math.floor(Math.random() * window.brandColors.length)); };
 window.updateColor = (idx, val) => { window.brandColors[idx] = val; doRender(); };
+window.removeColor = (idx, e) => { if(e) e.stopPropagation(); window.brandColors.splice(idx, 1); window.renderColorControls(); doRender(); };
+window.addColor = (e) => { if(e) e.stopPropagation(); window.brandColors.push("#E5E5E5"); window.generateRandomMap(); window.renderColorControls(); doRender(); };
 window.renderColorControls = () => {
     const container = document.getElementById('colorList');
     if (!container) return;
