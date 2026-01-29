@@ -276,7 +276,6 @@ input:checked + .check-box::after { content: '✓'; color: white; font-size: 10p
  const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [], isDragging = false;
 
-// Color State
 window.brandColors = ["#FFD1DC", "#AEEEEE"]; 
 window.shuffledIndices = [];
 
@@ -294,12 +293,7 @@ function toggleMenu(id, e) {
     document.getElementById(id).classList.toggle('show'); 
 }
 
-// New function to handle the Custom Layout toggle specifically
-function toggleOrder() {
-    // If turning OFF, we don't necessarily clear storage, 
-    // but doRender will ignore it because isCustom will be false.
-    doRender();
-}
+function toggleOrder() { doRender(); }
 
 function updateUI() { 
     document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none'; 
@@ -308,47 +302,27 @@ function updateUI() {
     doRender(); 
 }
 
-// --- CONTENT MAP COLORS ---
-window.generateRandomMap = function() {
-    const count = window.brandColors.length;
-    window.shuffledIndices = Array.from({ length: 300 }, () => Math.floor(Math.random() * count));
+// --- COLOR SYSTEM ---
+window.generateRandomMap = () => {
+    window.shuffledIndices = Array.from({ length: 300 }, () => Math.floor(Math.random() * window.brandColors.length));
 };
 
-window.renderColorControls = function() {
+window.renderColorControls = () => {
     const container = document.getElementById('colorList');
     if (!container) return;
     container.innerHTML = window.brandColors.map((color, idx) => `
         <div class="color-row">
-            <div class="color-picker-wrapper">
-                <input type="color" class="color-picker" value="${color}" onchange="window.updateColor(${idx}, this.value)">
-            </div>
-            <span style="font-size:12px; font-weight:700; flex:1; color:#555;">Color ${idx + 1}</span>
-            ${window.brandColors.length > 1 ? `<button class="remove-btn" onclick="window.removeColor(${idx}, event)">×</button>` : ''}
+            <div class="color-picker-wrapper"><input type="color" class="color-picker" value="${color}" onchange="window.updateColor(${idx}, this.value)"></div>
+            <span style="font-size:12px; font-weight:700; flex:1;">Color ${idx + 1}</span>
+            <button class="remove-btn" onclick="window.removeColor(${idx}, event)">×</button>
         </div>`).join('');
 };
 
-window.addColor = function(e) {
-    if (e) e.stopPropagation(); 
-    window.brandColors.push("#E5E5E5");
-    window.generateRandomMap();
-    window.renderColorControls();
-    doRender();
-};
+window.updateColor = (idx, val) => { window.brandColors[idx] = val; doRender(); };
+window.addColor = (e) => { if(e) e.stopPropagation(); window.brandColors.push("#E5E5E5"); window.generateRandomMap(); window.renderColorControls(); doRender(); };
+window.removeColor = (idx, e) => { if(e) e.stopPropagation(); window.brandColors.splice(idx, 1); window.renderColorControls(); doRender(); };
 
-window.removeColor = function(idx, e) {
-    if (e) e.stopPropagation(); 
-    window.brandColors.splice(idx, 1);
-    window.generateRandomMap();
-    window.renderColorControls();
-    doRender();
-};
-
-window.updateColor = function(idx, val) {
-    window.brandColors[idx] = val;
-    doRender();
-};
-
-// --- CORE RENDERING ---
+// --- RENDERING ---
 function getCanvaEmbedUrl(url) {
     if (!url || !url.includes('canva.com')) return url;
     const match = url.match(/design\/([A-Za-z0-9_-]+)/);
@@ -358,63 +332,45 @@ function getCanvaEmbedUrl(url) {
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
-    const canvaOn = document.getElementById('canvaT').checked;
     const isCustom = document.getElementById('customOrderT').checked;
-    
-    // 1. Filter data (Platform + Status)
+    const canvaOn = document.getElementById('canvaT').checked;
+
     let filtered = [...gridData].filter(i => (currentPlat === 'all' || i.platforms.includes(currentPlat)) && activeStats.includes(i.status));
 
-    // 2. Apply Custom Layout ONLY if toggled on
+    // Sort by Custom Order if enabled
     if (isCustom) {
         const savedOrder = localStorage.getItem('customGridOrder');
         if (savedOrder) {
             const orderIds = JSON.parse(savedOrder);
             filtered.sort((a, b) => {
-                let urlA = a.files?.[0]?.url;
-                let urlB = b.files?.[0]?.url;
-                let indexA = orderIds.indexOf(urlA);
-                let indexB = orderIds.indexOf(urlB);
-                // Items not in the saved list go to the end
+                const indexA = orderIds.indexOf(a.files?.[0]?.url);
+                const indexB = orderIds.indexOf(b.files?.[0]?.url);
                 return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
             });
         }
-    } else {
-        // When OFF: Default sorting (e.g., by date if your API provides it sorted)
-        // If your API isn't sorted, add a .sort() here based on item['Publish Date']
     }
 
-    // 3. Create display list with placeholders to complete the row
+    // Min 9 squares / Multiples of 3
     let displayList = [...filtered];
-    while (displayList.length < 3 || displayList.length % 3 !== 0) {
+    while (displayList.length < 9 || displayList.length % 3 !== 0) {
         displayList.push({ isPlaceholder: true });
     }
 
     grid.innerHTML = displayList.map((item, i) => {
-        if (item.isPlaceholder) {
-            return `<div class="item empty"><span class="empty-text">No Content</span></div>`;
-        }
+        if (item.isPlaceholder) return `<div class="item empty"><span class="empty-text">No Content</span></div>`;
 
         const dataIdx = gridData.indexOf(item);
-        const contentTitle = (item.name && item.name.trim() !== "" && isNaN(item.name)) 
-            ? item.name : "Content Item";
-        
+        const title = (item.name && isNaN(item.name)) ? item.name : "Content Item";
         const pillar = item["Content Pillar"] || "General";
-        const rawDate = item["Publish Date"] || "";
-        let postDate = "";
-        if (rawDate) {
-            const d = new Date(rawDate);
-            if (!isNaN(d.getTime())) postDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        }
+        const date = item["Publish Date"] ? new Date(item["Publish Date"]).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : "";
 
         if (isMap) {
             const color = window.brandColors[window.shuffledIndices[i % window.shuffledIndices.length] % window.brandColors.length];
-            return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; padding:12px;">
-                        <span style="color:white; font-weight:700; font-size:13px; text-align:center;">${contentTitle}</span>
-                    </div>`;
+            return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; padding:15px; color:white; font-weight:700; text-align:center;">${title}</div>`;
         }
 
         const slides = (item.files || []).map(f => {
-            if (canvaOn && f.url.includes('canva.com')) return `<div class="slide"><iframe src="${getCanvaEmbedUrl(f.url)}" referrerpolicy="no-referrer"></iframe></div>`;
+            if (canvaOn && f.url.includes('canva.com')) return `<div class="slide"><iframe src="${getCanvaEmbedUrl(f.url)}"></iframe></div>`;
             return `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop muted playsinline autoplay></video>` : `<img src="${f.url}">`}</div>`;
         }).join('');
 
@@ -422,83 +378,67 @@ function doRender() {
             <div class="item" draggable="${isCustom}" data-id="${item.files?.[0]?.url}" onclick="if(!isDragging) openPreview(${dataIdx})">
                 <div class="carousel-track">${slides}</div>
                 <div class="overlay">
-                    <div class="ov-title">${contentTitle}</div>
-                    <div class="ov-meta">
-                        <span style="background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 4px;">${pillar}</span>
-                        <span style="font-weight:800;">${postDate}</span>
-                    </div>
+                    <div class="ov-title">${title}</div>
+                    <div class="ov-meta"><span>${pillar}</span><span style="font-weight:800;">${date}</span></div>
                 </div>
             </div>`;
     }).join('');
-    
-    // Always re-init dragging if mode is active after rendering HTML
+
     if (isCustom) initDragging();
 }
 
-// --- DRAG & DROP ---
+// --- FIXED DRAG LOGIC ---
 function initDragging() {
     const grid = document.getElementById('grid');
     const items = grid.querySelectorAll('.item:not(.empty)');
 
     items.forEach(item => {
-        item.addEventListener('dragstart', (e) => { 
+        item.addEventListener('dragstart', () => { 
             isDragging = true; 
             item.classList.add('dragging'); 
-            e.dataTransfer.effectAllowed = 'move';
         });
         item.addEventListener('dragend', () => {
             item.classList.remove('dragging');
             saveCurrentOrder();
-            // Small delay to prevent accidental click-previews after drop
             setTimeout(() => { isDragging = false; }, 100);
         });
     });
 
     grid.addEventListener('dragover', e => {
-    e.preventDefault();
-    const draggingItem = document.querySelector('.dragging');
-    if (!draggingItem) return;
-    
-    const afterElement = getDragAfterElement(grid, e.clientX, e.clientY);
-    
-    if (afterElement) {
-        grid.insertBefore(draggingItem, afterElement);
-    } else {
-        // If no 'after' element is found, it means we are at the very end 
-        // but before the empty placeholders.
-        const firstEmpty = grid.querySelector('.item.empty');
-        if (firstEmpty) {
-            grid.insertBefore(draggingItem, firstEmpty);
+        e.preventDefault();
+        const draggingItem = document.querySelector('.dragging');
+        if (!draggingItem) return;
+
+        const afterElement = getDragAfterElement(grid, e.clientX, e.clientY);
+        if (!afterElement) {
+            // Drop at end of real items, before placeholders
+            const firstEmpty = grid.querySelector('.item.empty');
+            if (firstEmpty) grid.insertBefore(draggingItem, firstEmpty);
+            else grid.appendChild(draggingItem);
         } else {
-            grid.appendChild(draggingItem);
+            grid.insertBefore(draggingItem, afterElement);
         }
-    }
-});
+    });
+}
 
 function getDragAfterElement(container, x, y) {
-    const draggableElements = [...container.querySelectorAll('.item:not(.dragging):not(.empty)')];
-
-    return draggableElements.reduce((closest, child) => {
+    const draggables = [...container.querySelectorAll('.item:not(.dragging):not(.empty)')];
+    
+    return draggables.reduce((closest, child) => {
         const box = child.getBoundingClientRect();
-        
-        // Check if the mouse is currently within the vertical bounds of this row
-        const inRow = y > box.top && y < box.bottom;
-        // Check if the mouse is to the left of the center of this specific box
-        const toLeft = x < box.left + box.width / 2;
+        // Calculate distance from mouse to center of the box
+        const centerX = box.left + box.width / 2;
+        const centerY = box.top + box.height / 2;
+        const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
 
-        if (inRow) {
-            // If we are in the same row, only care about horizontal distance
-            const offset = x - (box.left + box.width / 2);
-            if (offset < 0 && offset > closest.offset) {
-                return { offset: offset, element: child };
-            }
-        } else if (y < box.top && closest.offset === Number.NEGATIVE_INFINITY) {
-            // If we haven't found anything in our row yet, look for the first element in the row below
-            return { offset: Number.NEGATIVE_INFINITY, element: child };
+        // We only care about elements that are effectively "after" our cursor position
+        // in the natural flow of the grid
+        if (distance < closest.distance) {
+            return { distance: distance, element: child };
+        } else {
+            return closest;
         }
-
-        return closest;
-    }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }, { distance: Number.POSITIVE_INFINITY }).element;
 }
 
 function saveCurrentOrder() {
@@ -507,7 +447,7 @@ function saveCurrentOrder() {
     localStorage.setItem('customGridOrder', JSON.stringify(orderIds));
 }
 
-// --- INITIALIZATION ---
+// --- INIT ---
 async function init() {
     try {
         const res = await fetch(API);
@@ -525,32 +465,24 @@ async function init() {
         document.getElementById('bioLink').innerText = data.bio.linkDisplay || "";
         document.getElementById('bioLink').href = data.bio.linkUrl || "#";
 
-        document.getElementById('highRow').innerHTML = (data.highlights || []).map(h => {
-            const hasImage = h.image && h.image !== null;
-            return `
-                <div style="text-align:center; min-width:75px;">
-                    <div class="h-circle ${hasImage ? '' : 'empty'}">
-                        ${hasImage ? `<img src="${h.image}" class="h-img">` : `<span class="empty-text" style="font-size:8px">No Img</span>`}
-                    </div>
-                    <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h.name}</span>
-                </div>`;
-        }).join('');
+        document.getElementById('highRow').innerHTML = (data.highlights || []).map(h => `
+            <div style="text-align:center; min-width:75px;">
+                <div class="h-circle ${h.image ? '' : 'empty'}">${h.image ? `<img src="${h.image}" class="h-img">` : 'N/A'}</div>
+                <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h.name}</span>
+            </div>`).join('');
 
         const stats = [...new Set(gridData.map(i => i.status))];
         activeStats = [...stats];
         document.getElementById('statusOptions').innerHTML = stats.map(s => `
             <label class="dropdown-item" onclick="event.stopPropagation()">
-                <div class="item-left">
-                    <input type="checkbox" checked onchange="toggleStat('${s}')">
-                    <div class="check-box"></div><span style="font-weight:600; font-size:13px;">${s}</span>
-                </div>
+                <div class="item-left"><input type="checkbox" checked onchange="toggleStat('${s}')"><div class="check-box"></div><span>${s}</span></div>
                 <span class="count-pill">${gridData.filter(i => i.status === s).length}</span>
             </label>`).join('');
 
         window.generateRandomMap();
         window.renderColorControls();
         doRender();
-    } catch (e) { console.error("Initialization Failed:", e); }
+    } catch (e) { console.error(e); }
 }
 
 function openPreview(idx) {
@@ -558,11 +490,7 @@ function openPreview(idx) {
     if (!item || isDragging) return;
     const content = document.getElementById('lightboxContent');
     const file = item.files[0];
-    const canvaOn = document.getElementById('canvaT').checked;
-    content.innerHTML = (canvaOn && file.url.includes('canva.com')) 
-        ? `<iframe src="${getCanvaEmbedUrl(file.url)}" allowfullscreen referrerpolicy="no-referrer" style="width:100%; height:100%; border:none;"></iframe>`
-        : file.isVideo ? `<video src="${file.url}" controls autoplay loop style="max-width:100%; max-height:100%;"></video>`
-        : `<img src="${file.url}" style="max-width:100%; max-height:100%; object-fit:contain;">`;
+    content.innerHTML = file.isVideo ? `<video src="${file.url}" controls autoplay loop></video>` : `<img src="${file.url}">`;
     document.getElementById('previewLightbox').style.display = 'flex';
 }
 
@@ -573,11 +501,11 @@ function toggleStat(s) {
 
 function setPlat(p) { 
     currentPlat = p; 
-    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
+    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p;
     doRender(); 
 }
 
-window.onclick = function(e) {
+window.onclick = (e) => {
     if (!e.target.closest('.dropdown-container') && !e.target.closest('.settings-menu') && !e.target.closest('.icon-btn')) {
         document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
         document.getElementById('setMenu').classList.remove('open');
