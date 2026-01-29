@@ -410,10 +410,10 @@ input:checked + .slider:before { transform: translateX(18px); }
     </div>
     <script>
 const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
-let gridData = [], highlightsData = [], currentPlat = 'all', activeStats = [], isDragging = false;
+let gridData = [], currentPlat = 'all', activeStats = [], isDragging = false;
 let currentLightboxItemIdx = 0;
 
-// --- 1. INITIALIZATION ---
+// --- 1. INITIALIZATION (Flicker-Free & Persistent) ---
 async function init() {
     const toggleIds = ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'];
     toggleIds.forEach(id => {
@@ -430,7 +430,9 @@ async function init() {
     if (savedPlat) {
         currentPlat = savedPlat;
         const platDisplay = document.getElementById('platCurrent');
-        if (platDisplay) platDisplay.innerText = currentPlat === 'all' ? 'All Platforms' : currentPlat.charAt(0).toUpperCase() + currentPlat.slice(1);
+        if (platDisplay) {
+            platDisplay.innerText = currentPlat === 'all' ? 'All Platforms' : currentPlat.charAt(0).toUpperCase() + currentPlat.slice(1);
+        }
     }
 
     updateUI(); 
@@ -439,29 +441,43 @@ async function init() {
         const res = await fetch(API);
         const data = await res.json();
         gridData = data.grid || [];
-        highlightsData = data.highlights || [];
         
         renderProfile(data);
-        setupStatusFilters();
+
+        const stats = [...new Set(gridData.map(i => i.status))];
+        const savedStats = localStorage.getItem('activeStats');
+        activeStats = savedStats ? JSON.parse(savedStats) : [...stats];
+
+        const statusContainer = document.getElementById('statusOptions');
+        if (statusContainer) {
+            statusContainer.innerHTML = stats.map(s => `
+                <label class="dropdown-item" onclick="event.stopPropagation()">
+                    <div class="item-left">
+                        <input type="checkbox" ${activeStats.includes(s) ? 'checked' : ''} onchange="toggleStat('${s}')">
+                        <div class="check-box"></div>
+                        <span style="font-weight:600; font-size:13px;">${s}</span>
+                    </div>
+                    <span class="count-pill">${gridData.filter(i => i.status === s).length}</span>
+                </label>`).join('');
+        }
+
         window.generateRandomMap();
         window.renderColorControls();
         doRender(); 
     } catch (e) { console.error("Initialization Failed:", e); }
 }
 
-// --- 2. GRID RENDERING (Includes Hover Arrows & Carousel Icon) ---
+// --- 2. CORE RENDERING (Grid + Carousel Indicators) ---
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
     const isCustom = document.getElementById('customOrderT').checked;
     const canvaOn = document.getElementById('canvaT').checked;
 
-    // Filter out items marked as "Story" so they don't appear in the grid
     let filtered = [...gridData].filter(i => {
-        const isNotStory = i.type !== "Story";
         const platMatch = (currentPlat === 'all' || i.platforms.includes(currentPlat));
         const statMatch = activeStats.includes(i.status);
-        return isNotStory && platMatch && statMatch;
+        return platMatch && statMatch;
     });
 
     if (isCustom) {
@@ -480,6 +496,7 @@ function doRender() {
 
     grid.innerHTML = displayList.map((item, i) => {
         if (item.isPlaceholder) return `<div class="item empty"><span class="empty-text">No Content</span></div>`;
+
         const dataIdx = gridData.indexOf(item);
         const files = item.files || [];
         const hasMultiple = files.length > 1;
@@ -490,8 +507,10 @@ function doRender() {
         }
 
         const slidesHtml = files.map(file => {
-            const content = (canvaOn && file.url.includes('canva.com')) ? `<iframe src="${getCanvaEmbedUrl(file.url)}"></iframe>` : (file.isVideo ? `<video src="${file.url}" muted loop playsinline autoplay></video>` : `<img src="${file.url}">`);
-            return `<div class="slide">${content}</div>`;
+            if (canvaOn && file.url.includes('canva.com')) {
+                return `<div class="slide"><iframe src="${getCanvaEmbedUrl(file.url)}"></iframe></div>`;
+            }
+            return `<div class="slide">${file.isVideo ? `<video src="${file.url}" muted loop playsinline autoplay></video>` : `<img src="${file.url}">`}</div>`;
         }).join('');
 
         return `
@@ -509,11 +528,22 @@ function doRender() {
     if (isCustom) initDragging();
 }
 
-// --- 3. LIGHTBOX PREVIEW (Scroll-Snap & Buttons Always Visible) ---
+function moveSlide(dataIdx, dir, event) {
+    if (event) event.stopPropagation();
+    const track = document.getElementById(`track-${dataIdx}`);
+    const slides = track.querySelectorAll('.slide');
+    if (!track.dataset.idx) track.dataset.idx = 0;
+    let idx = (parseInt(track.dataset.idx) + dir + slides.length) % slides.length;
+    track.dataset.idx = idx;
+    track.style.transform = `translateX(-${idx * 100}%)`;
+}
+
+// --- 3. PREVIEW LIGHTBOX (True Horizontal Scroll-Snap) ---
 function openPreview(idx) {
     const item = gridData[idx];
     if (!item || isDragging) return;
     
+    currentLightboxItemIdx = idx;
     const lightbox = document.getElementById('previewLightbox');
     const content = document.getElementById('lightboxContent');
     const canvaOn = document.getElementById('canvaT').checked;
@@ -530,31 +560,9 @@ function openPreview(idx) {
     document.querySelectorAll('.lb-nav').forEach(a => a.remove());
     if (item.files.length > 1) {
         lightbox.insertAdjacentHTML('beforeend', `
-            <button class="nav-btn lb-nav prev-btn active-lb-btn" onclick="scrollLB(-1)">‹</button>
-            <button class="nav-btn lb-nav next-btn active-lb-btn" onclick="scrollLB(1)">›</button>
+            <button class="nav-btn lb-nav prev-btn" onclick="scrollLB(-1)">‹</button>
+            <button class="nav-btn lb-nav next-btn" onclick="scrollLB(1)">›</button>
         `);
-    }
-    lightbox.style.display = 'flex';
-}
-
-// Highlights Story Preview
-function openStory(highlightName) {
-    const relatedStories = gridData.filter(item => item.type === "Story" && item.highlightGroup === highlightName);
-    if (relatedStories.length === 0) return;
-
-    const lightbox = document.getElementById('previewLightbox');
-    const content = document.getElementById('lightboxContent');
-    const allFiles = relatedStories.flatMap(s => s.files);
-
-    const storiesHtml = allFiles.map(file => {
-        const media = file.isVideo ? `<video src="${file.url}" controls autoplay loop></video>` : `<img src="${file.url}">`;
-        return `<div class="lb-slide">${media}</div>`;
-    }).join('');
-
-    content.innerHTML = `<div class="lb-track" id="lbTrack">${storiesHtml}</div>`;
-    document.querySelectorAll('.lb-nav').forEach(a => a.remove());
-    if (allFiles.length > 1) {
-        lightbox.insertAdjacentHTML('beforeend', `<button class="nav-btn lb-nav prev-btn active-lb-btn" onclick="scrollLB(-1)">‹</button><button class="nav-btn lb-nav next-btn active-lb-btn" onclick="scrollLB(1)">›</button>`);
     }
     lightbox.style.display = 'flex';
 }
@@ -564,25 +572,54 @@ function scrollLB(dir) {
     if (track) track.scrollBy({ left: track.clientWidth * dir, behavior: 'smooth' });
 }
 
-// --- 4. UTILITIES & UI ---
-function moveSlide(dataIdx, dir, event) {
-    if (event) event.stopPropagation();
-    const track = document.getElementById(`track-${dataIdx}`);
-    const slides = track.querySelectorAll('.slide');
-    let idx = (parseInt(track.dataset.idx || 0) + dir + slides.length) % slides.length;
-    track.dataset.idx = idx;
-    track.style.transform = `translateX(-${idx * 100}%)`;
+window.addEventListener('keydown', (e) => {
+    if (document.getElementById('previewLightbox').style.display === 'flex') {
+        if (e.key === 'ArrowRight') scrollLB(1);
+        if (e.key === 'ArrowLeft') scrollLB(-1);
+        if (e.key === 'Escape') document.getElementById('previewLightbox').style.display = 'none';
+    }
+});
+
+// --- 4. FILTERS & UI LOGIC ---
+function updateUI() {
+    const states = {
+        bioT: document.getElementById('bioT').checked,
+        highT: document.getElementById('highT').checked,
+        mapT: document.getElementById('mapT').checked,
+        canvaT: document.getElementById('canvaT').checked,
+        customOrderT: document.getElementById('customOrderT').checked
+    };
+    Object.keys(states).forEach(k => localStorage.setItem(k, states[k]));
+    document.getElementById('bioSection').style.display = states.bioT ? 'flex' : 'none'; 
+    document.getElementById('highRow').style.display = states.highT ? 'flex' : 'none'; 
+    document.getElementById('colorManagerUI').style.display = states.mapT ? 'block' : 'none';
+    if(gridData.length > 0) doRender(); 
 }
 
-function updateUI() {
-    const ids = ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'];
-    ids.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) localStorage.setItem(id, el.checked);
-    });
-    document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none'; 
-    document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none'; 
-    if(gridData.length > 0) doRender(); 
+function toggleFilterRow(e) {
+    if (e) e.stopPropagation();
+    const isActive = document.getElementById('filterRow').classList.toggle('active');
+    localStorage.setItem('filterRowActive', isActive);
+}
+
+function setPlat(p) { 
+    currentPlat = p; 
+    localStorage.setItem('currentPlat', p); 
+    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
+    document.getElementById('platMenu').classList.remove('show');
+    doRender(); 
+}
+
+function toggleStat(s) { 
+    activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s]; 
+    localStorage.setItem('activeStats', JSON.stringify(activeStats));
+    doRender(); 
+}
+
+function toggleMenu(id, e) { 
+    if (e) e.stopPropagation(); 
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.id !== id && m.classList.remove('show'));
+    document.getElementById(id).classList.toggle('show');
 }
 
 function renderProfile(data) {
@@ -595,30 +632,41 @@ function renderProfile(data) {
     document.getElementById('bioLink').href = b.linkUrl || "#";
 
     document.getElementById('highRow').innerHTML = (data.highlights || []).map(h => `
-        <div style="text-align:center; min-width:75px; cursor:pointer;" onclick="openStory('${h.name}')">
+        <div style="text-align:center; min-width:75px;">
             <div class="h-circle"><img src="${h.image}" class="h-img"></div>
             <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h.name}</span>
         </div>`).join('');
+    
+    document.getElementById('cnt-all').innerText = gridData.length;
+    document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
+    document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
 }
 
-function setupStatusFilters() {
-    const stats = [...new Set(gridData.map(i => i.status))];
-    const savedStats = localStorage.getItem('activeStats');
-    activeStats = savedStats ? JSON.parse(savedStats) : [...stats];
-    document.getElementById('statusOptions').innerHTML = stats.map(s => `
-        <label class="dropdown-item" onclick="event.stopPropagation()">
-            <div class="item-left">
-                <input type="checkbox" ${activeStats.includes(s) ? 'checked' : ''} onchange="toggleStat('${s}')">
-                <div class="check-box"></div>
-                <span style="font-weight:600; font-size:13px;">${s}</span>
-            </div>
-        </label>`).join('');
+function initDragging() {
+    const grid = document.getElementById('grid');
+    const items = grid.querySelectorAll('.item:not(.empty)');
+    items.forEach(item => {
+        item.addEventListener('dragstart', () => { isDragging = true; item.classList.add('dragging'); });
+        item.addEventListener('dragend', () => {
+            item.classList.remove('dragging');
+            saveCurrentOrder();
+            setTimeout(() => { isDragging = false; }, 50);
+        });
+        item.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const draggingItem = document.querySelector('.dragging');
+            if (!draggingItem || draggingItem === item) return;
+            const rect = item.getBoundingClientRect();
+            const isAfter = (e.clientX - rect.left) > rect.width / 2 || (e.clientY - rect.top) > rect.height / 2;
+            grid.insertBefore(draggingItem, isAfter ? item.nextSibling : item);
+        });
+    });
 }
 
-function toggleStat(s) { 
-    activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s]; 
-    localStorage.setItem('activeStats', JSON.stringify(activeStats));
-    doRender(); 
+function saveCurrentOrder() {
+    const items = [...document.querySelectorAll('.item:not(.empty)')];
+    const orderIds = items.map(item => item.getAttribute('data-id'));
+    localStorage.setItem('customGridOrder', JSON.stringify(orderIds));
 }
 
 function getCanvaEmbedUrl(url) {
@@ -626,10 +674,28 @@ function getCanvaEmbedUrl(url) {
     return match ? `https://www.canva.com/design/${match[1]}/view?embed` : url;
 }
 
-// Global window event for Esc key
-window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') document.getElementById('previewLightbox').style.display = 'none';
-});
+function toggleSettings(e) { if (e) e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
+
+window.brandColors = ["#FFD1DC", "#AEEEEE"];
+window.generateRandomMap = () => { window.shuffledIndices = Array.from({ length: 300 }, () => Math.floor(Math.random() * window.brandColors.length)); };
+window.updateColor = (idx, val) => { window.brandColors[idx] = val; doRender(); };
+window.renderColorControls = () => {
+    const container = document.getElementById('colorList');
+    if (!container) return;
+    container.innerHTML = window.brandColors.map((color, idx) => `
+        <div class="color-row">
+            <div class="color-picker-wrapper"><input type="color" class="color-picker" value="${color}" onchange="window.updateColor(${idx}, this.value)"></div>
+            <span style="font-size:12px; font-weight:700; flex:1;">Color ${idx + 1}</span>
+            <button class="remove-btn" onclick="window.brandColors.splice(${idx},1); window.renderColorControls(); doRender();">×</button>
+        </div>`).join('');
+};
+
+window.onclick = (e) => {
+    if (!e.target.closest('.dropdown-container') && !e.target.closest('.settings-menu') && !e.target.closest('.icon-btn')) {
+        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+        document.getElementById('setMenu').classList.remove('open');
+    }
+};
 
 init();
     </script>
