@@ -157,6 +157,64 @@ input:checked + .check-box::after {
 .color-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
 .color-picker-wrapper { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #eee; position: relative; overflow: hidden; }
 .color-picker { position: absolute; top: -5px; left: -5px; width: 44px; height: 44px; border: none; cursor: pointer; }
+/* Color Manager Styling */
+.brand-color-section {
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+    margin-top: 15px;
+}
+
+.color-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.color-picker-wrapper {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px #ddd;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.color-picker {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    width: 40px;
+    height: 40px;
+    border: none;
+    cursor: pointer;
+    background: none;
+}
+
+.add-btn {
+    width: 100%;
+    padding: 10px;
+    background: #f3f3f7;
+    border: 1px dashed #ccc;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.add-btn:hover { background: #e8e8ef; }
+
+.remove-btn {
+    background: none;
+    border: none;
+    color: #ff4d4d;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 5px;
+}
     </style>
 </head>
 <body>
@@ -196,21 +254,21 @@ input:checked + .check-box::after {
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
                     Show Highlights <label class="switch"><input type="checkbox" id="highT" onchange="updateUI()"><span class="slider"></span></label>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
-                    Content Map <label class="switch"><input type="checkbox" id="mapT" onchange="updateUI()"><span class="slider"></span></label>
-                </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600; border-top: 1px solid #eee; padding-top: 15px;">
                     Custom Layout <label class="switch"><input type="checkbox" id="customOrderT" onchange="toggleOrder()"><span class="slider"></span></label>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; font-weight:600;">
                     Direct Canva Previews <label class="switch"><input type="checkbox" id="canvaT" onchange="updateUI()"><span class="slider"></span></label>
                 </div>
-                
-                <div class="brand-color-section" id="colorManagerUI" style="display:none; margin-top: 15px;">
-                    <div style="font-size: 11px; font-weight: 800; color: #888; margin-bottom: 10px; text-transform: uppercase;">Brand Palette</div>
-                    <div id="colorList"></div>
-                    <button class="add-btn" style="width:100%; padding:8px; margin-top:5px; cursor:pointer;" onclick="addColor()">+ Add Color</button>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
+                    Content Map <label class="switch"><input type="checkbox" id="mapT" onchange="updateUI()"><span class="slider"></span></label>
                 </div>
+                
+                <div class="brand-color-section" id="colorManagerUI" style="display:none;">
+    <div style="font-size: 11px; font-weight: 800; color: #888; margin-bottom: 10px; text-transform: uppercase;">Brand Palette</div>
+    <div id="colorList"></div>
+    <button class="add-btn" onclick="addColor()">+ Add Color</button>
+</div>
             </div>
         </div>
     </div>
@@ -402,6 +460,7 @@ function openPreview(index) {
     content.innerHTML = html;
     document.getElementById('previewLightbox').style.display = 'flex';
 }
+        
 
 // --- 6. INITIALIZATION ---
 async function init() {
@@ -435,6 +494,52 @@ async function init() {
         console.error("Fetch Error:", err);
         document.getElementById('grid').innerHTML = '<p style="text-align:center; padding:50px;">Check your Worker URL.</p>';
     }
+    // Initial Randomization for the Content Map
+function generateRandomMap() {
+    // Generates a large enough list of random color indices
+    shuffledIndices = Array.from({ length: 200 }, () => Math.floor(Math.random() * brandColors.length));
+}
+
+function renderColorControls() {
+    const container = document.getElementById('colorList');
+    if (!container) return;
+
+    container.innerHTML = brandColors.map((color, idx) => `
+        <div class="color-row">
+            <div class="color-picker-wrapper">
+                <input type="color" class="color-picker" value="${color}" onchange="updateColor(${idx}, this.value)">
+            </div>
+            <span style="font-size:12px; font-weight:700; flex:1; color:#555;">Color ${idx + 1}</span>
+            ${brandColors.length > 1 ? `<button class="remove-btn" onclick="removeColor(${idx})">×</button>` : ''}
+        </div>
+    `).join('');
+}
+
+function addColor() {
+    // Add a default light grey color
+    brandColors.push("#E5E5E5");
+    renderColorControls();
+    generateRandomMap(); // Re-randomize when palette changes
+    doRender();
+}
+
+function removeColor(idx) {
+    brandColors.splice(idx, 1);
+    renderColorControls();
+    generateRandomMap(); // Re-randomize when palette changes
+    doRender();
+}
+
+function updateColor(idx, val) {
+    brandColors[idx] = val;
+    // No need to re-randomize here, just re-render with the new hex code
+    doRender();
+}
+
+// Update the init function call
+// Make sure this is called inside your async init() function:
+// generateRandomMap();
+// renderColorControls();
 }
 
 function renderStatusOptions(stats) {
