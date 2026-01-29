@@ -93,6 +93,50 @@ input { display: none; }
 .dropdown-menu.show { display: block; }
 .dropdown-item { padding: 10px 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
 .dropdown-item:hover { background: var(--surface); }
+        /* Status Filter Styling */
+.item-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.count-pill {
+    background: var(--surface);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    color: #888;
+    font-weight: 700;
+}
+
+/* Custom Checkbox Look */
+.dropdown-item input[type="checkbox"] {
+    display: none; /* Hide default */
+}
+
+.check-box {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    position: relative;
+    transition: 0.2s;
+}
+
+input:checked + .check-box {
+    background: #000;
+    border-color: #000;
+}
+
+input:checked + .check-box::after {
+    content: '✓';
+    color: white;
+    font-size: 12px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
 
 /* Grid & Drag/Drop */
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
@@ -394,16 +438,42 @@ async function init() {
 }
 
 function renderStatusOptions(stats) {
-    document.getElementById('statusOptions').innerHTML = stats.map(s => `
-        <label class="dropdown-item" onclick="event.stopPropagation()">
-            <span>${s}</span>
-            <input type="checkbox" checked onchange="toggleStat('${s}')">
-        </label>`).join('');
+    const container = document.getElementById('statusOptions');
+    
+    container.innerHTML = stats.map(s => {
+        // Calculate how many items have this status
+        const count = gridData.filter(i => i.status === s).length;
+        const isChecked = activeStats.includes(s) ? 'checked' : '';
+
+        return `
+            <label class="dropdown-item" onclick="event.stopPropagation()">
+                <div class="item-left">
+                    <input type="checkbox" ${isChecked} onchange="toggleStat('${s}')">
+                    <div class="check-box"></div>
+                    <span style="font-weight:600; font-size:13px;">${s}</span>
+                </div>
+                <span class="count-pill">${count}</span>
+            </label>
+        `;
+    }).join('');
+}
+function toggleStat(s) { 
+    // Add or remove status from active list
+    if (activeStats.includes(s)) {
+        activeStats = activeStats.filter(x => x !== s);
+    } else {
+        activeStats.push(s);
+    }
+    doRender(); 
 }
 
-function toggleStat(s) { 
-    activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s]; 
-    doRender(); 
+function updateCounts() {
+    // Updates the platform filter numbers
+    if (document.getElementById('cnt-all')) {
+        document.getElementById('cnt-all').innerText = gridData.length;
+        document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
+        document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
+    }
 }
 
 function updateCounts() {
