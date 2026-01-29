@@ -399,14 +399,19 @@ function doRender() {
     grid.innerHTML = filtered.map((item, i) => {
         const dataIdx = gridData.indexOf(item);
         
-        // 1. DATA PARSING (Handles Notion property variations)
-        const contentTitle = (item.name && item.name.trim() !== "") ? item.name : "No Content";
-        const pillar = item.pillar || item.Pillar || item["Content Pillar"] || "General";
+        // 1. EXACT DATA MAPPING FROM YOUR NOTION SCREENSHOT
+        // Using bracket notation to handle spaces in property names
+        const contentTitle = item.Caption || item.caption || item.name || "No Content";
+        const pillar = item["Content Pillar"] || item.pillar || "General";
         
+        // Handle "Publish Date" property
+        const rawDate = item["Publish Date"] || item.date || "";
         let postDate = "";
-        if (item.date) {
-            const d = new Date(item.date);
+        
+        if (rawDate) {
+            const d = new Date(rawDate);
             if (!isNaN(d.getTime())) {
+                // Formats to "Feb 16"
                 postDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             }
         }
@@ -435,9 +440,9 @@ function doRender() {
                 
                 <div class="overlay">
                     <div class="ov-title">${contentTitle}</div>
-                    <div class="ov-meta">
-                        <span style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px;">${pillar}</span>
-                        <span style="font-weight: 800;">${postDate}</span>
+                    <div class="ov-meta" style="margin-top: 5px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: 700;">${pillar}</span>
+                        <span style="font-weight: 800; font-size: 10px;">${postDate}</span>
                     </div>
                 </div>
             </div>`;
