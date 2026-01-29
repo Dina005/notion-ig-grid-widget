@@ -252,9 +252,18 @@ input:checked + .check-box::after { content: '✓'; color: white; font-size: 10p
 let gridData = [], currentPlat = 'all', activeStats = [], isDragging = false;
 let dragTimeout;
 
-// --- INITIALIZATION ---
+// --- UPDATED INITIALIZATION ---
 async function init() {
     try {
+        // 1. First, restore toggle states from localStorage if they exist
+        const toggleIds = ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'];
+        toggleIds.forEach(id => {
+            const savedState = localStorage.getItem(id);
+            if (savedState !== null) {
+                document.getElementById(id).checked = savedState === 'true';
+            }
+        });
+
         const res = await fetch(API);
         const data = await res.json();
         gridData = data.grid || [];
@@ -276,21 +285,13 @@ async function init() {
                 <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h.name}</span>
             </div>`).join('');
 
-        // Populate Status Filters
-        const stats = [...new Set(gridData.map(i => i.status))];
-        activeStats = [...stats];
-        document.getElementById('statusOptions').innerHTML = stats.map(s => `
-            <label class="dropdown-item" onclick="event.stopPropagation()">
-                <div class="item-left">
-                    <input type="checkbox" checked onchange="toggleStat('${s}')">
-                    <div class="check-box"></div><span style="font-weight:600; font-size:13px;">${s}</span>
-                </div>
-                <span class="count-pill">${gridData.filter(i => i.status === s).length}</span>
-            </label>`).join('');
+        // Populate Filters... (keep your existing statusOptions code here)
 
         window.generateRandomMap();
         window.renderColorControls();
-        doRender();
+        
+        // 2. Final Step: Run updateUI to apply the hidden/visible logic based on toggles
+        updateUI(); 
     } catch (e) { console.error("Initialization Failed:", e); }
 }
 
@@ -459,10 +460,23 @@ function toggleMenu(id, e) {
     document.getElementById(id).classList.toggle('show'); 
 }
 
+// --- UPDATED updateUI ---
 function updateUI() { 
-    document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none'; 
-    document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none'; 
-    document.getElementById('colorManagerUI').style.display = document.getElementById('mapT').checked ? 'block' : 'none';
+    const bioOn = document.getElementById('bioT').checked;
+    const highOn = document.getElementById('highT').checked;
+    const mapOn = document.getElementById('mapT').checked;
+
+    // Save states so they persist after refresh
+    localStorage.setItem('bioT', bioOn);
+    localStorage.setItem('highT', highOn);
+    localStorage.setItem('mapT', mapOn);
+    localStorage.setItem('canvaT', document.getElementById('canvaT').checked);
+    localStorage.setItem('customOrderT', document.getElementById('customOrderT').checked);
+
+    document.getElementById('bioSection').style.display = bioOn ? 'flex' : 'none'; 
+    document.getElementById('highRow').style.display = highOn ? 'flex' : 'none'; 
+    document.getElementById('colorManagerUI').style.display = mapOn ? 'block' : 'none';
+    
     doRender(); 
 }
 
