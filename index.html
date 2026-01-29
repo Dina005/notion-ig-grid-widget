@@ -250,19 +250,24 @@ const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [], isDragging = false;
 let dragTimeout;
 
-// --- 1. INITIALIZATION (Instant Logic) ---
+// --- 1. INITIALIZATION ---
 async function init() {
-    // Apply saved toggle states BEFORE fetching data to prevent flickering
+    // A. Restore Visual Toggles (Bio, Highlights, etc.)
     const toggleIds = ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'];
     toggleIds.forEach(id => {
         const savedState = localStorage.getItem(id);
         const el = document.getElementById(id);
-        if (savedState !== null && el) {
-            el.checked = savedState === 'true';
-        }
+        if (savedState !== null && el) el.checked = savedState === 'true';
     });
 
-    // Set initial visibility based on toggles
+    // B. Restore Platform Filter choice
+    const savedPlat = localStorage.getItem('currentPlat');
+    if (savedPlat) {
+        currentPlat = savedPlat;
+        document.getElementById('platCurrent').innerText = currentPlat === 'all' ? 'All Platforms' : currentPlat.charAt(0).toUpperCase() + currentPlat.slice(1);
+    }
+
+    // C. Apply UI visibility immediately to stop flicker
     updateUI(); 
 
     try {
@@ -270,35 +275,18 @@ async function init() {
         const data = await res.json();
         gridData = data.grid || [];
         
-        // Populate Profile Info
-        document.getElementById('pfpImg').src = data.bio.profilePicture || "";
-        document.getElementById('bioUser').innerText = "@" + (data.bio.username || "user");
-        document.getElementById('bioDisplay').innerText = data.bio.displayName || "";
-        document.getElementById('bioDesc').innerText = data.bio.bioText || "";
-        document.getElementById('bioLink').innerText = data.bio.linkDisplay || "";
-        document.getElementById('bioLink').href = data.bio.linkUrl || "#";
+        // D. Populate Profile & Counts
+        renderProfile(data);
 
-        // Populate Highlights
-        document.getElementById('highRow').innerHTML = (data.highlights || []).map(h => `
-            <div style="text-align:center; min-width:75px;">
-                <div class="h-circle ${h.image ? '' : 'empty'}">
-                    ${h.image ? `<img src="${h.image}" class="h-img">` : '<span class="empty-text" style="font-size:8px">N/A</span>'}
-                </div>
-                <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h.name}</span>
-            </div>`).join('');
-
-        // Populate Platform Counts
-        document.getElementById('cnt-all').innerText = gridData.length;
-        document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
-        document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
-
-        // Populate Status Filters
+        // E. Restore Status Filter choices
         const stats = [...new Set(gridData.map(i => i.status))];
-        activeStats = [...stats];
+        const savedStats = localStorage.getItem('activeStats');
+        activeStats = savedStats ? JSON.parse(savedStats) : [...stats];
+
         document.getElementById('statusOptions').innerHTML = stats.map(s => `
             <label class="dropdown-item" onclick="event.stopPropagation()">
                 <div class="item-left">
-                    <input type="checkbox" checked onchange="toggleStat('${s}')">
+                    <input type="checkbox" ${activeStats.includes(s) ? 'checked' : ''} onchange="toggleStat('${s}')">
                     <div class="check-box"></div>
                     <span style="font-weight:600; font-size:13px;">${s}</span>
                 </div>
@@ -311,7 +299,7 @@ async function init() {
     } catch (e) { console.error("Initialization Failed:", e); }
 }
 
-// --- 2. CORE RENDERING ---
+// --- 2. CORE RENDERING ENGINE ---
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
@@ -372,28 +360,69 @@ function doRender() {
     if (isCustom) initDragging();
 }
 
-// --- 3. UI & STATE MANAGEMENT ---
+// --- 3. UI, FILTERS & PERSISTENCE ---
 function updateUI() { 
-    const bioOn = document.getElementById('bioT').checked;
-    const highOn = document.getElementById('highT').checked;
-    const mapOn = document.getElementById('mapT').checked;
-    const customOn = document.getElementById('customOrderT').checked;
-    const canvaOn = document.getElementById('canvaT').checked;
+    const states = {
+        bioT: document.getElementById('bioT').checked,
+        highT: document.getElementById('highT').checked,
+        mapT: document.getElementById('mapT').checked,
+        canvaT: document.getElementById('canvaT').checked,
+        customOrderT: document.getElementById('customOrderT').checked
+    };
 
-    localStorage.setItem('bioT', bioOn);
-    localStorage.setItem('highT', highOn);
-    localStorage.setItem('mapT', mapOn);
-    localStorage.setItem('canvaT', canvaOn);
-    localStorage.setItem('customOrderT', customOn);
+    Object.keys(states).forEach(key => localStorage.setItem(key, states[key]));
 
-    document.getElementById('bioSection').style.display = bioOn ? 'flex' : 'none'; 
-    document.getElementById('highRow').style.display = highOn ? 'flex' : 'none'; 
-    document.getElementById('colorManagerUI').style.display = mapOn ? 'block' : 'none';
+    document.getElementById('bioSection').style.display = states.bioT ? 'flex' : 'none'; 
+    document.getElementById('highRow').style.display = states.highT ? 'flex' : 'none'; 
+    document.getElementById('colorManagerUI').style.display = states.mapT ? 'block' : 'none';
     
     if(gridData.length > 0) doRender(); 
 }
 
-// --- 4. DRAG & DROP ---
+function setPlat(p) { 
+    currentPlat = p; 
+    localStorage.setItem('currentPlat', p); 
+    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
+    document.getElementById('platMenu').classList.remove('show'); // Auto-collapse
+    doRender(); 
+}
+
+function toggleStat(s) { 
+    activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s]; 
+    localStorage.setItem('activeStats', JSON.stringify(activeStats));
+    doRender(); 
+}
+
+function toggleMenu(id, e) { 
+    if (e) e.stopPropagation(); 
+    const menu = document.getElementById(id);
+    const wasOpen = menu.classList.contains('show');
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+    if (!wasOpen) menu.classList.add('show');
+}
+
+function renderProfile(data) {
+    document.getElementById('pfpImg').src = data.bio.profilePicture || "";
+    document.getElementById('bioUser').innerText = "@" + (data.bio.username || "user");
+    document.getElementById('bioDisplay').innerText = data.bio.displayName || "";
+    document.getElementById('bioDesc').innerText = data.bio.bioText || "";
+    document.getElementById('bioLink').innerText = data.bio.linkDisplay || "";
+    document.getElementById('bioLink').href = data.bio.linkUrl || "#";
+
+    document.getElementById('highRow').innerHTML = (data.highlights || []).map(h => `
+        <div style="text-align:center; min-width:75px;">
+            <div class="h-circle ${h.image ? '' : 'empty'}">
+                ${h.image ? `<img src="${h.image}" class="h-img">` : '<span class="empty-text" style="font-size:8px">N/A</span>'}
+            </div>
+            <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h.name}</span>
+        </div>`).join('');
+    
+    document.getElementById('cnt-all').innerText = gridData.length;
+    document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
+    document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
+}
+
+// --- 4. DRAG & DROP ENGINE ---
 function initDragging() {
     const grid = document.getElementById('grid');
     const items = grid.querySelectorAll('.item:not(.empty)');
@@ -441,12 +470,9 @@ function getCanvaEmbedUrl(url) {
     return match ? `https://www.canva.com/design/${match[1]}/view?embed` : url.split('?')[0] + '/view?embed';
 }
 
-function toggleStat(s) { activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s]; doRender(); }
-function setPlat(p) { currentPlat = p; document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1); doRender(); }
 function toggleSettings(e) { if (e) e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
-function toggleMenu(id, e) { if (e) e.stopPropagation(); document.querySelectorAll('.dropdown-menu').forEach(m => m.id !== id && m.classList.remove('show')); document.getElementById(id).classList.toggle('show'); }
 
-// Brand Color Logic
+// Brand Color Methods
 window.brandColors = ["#FFD1DC", "#AEEEEE"];
 window.generateRandomMap = () => { window.shuffledIndices = Array.from({ length: 300 }, () => Math.floor(Math.random() * window.brandColors.length)); };
 window.updateColor = (idx, val) => { window.brandColors[idx] = val; doRender(); };
