@@ -184,6 +184,19 @@ input:checked + .check-box::after { content: '✓'; color: white; font-size: 10p
     font-weight: 600;
     text-transform: uppercase;
 }
+.grid {
+    /* Prevents layout shifts during drag */
+    contain: layout; 
+}
+.item {
+    /* Keeps the browser from getting overwhelmed */
+    will-change: transform; 
+    transition: transform 0.1s ease-out;
+}
+.item.dragging {
+    transition: none; /* No transition on the actual item you are holding */
+    opacity: 0.2;
+}
         
     </style>
 </head>
@@ -275,7 +288,9 @@ input:checked + .check-box::after { content: '✓'; color: white; font-size: 10p
     <script>
  const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [], isDragging = false;
+let dragTimeout;
 
+// Color State
 window.brandColors = ["#FFD1DC", "#AEEEEE"]; 
 window.shuffledIndices = [];
 
@@ -312,7 +327,9 @@ window.renderColorControls = () => {
     if (!container) return;
     container.innerHTML = window.brandColors.map((color, idx) => `
         <div class="color-row">
-            <div class="color-picker-wrapper"><input type="color" class="color-picker" value="${color}" onchange="window.updateColor(${idx}, this.value)"></div>
+            <div class="color-picker-wrapper">
+                <input type="color" class="color-picker" value="${color}" onchange="window.updateColor(${idx}, this.value)">
+            </div>
             <span style="font-size:12px; font-weight:700; flex:1;">Color ${idx + 1}</span>
             <button class="remove-btn" onclick="window.removeColor(${idx}, event)">×</button>
         </div>`).join('');
@@ -322,7 +339,7 @@ window.updateColor = (idx, val) => { window.brandColors[idx] = val; doRender(); 
 window.addColor = (e) => { if(e) e.stopPropagation(); window.brandColors.push("#E5E5E5"); window.generateRandomMap(); window.renderColorControls(); doRender(); };
 window.removeColor = (idx, e) => { if(e) e.stopPropagation(); window.brandColors.splice(idx, 1); window.renderColorControls(); doRender(); };
 
-// --- RENDERING ---
+// --- RENDERING ENGINE ---
 function getCanvaEmbedUrl(url) {
     if (!url || !url.includes('canva.com')) return url;
     const match = url.match(/design\/([A-Za-z0-9_-]+)/);
@@ -337,7 +354,7 @@ function doRender() {
 
     let filtered = [...gridData].filter(i => (currentPlat === 'all' || i.platforms.includes(currentPlat)) && activeStats.includes(i.status));
 
-    // Sort by Custom Order if enabled
+    // Apply Saved Custom Order
     if (isCustom) {
         const savedOrder = localStorage.getItem('customGridOrder');
         if (savedOrder) {
@@ -350,7 +367,7 @@ function doRender() {
         }
     }
 
-    // Min 9 squares / Multiples of 3
+    // Min 9 squares / Multiples of 3 Logic
     let displayList = [...filtered];
     while (displayList.length < 9 || displayList.length % 3 !== 0) {
         displayList.push({ isPlaceholder: true });
@@ -387,58 +404,52 @@ function doRender() {
     if (isCustom) initDragging();
 }
 
-// --- FIXED DRAG LOGIC ---
+// --- NO-LAG DRAGGING LOGIC ---
 function initDragging() {
     const grid = document.getElementById('grid');
     const items = grid.querySelectorAll('.item:not(.empty)');
 
     items.forEach(item => {
-        item.addEventListener('dragstart', () => { 
+        item.addEventListener('dragstart', (e) => { 
             isDragging = true; 
             item.classList.add('dragging'); 
+            e.dataTransfer.effectAllowed = 'move';
         });
+
         item.addEventListener('dragend', () => {
             item.classList.remove('dragging');
             saveCurrentOrder();
-            setTimeout(() => { isDragging = false; }, 100);
+            setTimeout(() => { isDragging = false; }, 50);
+        });
+
+        item.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const draggingItem = document.querySelector('.dragging');
+            if (!draggingItem || draggingItem === item) return;
+
+            // Precise swapping logic
+            const rect = item.getBoundingClientRect();
+            const relX = e.clientX - rect.left;
+            const relY = e.clientY - rect.top;
+            
+            clearTimeout(dragTimeout);
+            dragTimeout = setTimeout(() => {
+                // If mouse is past the halfway point of the target item, move after it
+                const isAfter = relX > rect.width / 2 || relY > rect.height / 2;
+                grid.insertBefore(draggingItem, isAfter ? item.nextSibling : item);
+            }, 0);
         });
     });
 
-    grid.addEventListener('dragover', e => {
+    // Allow dropping into empty placeholder territory
+    grid.addEventListener('dragover', (e) => {
         e.preventDefault();
         const draggingItem = document.querySelector('.dragging');
-        if (!draggingItem) return;
-
-        const afterElement = getDragAfterElement(grid, e.clientX, e.clientY);
-        if (!afterElement) {
-            // Drop at end of real items, before placeholders
+        if (draggingItem && e.target.classList.contains('empty')) {
             const firstEmpty = grid.querySelector('.item.empty');
-            if (firstEmpty) grid.insertBefore(draggingItem, firstEmpty);
-            else grid.appendChild(draggingItem);
-        } else {
-            grid.insertBefore(draggingItem, afterElement);
+            grid.insertBefore(draggingItem, firstEmpty);
         }
     });
-}
-
-function getDragAfterElement(container, x, y) {
-    const draggables = [...container.querySelectorAll('.item:not(.dragging):not(.empty)')];
-    
-    return draggables.reduce((closest, child) => {
-        const box = child.getBoundingClientRect();
-        // Calculate distance from mouse to center of the box
-        const centerX = box.left + box.width / 2;
-        const centerY = box.top + box.height / 2;
-        const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
-
-        // We only care about elements that are effectively "after" our cursor position
-        // in the natural flow of the grid
-        if (distance < closest.distance) {
-            return { distance: distance, element: child };
-        } else {
-            return closest;
-        }
-    }, { distance: Number.POSITIVE_INFINITY }).element;
 }
 
 function saveCurrentOrder() {
@@ -447,7 +458,7 @@ function saveCurrentOrder() {
     localStorage.setItem('customGridOrder', JSON.stringify(orderIds));
 }
 
-// --- INIT ---
+// --- DATA INITIALIZATION ---
 async function init() {
     try {
         const res = await fetch(API);
@@ -482,7 +493,7 @@ async function init() {
         window.generateRandomMap();
         window.renderColorControls();
         doRender();
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("API Load Error:", e); }
 }
 
 function openPreview(idx) {
@@ -501,7 +512,7 @@ function toggleStat(s) {
 
 function setPlat(p) { 
     currentPlat = p; 
-    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p;
+    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
     doRender(); 
 }
 
