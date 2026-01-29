@@ -302,14 +302,17 @@
         function removeColor(idx) { brandColors.splice(idx, 1); shuffleColors(); renderColorControls(); }
         function updateColor(idx, val) { brandColors[idx] = val; doRender(); }
 
-        // Canva URL Cleaner (The Fix)
+        // THE ULTIMATE CANVA FIX: Forces the clean embed structure
         function getCanvaEmbedUrl(originalUrl) {
             if (!originalUrl || !originalUrl.includes('canva.com')) return originalUrl;
-            let cleanUrl = originalUrl.split('?')[0].replace('/view', '').replace('/edit', '').replace('/watch', '');
-            return cleanUrl + '/view?embed';
+            const regex = /\/design\/([A-Za-z0-9_-]+)/;
+            const match = originalUrl.match(regex);
+            if (match && match[1]) {
+                return `https://www.canva.com/design/${match[1]}/view?embed`;
+            }
+            return originalUrl.split('?')[0] + '/view?embed';
         }
 
-        // Preview / Lightbox
         function openPreview(index) {
             const item = gridData[index];
             if (!item) return;
@@ -330,14 +333,27 @@
             document.getElementById('previewLightbox').style.display = 'flex';
         }
 
-        // Data Fetching
+        // FAIL-SAFE DATA FETCHING
         async function init() {
             document.getElementById('canvaT').checked = true;
+            const gridContainer = document.getElementById('grid');
+            gridContainer.innerHTML = '<p style="text-align:center; padding:50px; color:#888;">Connecting to Notion...</p>';
+
             try {
-                const r = await fetch(API); 
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+                const r = await fetch(API, { signal: controller.signal }); 
                 const res = await r.json();
+                clearTimeout(timeoutId);
+
                 gridData = res.grid;
                 
+                if (!gridData || gridData.length === 0) {
+                    gridContainer.innerHTML = '<p style="text-align:center; padding:50px;">No data found in Notion database.</p>';
+                    return;
+                }
+
                 // Set Bio
                 document.getElementById('pfpImg').src = res.bio.profilePicture || "";
                 document.getElementById('bioUser').innerText = "@" + (res.bio.username || "username");
@@ -360,7 +376,10 @@
                 updateCounts();
                 renderColorControls();
                 shuffleColors();
-            } catch(e) { console.error("Error loading data:", e); }
+            } catch(e) { 
+                console.error("Critical Fetch Error:", e);
+                gridContainer.innerHTML = `<p style="text-align:center; padding:50px; color:red;">Connection Error: ${e.message}<br><small>Check if your Worker is running.</small></p>`;
+            }
         }
 
         function renderStatusOptions(stats) {
@@ -392,7 +411,6 @@
             doRender(); 
         }
 
-        // Main Rendering Logic
         function doRender() {
             const grid = document.getElementById('grid');
             const isMap = document.getElementById('mapT').checked;
@@ -420,7 +438,6 @@
             }).join('');
         }
 
-        // Close dropdowns when clicking outside
         window.onclick = function(event) {
             if (!event.target.closest('.dropdown-container') && !event.target.closest('.settings-menu') && !event.target.closest('.icon-btn')) {
                 document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
