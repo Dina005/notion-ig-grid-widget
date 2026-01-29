@@ -218,6 +218,46 @@ input:checked + .slider:before { transform: translateX(18px); }
     color: white;
 }
 .lb-nav:hover { background: rgba(255,255,255,0.3); }
+        /* Carousel Indicator Icon */
+.carousel-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.4);
+    color: white;
+    padding: 5px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 6;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Hide arrows by default on the grid */
+.item .nav-btn {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+/* Show arrows only on hover */
+.item:hover .nav-btn {
+    opacity: 1;
+}
+
+/* Keep Lightbox arrows always visible */
+.lb-nav {
+    opacity: 1 !important;
+}
+
+/* Scroll handling for the track */
+.carousel-track {
+    display: flex;
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    height: 100%;
+    width: 100%;
+}
         
     </style>
 </head>
@@ -311,9 +351,9 @@ const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [], isDragging = false;
 let currentLightboxItemIdx = 0, currentSlideIdx = 0;
 
-// --- 1. INITIALIZATION ---
+// --- 1. INITIALIZATION (Flicker-Free & Persistent) ---
 async function init() {
-    // Restore Visual Toggles
+    // A. Restore Visual Toggles (Bio, Highlights, etc.)
     const toggleIds = ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'];
     toggleIds.forEach(id => {
         const savedState = localStorage.getItem(id);
@@ -321,18 +361,22 @@ async function init() {
         if (savedState !== null && el) el.checked = savedState === 'true';
     });
 
-    // Restore Filter Bar Visibility
+    // B. Restore Filter Bar Visibility preference
     if (localStorage.getItem('filterRowActive') === 'true') {
         document.getElementById('filterRow').classList.add('active');
     }
 
-    // Restore Platform Choice
+    // C. Restore Filter Choices
     const savedPlat = localStorage.getItem('currentPlat');
     if (savedPlat) {
         currentPlat = savedPlat;
-        document.getElementById('platCurrent').innerText = currentPlat === 'all' ? 'All Platforms' : currentPlat.charAt(0).toUpperCase() + currentPlat.slice(1);
+        const platDisplay = document.getElementById('platCurrent');
+        if (platDisplay) {
+            platDisplay.innerText = currentPlat === 'all' ? 'All Platforms' : currentPlat.charAt(0).toUpperCase() + currentPlat.slice(1);
+        }
     }
 
+    // D. Apply UI visibility immediately to stop flicker
     updateUI(); 
 
     try {
@@ -340,22 +384,26 @@ async function init() {
         const data = await res.json();
         gridData = data.grid || [];
         
+        // E. Populate Profile & Counts
         renderProfile(data);
 
-        // Restore Status Filters
+        // F. Restore Status Filter choices
         const stats = [...new Set(gridData.map(i => i.status))];
         const savedStats = localStorage.getItem('activeStats');
         activeStats = savedStats ? JSON.parse(savedStats) : [...stats];
 
-        document.getElementById('statusOptions').innerHTML = stats.map(s => `
-            <label class="dropdown-item" onclick="event.stopPropagation()">
-                <div class="item-left">
-                    <input type="checkbox" ${activeStats.includes(s) ? 'checked' : ''} onchange="toggleStat('${s}')">
-                    <div class="check-box"></div>
-                    <span style="font-weight:600; font-size:13px;">${s}</span>
-                </div>
-                <span class="count-pill">${gridData.filter(i => i.status === s).length}</span>
-            </label>`).join('');
+        const statusContainer = document.getElementById('statusOptions');
+        if (statusContainer) {
+            statusContainer.innerHTML = stats.map(s => `
+                <label class="dropdown-item" onclick="event.stopPropagation()">
+                    <div class="item-left">
+                        <input type="checkbox" ${activeStats.includes(s) ? 'checked' : ''} onchange="toggleStat('${s}')">
+                        <div class="check-box"></div>
+                        <span style="font-weight:600; font-size:13px;">${s}</span>
+                    </div>
+                    <span class="count-pill">${gridData.filter(i => i.status === s).length}</span>
+                </label>`).join('');
+        }
 
         window.generateRandomMap();
         window.renderColorControls();
@@ -363,7 +411,7 @@ async function init() {
     } catch (e) { console.error("Initialization Failed:", e); }
 }
 
-// --- 2. CORE RENDERING (With Carousel Support) ---
+// --- 2. CORE RENDERING ENGINE ---
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
@@ -414,6 +462,11 @@ function doRender() {
 
         return `
             <div class="item ${hasMultiple ? 'has-multiple' : ''}" draggable="${isCustom}" data-id="${files[0]?.url}" onclick="if(!isDragging) openPreview(${dataIdx})">
+                ${hasMultiple ? `
+                    <div class="carousel-indicator">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M19,2H9C7.9,2,7,2.9,7,4v11c0,1.1,0.9,2,2,2h10c1.1,0,2-0.9,2-2V4C21,2.9,20.1,2,19,2z M19,15H9V4h10V15z M5,7H3v11 c0,1.1,0.9,2,2,2h11v-2H5V7z"/></svg>
+                    </div>
+                ` : ''}
                 <div class="carousel-track" id="track-${dataIdx}">${slidesHtml}</div>
                 ${hasMultiple ? `
                     <button class="nav-btn prev-btn" onclick="moveSlide(${dataIdx}, -1, event)">‹</button>
@@ -444,7 +497,7 @@ function moveSlide(dataIdx, dir, event) {
     track.style.transform = `translateX(-${idx * 100}%)`;
 }
 
-// --- 4. PREVIEW & LIGHTBOX ---
+// --- 4. PREVIEW & LIGHTBOX CAROUSEL ---
 function openPreview(idx) {
     const item = gridData[idx];
     if (!item || isDragging) return;
@@ -453,7 +506,7 @@ function openPreview(idx) {
     currentSlideIdx = 0;
     const lightbox = document.getElementById('previewLightbox');
     
-    // Remove old arrows if they exist to prevent duplicates
+    // Clean up existing lightbox navigation arrows
     document.querySelectorAll('.lb-nav').forEach(a => a.remove());
 
     renderLightboxSlide();
@@ -490,7 +543,7 @@ function moveLightbox(dir) {
     renderLightboxSlide();
 }
 
-// --- 5. UI, FILTERS & UTILS ---
+// --- 5. UI, FILTERS & UTILITIES ---
 function updateUI() { 
     const states = {
         bioT: document.getElementById('bioT').checked,
@@ -500,9 +553,11 @@ function updateUI() {
         customOrderT: document.getElementById('customOrderT').checked
     };
     Object.keys(states).forEach(key => localStorage.setItem(key, states[key]));
+
     document.getElementById('bioSection').style.display = states.bioT ? 'flex' : 'none'; 
     document.getElementById('highRow').style.display = states.highT ? 'flex' : 'none'; 
     document.getElementById('colorManagerUI').style.display = states.mapT ? 'block' : 'none';
+    
     if(gridData.length > 0) doRender(); 
 }
 
@@ -555,6 +610,7 @@ function renderProfile(data) {
     document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
 }
 
+// --- 6. DRAG & DROP ENGINE ---
 function initDragging() {
     const grid = document.getElementById('grid');
     const items = grid.querySelectorAll('.item:not(.empty)');
@@ -589,7 +645,7 @@ function getCanvaEmbedUrl(url) {
 
 function toggleSettings(e) { if (e) e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
 
-// Color Map Logic
+// Brand Color Mapping
 window.brandColors = ["#FFD1DC", "#AEEEEE"];
 window.generateRandomMap = () => { window.shuffledIndices = Array.from({ length: 300 }, () => Math.floor(Math.random() * window.brandColors.length)); };
 window.updateColor = (idx, val) => { window.brandColors[idx] = val; doRender(); };
