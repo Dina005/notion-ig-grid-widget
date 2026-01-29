@@ -324,21 +324,31 @@ function doRender() {
 
 // --- 3. STORY VIEWER (Links Highlight to DB Stories) ---
 function openStory(highlightName) {
-    // Finds grid items marked as "Story" where "Highlight Group" matches the clicked circle's name
-    const relatedStories = gridData.filter(item => item.type === "Story" && item.highlightGroup === highlightName);
-    if (relatedStories.length === 0) return;
+    // We now look for 'highlightGroup' which the Worker populates from the Rollup
+    const relatedStories = gridData.filter(item => 
+        item.type === "Story" && 
+        item.highlightGroup === highlightName
+    );
+    
+    if (relatedStories.length === 0) {
+        console.log("No stories found for highlight:", highlightName);
+        return;
+    }
 
     const lightbox = document.getElementById('previewLightbox');
     const content = document.getElementById('lightboxContent');
     const allFiles = relatedStories.flatMap(s => s.files);
 
     const storiesHtml = allFiles.map(file => {
-        const media = file.isVideo ? `<video src="${file.url}" controls autoplay loop></video>` : `<img src="${file.url}">`;
+        const media = file.isVideo 
+            ? `<video src="${file.url}" controls autoplay loop></video>` 
+            : `<img src="${file.url}">`;
         return `<div class="lb-slide">${media}</div>`;
     }).join('');
 
     content.innerHTML = `<div class="lb-track" id="lbTrack">${storiesHtml}</div>`;
     
+    // UI logic for lightbox navigation
     document.querySelectorAll('.lb-nav').forEach(a => a.remove());
     if (allFiles.length > 1) {
         lightbox.insertAdjacentHTML('beforeend', `
@@ -348,7 +358,6 @@ function openStory(highlightName) {
     }
     lightbox.style.display = 'flex';
 }
-
 // --- 4. PREVIEW & NAVIGATION ---
 function openPreview(idx) {
     const item = gridData[idx];
