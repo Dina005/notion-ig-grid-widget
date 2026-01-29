@@ -11,194 +11,112 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pro Planner v22 - Left Aligned Stack</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; --grey-empty: #efefef; --border: #e0e0e6; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-        /* Bio Section - Stacked and LEFT aligned */
-        #bioSection { 
-            max-width: 935px; 
-            margin: 40px auto 20px; 
-            padding: 0 20px; 
-            display: none; 
-            flex-direction: column; 
-            align-items: flex-start;
-            text-align: left;
-        }
-        
-        .pfp-container { 
-            width: 150px; 
-            height: 150px; 
-            border-radius: 50%; 
-            overflow: hidden; 
-            background: var(--grey-empty); 
-            flex-shrink: 0; 
-            border: 1px solid var(--border); 
-            margin-bottom: 25px;
-        }
-        .pfp-img { width: 100%; height: 100%; object-fit: cover; }
-
-        #bioUser { font-size: 32px; font-weight: 800; margin: 0 0 10px 0; }
-
-        /* Highlights */
-        #highRow { max-width: 935px; margin: 0 auto 30px; padding: 0 20px; display: none; gap: 15px; overflow-x: auto; scrollbar-width: none; justify-content: flex-start; }
-        .h-circle { width: 64px; height: 64px; border-radius: 50%; border: 1px solid #dbdbdb; padding: 3px; display: flex; align-items: center; justify-content: center; background: #fff; }
-        .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: var(--grey-empty); display: flex; align-items: center; justify-content: center; font-size: 8px; color: #999; font-weight: 600; text-transform: lowercase; }
-
-        /* Top Bar */
-        .top-bar { max-width: 935px; margin: 20px auto 10px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
-        .refresh-btn { background: #000; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
-        .icon-btn { background: var(--surface); border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-        /* Filter Row */
-        .filter-row { display: none; padding: 15px 20px; gap: 12px; max-width: 935px; margin: 0 auto; align-items: center; border-top: 1px solid #f0f0f2; }
-        .filter-row.active { display: flex; }
-
-        /* Dropdowns */
-        .dropdown-container { position: relative; font-size: 14px; font-weight: 600; }
-        .dropdown-trigger { 
-            padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border);
-            background: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px;
-            transition: all 0.2s; min-width: 140px; justify-content: space-between;
-        }
-        .dropdown-trigger:hover { border-color: #000; }
-        .dropdown-menu {
-            position: absolute; top: 110%; left: 0; background: white; 
-            border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            z-index: 3000; min-width: 220px; display: none; padding: 8px;
-        }
-        .dropdown-menu.show { display: block; }
-
-        .dropdown-item { 
-            padding: 10px 12px; border-radius: 8px; display: flex; 
-            align-items: center; justify-content: space-between; 
-            cursor: pointer; color: #444; line-height: 1;
-        }
-        .dropdown-item:hover { background: var(--surface); color: #000; }
-        .item-left { display: flex; align-items: center; gap: 12px; }
-
-        .check-box { 
-            width: 18px; height: 18px; border: 1.5px solid #ccc; 
-            border-radius: 5px; position: relative; flex-shrink: 0; 
-            background: #fff; box-sizing: border-box; display: inline-block;
-        }
-        input[type="checkbox"]:checked + .check-box { background: #000; border-color: #000; }
-        input[type="checkbox"]:checked + .check-box::after {
-            content: ""; position: absolute; left: 5px; top: 1px; width: 4px; height: 8px;
-            border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg);
-        }
-        input[type="checkbox"] { display: none; }
-        .count-pill { font-size: 11px; background: #eee; padding: 2px 8px; border-radius: 20px; color: #888; font-weight: 700; }
-
-        /* Settings Menu Customization */
-        .settings-menu { position: absolute; top: 55px; right: 20px; width: 280px; background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); display: none; z-index: 2000; padding: 20px; border: 1px solid #ededf0; }
-        .settings-menu.open { display: block; }
-        .switch { position: relative; width: 40px; height: 22px; display: inline-block; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e5ea; transition: .3s; border-radius: 20px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
-        input:checked + .slider { background-color: #000; }
-        input:checked + .slider:before { transform: translateX(18px); }
-
-        /* Brand Color Manager UI */
-        .brand-color-section { margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; }
-        .color-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-        .color-picker-wrapper {
-            position: relative; width: 32px; height: 32px; border-radius: 50%;
-            border: 2px solid #eee; transition: transform 0.2s, border-color 0.2s;
-            overflow: hidden; cursor: pointer;
-        }
-        .color-picker-wrapper:hover { transform: scale(1.1); border-color: #000; }
-        .color-picker { position: absolute; top: -5px; left: -5px; width: 44px; height: 44px; cursor: pointer; border: none; padding: 0; background: none; }
-        .remove-btn { color: #ccc; border: none; background: none; font-size: 18px; cursor: pointer; transition: color 0.2s; }
-        .remove-btn:hover { color: #ff4d4d; }
-        .add-btn { width: 100%; padding: 10px; background: #f9f9f9; border: 1px dashed #ddd; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-
-        /* Grid & Item Styles */
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
-        .item { aspect-ratio: 1/1; background: var(--grey-empty); overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
-        .map-mode-label { color: #fff; font-weight: 800; font-size: 14px; text-transform: uppercase; text-align: center; padding: 15px; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-        .no-content-label { color: #aaaaaa; font-size: 13px; font-weight: 500; text-transform: lowercase; }
-        .carousel-track { display: flex; width: 100%; height: 100%; overflow-x: auto; scrollbar-width: none; }
-        .slide { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-        .slide img, .slide video { width: 100%; height: 100%; object-fit: cover; }
-        .slide iframe { position: absolute; top: 50%; left: 50%; width: 140%; height: 140%; border: none; transform: translate(-50%, -50%) scale(1.1); pointer-events: none; }
-
-       /* Fix Video sizing in preview */
-#lightboxContent video {
-    max-width: 100%;
-    max-height: 100%;
-    border-radius: 8px;
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+:root { 
+    --bg: #ffffff; 
+    --surface: #f3f3f7; 
+    --text: #1a1a1a; 
+    --grey-empty: #efefef; 
+    --border: #e0e0e6; 
 }
 
-/* Dedicated Close Button */
-.close-preview {
-    position: fixed;
-    top: 30px;
-    right: 30px;
-    background: none; /* Removed the circle */
-    color: white; /* Made it white */
-    font-size: 38px; /* Slightly larger for easier clicking */
-    font-weight: 300; /* Thinner, more modern look */
-    cursor: pointer;
-    z-index: 10002;
-    line-height: 1;
-    text-shadow: 0 0 10px rgba(0,0,0,0.5); /* Shadow for visibility on light backgrounds */
-    transition: opacity 0.2s, transform 0.2s;
-    user-select: none;
+body { 
+    margin: 0; 
+    font-family: 'Inter', sans-serif; 
+    background: var(--bg); 
+    color: var(--text); 
+    -webkit-font-smoothing: antialiased; 
+    overflow-x: hidden;
 }
 
-.close-preview:hover { 
-    opacity: 0.7; 
-    transform: scale(1.1); 
-}
-/* Optimized Drag Styles */
-.item.dragging {
-    opacity: 0.4;
-    transform: scale(0.9);
-    filter: grayscale(1);
-    z-index: 100;
-}
-
-/* Fix: Prevents iframe from blocking the drag movement */
-.item.dragging iframe {
-    pointer-events: none;
+/* Bio Section - Left Aligned Stack */
+#bioSection { 
+    max-width: 935px; 
+    margin: 40px auto 20px; 
+    padding: 0 20px; 
+    display: none; 
+    flex-direction: column; 
+    align-items: flex-start;
+    text-align: left;
 }
 
-.item {
-    transition: transform 0.1s ease; /* Snappier transition */
-    cursor: grab;
-    touch-action: none; /* Better for mobile/tablet dragging */
+.pfp-container { 
+    width: 150px; height: 150px; 
+    border-radius: 50%; overflow: hidden; 
+    background: var(--grey-empty); 
+    border: 1px solid var(--border); 
+    margin-bottom: 25px;
 }
-        /* --- Drag and Drop Refinements --- */
+.pfp-img { width: 100%; height: 100%; object-fit: cover; }
+#bioUser { font-size: 32px; font-weight: 800; margin: 0 0 10px 0; }
 
-.item {
-    user-select: none;
-    -webkit-user-drag: element;
-    transition: transform 0.2s ease, opacity 0.2s ease;
+/* Highlights */
+#highRow { 
+    max-width: 935px; margin: 0 auto 30px; 
+    padding: 0 20px; display: none; gap: 15px; 
+    overflow-x: auto; scrollbar-width: none; 
 }
+.h-circle { 
+    width: 64px; height: 64px; border-radius: 50%; 
+    border: 1px solid #dbdbdb; padding: 3px; 
+    background: #fff; display: flex; align-items: center; justify-content: center;
+}
+.h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
-/* This prevents the images/videos/iframes from "stealing" the mouse focus */
-.item > * {
-    pointer-events: none; 
-}
+/* Navigation & Settings */
+.top-bar { max-width: 935px; margin: 20px auto 10px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
+.refresh-btn { background: #000; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+.icon-btn { background: var(--surface); border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-/* This re-enables the click for the main container so you can still open previews */
-#grid .item {
-    pointer-events: auto;
+.settings-menu { 
+    position: absolute; top: 55px; right: 20px; width: 280px; 
+    background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); 
+    display: none; z-index: 2000; padding: 20px; border: 1px solid #ededf0; 
 }
+.settings-menu.open { display: block; }
 
-/* Visual feedback for the item being moved */
-.item.dragging {
-    opacity: 0.4;
-    transform: scale(0.9);
-    filter: grayscale(1);
-    z-index: 100;
-}
+/* Toggles */
+.switch { position: relative; width: 40px; height: 22px; display: inline-block; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e5ea; transition: .3s; border-radius: 20px; }
+.slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+input:checked + .slider { background-color: #000; }
+input:checked + .slider:before { transform: translateX(18px); }
+input { display: none; }
+
+/* Filters */
+.filter-row { display: none; padding: 15px 20px; gap: 12px; max-width: 935px; margin: 0 auto; border-top: 1px solid #f0f0f2; }
+.filter-row.active { display: flex; }
+.dropdown-container { position: relative; font-size: 14px; font-weight: 600; }
+.dropdown-trigger { padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border); background: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px; min-width: 140px; justify-content: space-between; }
+.dropdown-menu { position: absolute; top: 110%; left: 0; background: white; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); z-index: 3000; min-width: 220px; display: none; padding: 8px; }
+.dropdown-menu.show { display: block; }
+.dropdown-item { padding: 10px 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+.dropdown-item:hover { background: var(--surface); }
+
+/* Grid & Drag/Drop */
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
+.item { aspect-ratio: 1/1; background: var(--grey-empty); position: relative; cursor: grab; user-select: none; transition: transform 0.2s; }
+.item.dragging { opacity: 0.4; transform: scale(0.9); filter: grayscale(1); z-index: 100; }
+.item > * { pointer-events: none; } /* Prevents children from breaking drag */
+.carousel-track { display: flex; width: 100%; height: 100%; overflow: hidden; pointer-events: none; }
+.slide { min-width: 100%; height: 100%; position: relative; }
+.slide img, .slide video { width: 100%; height: 100%; object-fit: cover; }
+.slide iframe { position: absolute; top: 50%; left: 50%; width: 150%; height: 150%; border: none; transform: translate(-50%, -50%); }
+
+/* Lightbox & Minimalist X */
+#previewLightbox { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center; }
+#lightboxContent { width:90%; height:90%; display:flex; align-items:center; justify-content:center; }
+.close-preview { position: fixed; top: 30px; right: 30px; color: white; font-size: 40px; font-weight: 200; cursor: pointer; z-index: 10002; text-shadow: 0 0 15px rgba(0,0,0,0.5); }
+
+/* Brand Color Manager */
+.color-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.color-picker-wrapper { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #eee; position: relative; overflow: hidden; }
+.color-picker { position: absolute; top: -5px; left: -5px; width: 44px; height: 44px; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div id="bioSection">
+   <div id="bioSection">
         <div class="pfp-container">
             <img id="pfpImg" class="pfp-img" src="">
         </div>
@@ -212,6 +130,7 @@
 
     <div class="top-bar">
         <button class="refresh-btn" onclick="location.reload()">Refresh</button>
+        
         <button class="icon-btn" onclick="document.getElementById('filterArea').classList.toggle('active')">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5">
                 <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
@@ -233,20 +152,20 @@
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
                     Show Highlights <label class="switch"><input type="checkbox" id="highT" onchange="updateUI()"><span class="slider"></span></label>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600; border-top: 1px solid #eee; padding-top: 15px;">
-        Custom Layout <label class="switch"><input type="checkbox" id="customOrderT" onchange="toggleOrder()"><span class="slider"></span></label>
-    </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
                     Content Map <label class="switch"><input type="checkbox" id="mapT" onchange="updateUI()"><span class="slider"></span></label>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600; border-top: 1px solid #eee; padding-top: 15px;">
+                    Custom Layout <label class="switch"><input type="checkbox" id="customOrderT" onchange="toggleOrder()"><span class="slider"></span></label>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; font-weight:600;">
                     Direct Canva Previews <label class="switch"><input type="checkbox" id="canvaT" onchange="updateUI()"><span class="slider"></span></label>
                 </div>
                 
-                <div class="brand-color-section" id="colorManagerUI" style="display:none;">
+                <div class="brand-color-section" id="colorManagerUI" style="display:none; margin-top: 15px;">
                     <div style="font-size: 11px; font-weight: 800; color: #888; margin-bottom: 10px; text-transform: uppercase;">Brand Palette</div>
                     <div id="colorList"></div>
-                    <button class="add-btn" onclick="addColor()">+ Add Color</button>
+                    <button class="add-btn" style="width:100%; padding:8px; margin-top:5px; cursor:pointer;" onclick="addColor()">+ Add Color</button>
                 </div>
             </div>
         </div>
@@ -278,19 +197,17 @@
 
     <div id="grid" class="grid"></div>
 
-   <div id="previewLightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center;">
-    <div class="close-preview" onclick="document.getElementById('previewLightbox').style.display='none'">×</div>
-    
-    <div id="lightboxContent" style="width:90%; height:90%; display:flex; align-items:center; justify-content:center;"></div>
-</div>
-</div>
+    <div id="previewLightbox">
+        <div class="close-preview" onclick="document.getElementById('previewLightbox').style.display='none'">×</div>
+        <div id="lightboxContent"></div>
+    </div>
     <script>
        const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
-let gridData = [], currentPlat = 'all', activeStats = [];
+let gridData = [], currentPlat = 'all', activeStats = [], isDragging = false;
 let brandColors = ["#FFD1DC", "#AEEEEE", "#FFECB3", "#D1FFD7", "#E0BBE4"]; 
 let shuffledIndices = [];
 
-// UI Control Functions
+// --- 1. UI CONTROL FUNCTIONS ---
 function toggleSettings(e) { 
     e.stopPropagation(); 
     document.getElementById('setMenu').classList.toggle('open'); 
@@ -311,144 +228,79 @@ function updateUI() {
     doRender(); 
 }
 
-// Color Palette Logic
-function shuffleColors() { 
-    shuffledIndices = Array.from({ length: 150 }, () => Math.floor(Math.random() * brandColors.length)); 
-    doRender(); 
-}
+function toggleOrder() { doRender(); }
 
-function renderColorControls() {
-    const container = document.getElementById('colorList');
-    container.innerHTML = brandColors.map((color, idx) => `
-        <div class="color-row">
-            <div class="color-picker-wrapper">
-                <input type="color" class="color-picker" value="${color}" onchange="updateColor(${idx}, this.value)">
-            </div>
-            <span style="font-size:12px; font-weight:700; flex:1; color:#555;">Color ${idx+1}</span>
-            ${brandColors.length > 2 ? `<button class="remove-btn" onclick="removeColor(${idx})">×</button>` : ''}
-        </div>`).join('');
-}
-
-function addColor() { brandColors.push("#e0e0e0"); renderColorControls(); shuffleColors(); }
-function removeColor(idx) { brandColors.splice(idx, 1); renderColorControls(); shuffleColors(); }
-function updateColor(idx, val) { brandColors[idx] = val; doRender(); }
-
-// The Canva Link Fix
+// --- 2. THE CANVA ENGINE ---
 function getCanvaEmbedUrl(url) {
     if (!url || !url.includes('canva.com')) return url;
-    // Extract only the design ID to bypass 403 Forbidden errors
     const match = url.match(/design\/([A-Za-z0-9_-]+)/);
-    if (match && match[1]) {
-        return `https://www.canva.com/design/${match[1]}/view?embed`;
-    }
+    if (match && match[1]) return `https://www.canva.com/design/${match[1]}/view?embed`;
     return url.split('?')[0] + '/view?embed';
 }
 
-// Lightbox/Preview
-function openPreview(index) {
-    const item = gridData[index];
-    if (!item) return;
-    const content = document.getElementById('lightboxContent');
-    const lightbox = document.getElementById('previewLightbox');
-    const file = item.files[0];
-    const canvaOn = document.getElementById('canvaT').checked;
-    let html = "";
-
-    if (canvaOn && file.url.includes('canva.com')) {
-        let embed = getCanvaEmbedUrl(file.url);
-        html = `<iframe src="${embed}" allowfullscreen referrerpolicy="no-referrer" style="width:100%; height:100%; border:none;"></iframe>`;
-    } else if (file.isVideo) {
-        // Added styling to force the video to stay within bounds
-        html = `<video src="${file.url}" controls autoplay loop style="max-width:100%; max-height:100%; outline:none;"></video>`;
-    } else {
-        html = `<img src="${file.url}" style="max-width:100%; max-height:100%; object-fit:contain;">`;
-    }
-
-    content.innerHTML = html;
-    lightbox.style.display = 'flex';
-}
-
-// Initialization & Data Loading
-async function init() {
-    document.getElementById('canvaT').checked = true;
+// --- 3. DRAG & DROP LOGIC ---
+function initDragging() {
     const grid = document.getElementById('grid');
-    grid.innerHTML = '<p style="grid-column: span 3; text-align:center; padding:50px;">Loading from Notion...</p>';
+    const items = grid.querySelectorAll('.item');
 
-    try {
-        const response = await fetch(API);
-        const data = await response.json();
-        
-        gridData = data.grid || [];
-        
-        // Bio Population
-        document.getElementById('pfpImg').src = data.bio.profilePicture || "";
-        document.getElementById('bioUser').innerText = "@" + (data.bio.username || "user");
-        document.getElementById('bioDisplay').innerText = data.bio.displayName || "";
-        document.getElementById('bioDesc').innerText = data.bio.bioText || "";
-        document.getElementById('bioLink').innerText = data.bio.linkDisplay || "";
-        document.getElementById('bioLink').href = data.bio.linkUrl || "#";
+    items.forEach(item => {
+        item.addEventListener('dragstart', () => {
+            isDragging = true;
+            item.classList.add('dragging');
+        });
 
-        // Highlights Population
-        const hData = data.highlights || [];
-        document.getElementById('highRow').innerHTML = hData.map(h => `
-            <div style="text-align:center; min-width:75px;">
-                <div class="h-circle"><img src="${h.image}" class="h-img"></div>
-                <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h.name}</span>
-            </div>`).join('');
+        item.addEventListener('dragend', () => {
+            setTimeout(() => { isDragging = false; }, 100);
+            item.classList.remove('dragging');
+            saveCurrentOrder();
+        });
+    });
 
-        const stats = [...new Set(gridData.map(i => i.status))];
-        activeStats = [...stats];
-        
-        renderStatusOptions(stats);
-        renderColorControls();
-        updateCounts();
-        shuffleColors();
-    } catch (err) {
-        console.error("Fetch Error:", err);
-        grid.innerHTML = '<p style="grid-column: span 3; text-align:center; padding:50px; color:red;">Connection Error. Check your Worker URL.</p>';
-    }
+    grid.addEventListener('dragover', e => {
+        e.preventDefault();
+        const draggingItem = document.querySelector('.dragging');
+        if (!draggingItem) return;
+
+        const afterElement = getDragAfterElement(grid, e.clientX, e.clientY);
+        if (afterElement == null) {
+            grid.appendChild(draggingItem);
+        } else {
+            grid.insertBefore(draggingItem, afterElement);
+        }
+    });
 }
 
-function renderStatusOptions(stats) {
-    document.getElementById('statusOptions').innerHTML = stats.map(s => `
-        <label class="dropdown-item" onclick="event.stopPropagation()">
-            <div class="item-left">
-                <input type="checkbox" checked onchange="toggleStat('${s}')">
-                <div class="check-box"></div>
-                <span>${s}</span>
-            </div>
-            <span class="count-pill">${gridData.filter(i => i.status === s).length}</span>
-        </label>`).join('');
+function getDragAfterElement(container, x, y) {
+    const draggableElements = [...container.querySelectorAll('.item:not(.dragging)')];
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const centerX = box.left + box.width / 2;
+        const centerY = box.top + box.height / 2;
+        const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+
+        if (distance < closest.distance) {
+            return { distance: distance, element: child };
+        } else {
+            return closest;
+        }
+    }, { distance: Number.POSITIVE_INFINITY }).element;
 }
 
-function updateCounts() {
-    document.getElementById('cnt-all').innerText = gridData.length;
-    document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
-    document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
+function saveCurrentOrder() {
+    const items = [...document.querySelectorAll('.item')];
+    const orderIds = items.map(item => item.getAttribute('data-id'));
+    localStorage.setItem('customGridOrder', JSON.stringify(orderIds));
 }
 
-function setPlat(p) { 
-    currentPlat = p; 
-    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
-    doRender(); 
-}
-
-function toggleStat(s) { 
-    activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s]; 
-    doRender(); 
-}
-
-
-
+// --- 4. DATA RENDERING ---
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
     const canvaOn = document.getElementById('canvaT').checked;
     const isCustom = document.getElementById('customOrderT').checked;
     
-    let filtered = gridData.filter(i => (currentPlat === 'all' || i.platforms.includes(currentPlat)) && activeStats.includes(i.status));
+    let filtered = [...gridData].filter(i => (currentPlat === 'all' || i.platforms.includes(currentPlat)) && activeStats.includes(i.status));
 
-    // Only apply custom order if the toggle is ON
     if (isCustom) {
         const savedOrder = localStorage.getItem('customGridOrder');
         if (savedOrder) {
@@ -463,124 +315,111 @@ function doRender() {
 
     grid.innerHTML = filtered.map((item, i) => {
         const dataIdx = gridData.indexOf(item);
-        const uniqueId = item.files[0].url;
+        if (isMap) {
+            const color = brandColors[shuffledIndices[i % brandColors.length]];
+            return `<div class="item" draggable="${isCustom}" data-id="${item.files[0].url}" onclick="if(!isDragging) openPreview(${dataIdx})" style="background:${color}; display:flex; align-items:center; justify-content:center;">
+                        <span style="color:white; font-weight:800; font-size:12px; text-transform:uppercase; text-align:center;">${item.status}</span>
+                    </div>`;
+        }
 
-        return `<div class="item" 
-                     draggable="${isCustom}" 
-                     data-id="${uniqueId}" 
-                     onclick="isDragging ? null : openPreview(${dataIdx})" 
-                     style="position:relative;">
-            ${item.files.length > 1 ? `<div style="position:absolute; top:10px; right:10px; color:white; z-index:10; font-weight:bold;">▢▢</div>` : ''}
-            <div class="carousel-track">
-                ${item.files.map(f => {
-                    if (canvaOn && f.url.includes('canva.com')) {
-                        return `<div class="slide"><iframe src="${getCanvaEmbedUrl(f.url)}" referrerpolicy="no-referrer"></iframe></div>`;
-                    }
-                    return `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop muted playsinline autoplay></video>` : `<img src="${f.url}">`}</div>`;
-                }).join('')}
-            </div>
+        const slides = item.files.map(f => {
+            if (canvaOn && f.url.includes('canva.com')) {
+                return `<div class="slide"><iframe src="${getCanvaEmbedUrl(f.url)}" referrerpolicy="no-referrer"></iframe></div>`;
+            }
+            return `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop muted playsinline autoplay></video>` : `<img src="${f.url}">`}</div>`;
+        }).join('');
+
+        return `<div class="item" draggable="${isCustom}" data-id="${item.files[0].url}" onclick="if(!isDragging) openPreview(${dataIdx})">
+            ${item.files.length > 1 ? `<div style="position:absolute; top:10px; right:10px; color:white; z-index:10; font-weight:bold; text-shadow:0 0 4px rgba(0,0,0,0.5)">▢▢</div>` : ''}
+            <div class="carousel-track">${slides}</div>
         </div>`;
     }).join('');
 
-  ;
+    if (isCustom) initDragging();
 }
 
-let isDragging = false; // Flag to prevent preview opening while dragging
+// --- 5. LIGHTBOX & PREVIEW ---
+function openPreview(index) {
+    const item = gridData[index];
+    if (!item) return;
+    const content = document.getElementById('lightboxContent');
+    const file = item.files[0];
+    const canvaOn = document.getElementById('canvaT').checked;
+    let html = "";
 
+    if (canvaOn && file.url.includes('canva.com')) {
+        html = `<iframe src="${getCanvaEmbedUrl(file.url)}" allowfullscreen referrerpolicy="no-referrer" style="width:100%; height:100%; border:none;"></iframe>`;
+    } else if (file.isVideo) {
+        html = `<video src="${file.url}" controls autoplay loop style="max-width:100%; max-height:100%;"></video>`;
+    } else {
+        html = `<img src="${file.url}" style="max-width:100%; max-height:100%; object-fit:contain;">`;
+    }
 
-    });
-
-    grid.addEventListener('dragover', e => {
-        e.preventDefault();
-        const draggingItem = document.querySelector('.dragging');
-        const afterElement = getDragAfterElement(grid, e.clientX, e.clientY);
-        if (afterElement == null) {
-            grid.appendChild(draggingItem);
-        } else {
-            grid.insertBefore(draggingItem, afterElement);
-        }
-    });
-}
-let isDragging = false;
-
-// 1. Silent Toggle (No popups or bars)
-function toggleOrder() {
-    doRender();
+    content.innerHTML = html;
+    document.getElementById('previewLightbox').style.display = 'flex';
 }
 
-// 2. Refined Drag Engine
-function initDragging() {
-    const grid = document.getElementById('grid');
-    const items = grid.querySelectorAll('.item');
-
-    items.forEach(item => {
-        item.addEventListener('dragstart', (e) => {
-            isDragging = true;
-            item.classList.add('dragging');
-            // Ensure the drag image doesn't look weird
-            e.dataTransfer.effectAllowed = 'move';
-        });
-
-        item.addEventListener('dragend', () => {
-            // Delay reset so the 'click' to open preview doesn't trigger
-            setTimeout(() => { isDragging = false; }, 100);
-            item.classList.remove('dragging');
-            saveCurrentOrder();
-        });
-    });
-
-    grid.addEventListener('dragover', e => {
-        e.preventDefault();
-        const draggingItem = document.querySelector('.dragging');
-        if (!draggingItem) return;
-
-        // Use the simplified 'After Element' logic
-        const afterElement = getDragAfterElement(grid, e.clientX, e.clientY);
+// --- 6. INITIALIZATION ---
+async function init() {
+    try {
+        const response = await fetch(API);
+        const data = await response.json();
+        gridData = data.grid || [];
         
-        if (afterElement == null) {
-            grid.appendChild(draggingItem);
-        } else {
-            grid.insertBefore(draggingItem, afterElement);
-        }
-    });
-}
+        document.getElementById('pfpImg').src = data.bio.profilePicture || "";
+        document.getElementById('bioUser').innerText = "@" + (data.bio.username || "user");
+        document.getElementById('bioDisplay').innerText = data.bio.displayName || "";
+        document.getElementById('bioDesc').innerText = data.bio.bioText || "";
+        document.getElementById('bioLink').innerText = data.bio.linkDisplay || "";
+        document.getElementById('bioLink').href = data.bio.linkUrl || "#";
 
-// 3. Simplified "Slot" Detection
-function getDragAfterElement(container, x, y) {
-    const draggableElements = [...container.querySelectorAll('.item:not(.dragging)')];
+        const hData = data.highlights || [];
+        document.getElementById('highRow').innerHTML = hData.map(h => `
+            <div style="text-align:center; min-width:75px;">
+                <div class="h-circle"><img src="${h.image}" class="h-img"></div>
+                <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h.name}</span>
+            </div>`).join('');
 
-    return draggableElements.reduce((closest, child) => {
-        const box = child.getBoundingClientRect();
+        const stats = [...new Set(gridData.map(i => i.status))];
+        activeStats = [...stats];
+        shuffledIndices = Array.from({ length: 150 }, () => Math.floor(Math.random() * brandColors.length));
         
-        // We check if the mouse is in the left half or top half of the box
-        // This makes "dropping" feel like you are pushing the item aside
-        const horizontalInside = x < box.left + box.width / 2;
-        const verticalInside = y < box.bottom;
-
-        if (horizontalInside && verticalInside) {
-            if (closest.element == null) return { element: child };
-            return closest; // Keep the first match found
-        } else {
-            return closest;
-        }
-    }, { element: null }).element;
+        renderStatusOptions(stats);
+        updateCounts();
+        doRender();
+    } catch (err) {
+        console.error("Fetch Error:", err);
+        document.getElementById('grid').innerHTML = '<p style="text-align:center; padding:50px;">Check your Worker URL.</p>';
+    }
 }
 
-function saveCurrentOrder() {
-    const items = [...document.querySelectorAll('.item')];
-    const orderIds = items.map(item => item.getAttribute('data-id'));
-    localStorage.setItem('customGridOrder', JSON.stringify(orderIds));
+function renderStatusOptions(stats) {
+    document.getElementById('statusOptions').innerHTML = stats.map(s => `
+        <label class="dropdown-item" onclick="event.stopPropagation()">
+            <span>${s}</span>
+            <input type="checkbox" checked onchange="toggleStat('${s}')">
+        </label>`).join('');
 }
 
-function saveCurrentOrder() {
-    const items = [...document.querySelectorAll('.item')];
-    const orderIds = items.map(item => item.getAttribute('data-id'));
-    localStorage.setItem('customGridOrder', JSON.stringify(orderIds));
-    document.getElementById('customOrderT').checked = true; // Ensure toggle stays on
+function toggleStat(s) { 
+    activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s]; 
+    doRender(); 
 }
-// Global click handler to close menus
-window.onclick = function(event) {
-    if (!event.target.closest('.dropdown-container') && !event.target.closest('.settings-menu') && !event.target.closest('.icon-btn')) {
+
+function updateCounts() {
+    document.getElementById('cnt-all').innerText = gridData.length;
+    document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
+    document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
+}
+
+function setPlat(p) { 
+    currentPlat = p; 
+    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
+    doRender(); 
+}
+
+window.onclick = function(e) {
+    if (!e.target.closest('.dropdown-container') && !e.target.closest('.settings-menu') && !e.target.closest('.icon-btn')) {
         document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
         document.getElementById('setMenu').classList.remove('open');
     }
