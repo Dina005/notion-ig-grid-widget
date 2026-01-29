@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pro Planner v22 - Left Aligned Stack</title>
     <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+ @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root { 
     --bg: #ffffff; 
@@ -22,49 +22,35 @@
 }
 
 body { 
-    margin: 0; 
-    font-family: 'Inter', sans-serif; 
-    background: var(--bg); 
-    color: var(--text); 
-    -webkit-font-smoothing: antialiased; 
-    overflow-x: hidden;
+    margin: 0; font-family: 'Inter', sans-serif; 
+    background: var(--bg); color: var(--text); 
+    -webkit-font-smoothing: antialiased; overflow-x: hidden;
 }
 
-/* --- Bio Section (Left Aligned) --- */
+/* --- Bio (Left Aligned) --- */
 #bioSection { 
-    max-width: 935px; 
-    margin: 40px auto 20px; 
-    padding: 0 20px; 
-    display: none; 
-    flex-direction: column; 
-    align-items: flex-start;
-    text-align: left;
+    max-width: 935px; margin: 40px auto 20px; padding: 0 20px; 
+    display: none; flex-direction: column; align-items: flex-start; text-align: left;
 }
-
 .pfp-container { 
-    width: 150px; height: 150px; 
-    border-radius: 50%; overflow: hidden; 
-    background: var(--grey-empty); 
-    border: 1px solid var(--border); 
-    margin-bottom: 25px;
+    width: 150px; height: 150px; border-radius: 50%; overflow: hidden; 
+    background: var(--grey-empty); border: 1px solid var(--border); margin-bottom: 25px;
 }
 .pfp-img { width: 100%; height: 100%; object-fit: cover; }
 #bioUser { font-size: 32px; font-weight: 800; margin: 0 0 10px 0; }
 
 /* --- Highlights --- */
 #highRow { 
-    max-width: 935px; margin: 0 auto 30px; 
-    padding: 0 20px; display: none; gap: 15px; 
-    overflow-x: auto; scrollbar-width: none; 
+    max-width: 935px; margin: 0 auto 30px; padding: 0 20px; 
+    display: none; gap: 15px; overflow-x: auto; scrollbar-width: none; 
 }
 .h-circle { 
-    width: 64px; height: 64px; border-radius: 50%; 
-    border: 1px solid #dbdbdb; padding: 3px; 
-    background: #fff; display: flex; align-items: center; justify-content: center;
+    width: 64px; height: 64px; border-radius: 50%; border: 1px solid #dbdbdb; 
+    padding: 3px; background: #fff; display: flex; align-items: center; justify-content: center;
 }
 .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
-/* --- Navigation & Settings --- */
+/* --- Top Bar & Settings --- */
 .top-bar { max-width: 935px; margin: 20px auto 10px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
 .refresh-btn { background: #000; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
 .icon-btn { background: var(--surface); border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -73,10 +59,11 @@ body {
     position: absolute; top: 55px; right: 20px; width: 280px; 
     background: white; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); 
     display: none; z-index: 2000; padding: 20px; border: 1px solid #ededf0; 
+    max-height: 80vh; overflow-y: auto;
 }
 .settings-menu.open { display: block; }
 
-/* --- Toggles & Switches --- */
+/* --- Toggles & Filters --- */
 .switch { position: relative; width: 40px; height: 22px; display: inline-block; }
 .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e5ea; transition: .3s; border-radius: 20px; }
 .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
@@ -84,7 +71,6 @@ input:checked + .slider { background-color: #000; }
 input:checked + .slider:before { transform: translateX(18px); }
 input[type="checkbox"] { display: none; }
 
-/* --- Filters & Checkboxes --- */
 .filter-row { display: none; padding: 15px 20px; gap: 12px; max-width: 935px; margin: 0 auto; border-top: 1px solid #f0f0f2; }
 .filter-row.active { display: flex; }
 .dropdown-container { position: relative; font-size: 14px; font-weight: 600; }
@@ -97,25 +83,29 @@ input[type="checkbox"] { display: none; }
 .item-left { display: flex; align-items: center; gap: 10px; }
 .check-box { width: 18px; height: 18px; border: 2px solid #ddd; border-radius: 4px; position: relative; }
 input:checked + .check-box { background: #000; border-color: #000; }
-input:checked + .check-box::after { content: '✓'; color: white; font-size: 12px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+input:checked + .check-box::after { content: '✓'; color: white; font-size: 10px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 .count-pill { background: var(--surface); padding: 2px 8px; border-radius: 10px; font-size: 11px; color: #888; font-weight: 700; }
 
-/* --- Grid & Dragging --- */
+/* --- Grid & Drag --- */
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
 .item { aspect-ratio: 1/1; background: var(--grey-empty); position: relative; cursor: grab; user-select: none; transition: transform 0.2s; }
-.item.dragging { opacity: 0.4; transform: scale(0.9); filter: grayscale(1); z-index: 100; }
+.item.dragging { opacity: 0.4; transform: scale(0.95); filter: grayscale(1); z-index: 100; }
 .item * { pointer-events: none; }
 #grid .item { pointer-events: auto; }
-
 .carousel-track { display: flex; width: 100%; height: 100%; overflow: hidden; }
 .slide { min-width: 100%; height: 100%; position: relative; }
 .slide img, .slide video { width: 100%; height: 100%; object-fit: cover; }
 .slide iframe { position: absolute; top: 50%; left: 50%; width: 150%; height: 150%; border: none; transform: translate(-50%, -50%); }
 
-/* --- Content Map / Color Manager --- */
+/* --- Color Manager --- */
 .brand-color-section { border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px; }
 .color-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-.color-picker-wrapper { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px #ddd; position: relative; overflow: hidden; flex-shrink: 0; }
+.color-picker-wrapper { 
+    width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; 
+    box-shadow: 0 0 0 1px #ddd; position: relative; overflow: hidden; flex-shrink: 0; 
+    cursor: pointer; transition: transform 0.1s ease;
+}
+.color-picker-wrapper:hover { transform: scale(1.1); box-shadow: 0 0 0 1px #000; }
 .color-picker { position: absolute; top: -5px; left: -5px; width: 40px; height: 40px; border: none; cursor: pointer; background: none; }
 .add-btn { width: 100%; padding: 10px; background: #f3f3f7; border: 1px dashed #ccc; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 10px; }
 .remove-btn { background: none; border: none; color: #ff4d4d; font-weight: bold; cursor: pointer; padding: 5px; }
@@ -123,7 +113,7 @@ input:checked + .check-box::after { content: '✓'; color: white; font-size: 12p
 /* --- Lightbox --- */
 #previewLightbox { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center; }
 #lightboxContent { width:90%; height:90%; display:flex; align-items:center; justify-content:center; }
-.close-preview { position: fixed; top: 30px; right: 30px; color: white; font-size: 40px; font-weight: 200; cursor: pointer; z-index: 10002; text-shadow: 0 0 15px rgba(0,0,0,0.5); }
+.close-preview { position: fixed; top: 30px; right: 30px; color: white; font-size: 40px; font-weight: 200; cursor: pointer; z-index: 10002; }
     </style>
 </head>
 <body>
@@ -175,7 +165,7 @@ input:checked + .check-box::after { content: '✓'; color: white; font-size: 12p
                 <div class="brand-color-section" id="colorManagerUI" style="display:none;">
                     <div style="font-size: 11px; font-weight: 800; color: #888; margin-bottom: 10px; text-transform: uppercase;">Brand Palette</div>
                     <div id="colorList"></div>
-                    <button class="add-btn" onclick="addColor()">+ Add Color</button>
+                    <button class="add-btn" onclick="window.addColor(event)">+ Add Color</button>
                 </div>
             </div>
         </div>
@@ -215,18 +205,18 @@ input:checked + .check-box::after { content: '✓'; color: white; font-size: 12p
        const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [], isDragging = false;
 
-// Color State
-window.brandColors = ["#FFD1DC", "#AEEEEE", "#FFECB3", "#D1FFD7", "#E0BBE4"]; 
+// 1. Color State (Defaulting to 2 Colors)
+window.brandColors = ["#FFD1DC", "#AEEEEE"]; 
 window.shuffledIndices = [];
 
-// --- 1. UI CONTROL ---
+// --- UI CONTROLS ---
 function toggleSettings(e) { 
-    e.stopPropagation(); 
+    if (e) e.stopPropagation(); 
     document.getElementById('setMenu').classList.toggle('open'); 
 }
 
 function toggleMenu(id, e) { 
-    e.stopPropagation(); 
+    if (e) e.stopPropagation(); 
     document.querySelectorAll('.dropdown-menu').forEach(m => {
         if(m.id !== id) m.classList.remove('show');
     });
@@ -242,7 +232,7 @@ function updateUI() {
 
 function toggleOrder() { doRender(); }
 
-// --- 2. CONTENT MAP LOGIC ---
+// --- STICKY CONTENT MAP LOGIC ---
 window.generateRandomMap = function() {
     window.shuffledIndices = Array.from({ length: 200 }, () => Math.floor(Math.random() * window.brandColors.length));
 };
@@ -256,18 +246,20 @@ window.renderColorControls = function() {
                 <input type="color" class="color-picker" value="${color}" onchange="window.updateColor(${idx}, this.value)">
             </div>
             <span style="font-size:12px; font-weight:700; flex:1; color:#555;">Color ${idx + 1}</span>
-            ${window.brandColors.length > 1 ? `<button class="remove-btn" onclick="window.removeColor(${idx})">×</button>` : ''}
+            ${window.brandColors.length > 1 ? `<button class="remove-btn" onclick="window.removeColor(${idx}, event)">×</button>` : ''}
         </div>`).join('');
 };
 
-window.addColor = function() {
+window.addColor = function(e) {
+    if (e) e.stopPropagation(); // Keep menu sticky
     window.brandColors.push("#E5E5E5");
     window.generateRandomMap();
     window.renderColorControls();
     doRender();
 };
 
-window.removeColor = function(idx) {
+window.removeColor = function(idx, e) {
+    if (e) e.stopPropagation(); // Keep menu sticky
     window.brandColors.splice(idx, 1);
     window.generateRandomMap();
     window.renderColorControls();
@@ -279,7 +271,7 @@ window.updateColor = function(idx, val) {
     doRender();
 };
 
-// --- 3. DRAG & DROP ENGINE ---
+// --- DRAG & DROP ENGINE ---
 function initDragging() {
     const grid = document.getElementById('grid');
     const items = grid.querySelectorAll('.item');
@@ -321,7 +313,7 @@ function saveCurrentOrder() {
     localStorage.setItem('customGridOrder', JSON.stringify(orderIds));
 }
 
-// --- 4. CORE RENDERING ---
+// --- CORE RENDERING ---
 function getCanvaEmbedUrl(url) {
     if (!url || !url.includes('canva.com')) return url;
     const match = url.match(/design\/([A-Za-z0-9_-]+)/);
@@ -368,10 +360,10 @@ function doRender() {
     if (isCustom) initDragging();
 }
 
-// --- 5. INITIALIZATION ---
+// --- INITIALIZATION ---
 function openPreview(idx) {
     const item = gridData[idx];
-    if (!item) return;
+    if (!item || isDragging) return;
     const content = document.getElementById('lightboxContent');
     const file = item.files[0];
     const canvaOn = document.getElementById('canvaT').checked;
@@ -432,6 +424,7 @@ function setPlat(p) {
     doRender(); 
 }
 
+// Close dropdowns but ignore sticky menu clicks
 window.onclick = function(e) {
     if (!e.target.closest('.dropdown-container') && !e.target.closest('.settings-menu') && !e.target.closest('.icon-btn')) {
         document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
