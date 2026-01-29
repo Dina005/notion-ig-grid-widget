@@ -124,8 +124,12 @@
         .slide iframe { position: absolute; top: 50%; left: 50%; width: 140%; height: 140%; border: none; transform: translate(-50%, -50%) scale(1.1); pointer-events: none; }
 
         /* Lightbox */
-        #previewLightbox { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center; cursor:zoom-out; }
-        #lightboxContent { width:90%; height:90%; display:flex; align-items:center; justify-content:center; }
+            #previewLightbox { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center; cursor:zoom-out; }
+            #lightboxContent { width:90%; height:90%; display:flex; align-items:center; justify-content:center; pointer-events: none; } /* Allows the click to pass through to the background div to close it */
+        
+        #lightboxContent iframe, 
+        #lightboxContent img, 
+        #lightboxContent video { pointer-events: auto; /* Re-enables interaction for the actual content */}
     </style>
 </head>
 <body>
@@ -207,7 +211,7 @@
     <div id="grid" class="grid"></div>
 
     <div id="previewLightbox" onclick="this.style.display='none'">
-        <div id="lightboxContent" onclick="event.stopPropagation()"></div>
+    <div id="lightboxContent"></div>
     </div>
 
     <script>
@@ -275,20 +279,26 @@ function openPreview(index) {
     const item = gridData[index];
     if (!item) return;
     const content = document.getElementById('lightboxContent');
+    const lightbox = document.getElementById('previewLightbox');
     const file = item.files[0];
     const canvaOn = document.getElementById('canvaT').checked;
     let html = "";
 
+    // Add a Close Button (X) for extra clarity
+    const closeBtn = `<div onclick="document.getElementById('previewLightbox').style.display='none'" 
+                        style="position:absolute; top:20px; right:20px; color:white; font-size:30px; cursor:pointer; font-weight:bold; z-index:10001;">×</div>`;
+
     if (canvaOn && file.url.includes('canva.com')) {
         let embed = getCanvaEmbedUrl(file.url);
-        html = `<iframe src="${embed}" allowfullscreen referrerpolicy="no-referrer"></iframe>`;
+        html = `${closeBtn}<iframe src="${embed}" allowfullscreen referrerpolicy="no-referrer"></iframe>`;
     } else if (file.isVideo) {
-        html = `<video src="${file.url}" controls autoplay loop></video>`;
+        html = `${closeBtn}<video src="${file.url}" controls autoplay loop style="max-height:100%; max-width:100%;"></video>`;
     } else {
-        html = `<img src="${file.url}" style="max-width:100%; max-height:100%; object-fit:contain;">`;
+        html = `${closeBtn}<img src="${file.url}" style="max-height:100%; max-width:100%; object-fit:contain;">`;
     }
+
     content.innerHTML = html;
-    document.getElementById('previewLightbox').style.display = 'flex';
+    lightbox.style.display = 'flex';
 }
 
 // Initialization & Data Loading
