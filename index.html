@@ -17,9 +17,11 @@
     --bg: #ffffff; 
     --surface: #f8f8fa; 
     --text: #1a1a1a; 
-    --text-muted: #666666;
+    --text-muted: #8e8e93;
     --border: #ececee; 
     --accent: #0095f6;
+    --success: #34c759;
+    --danger: #ff3b30;
     --grey-empty: #efefef;
     --shadow: 0 12px 40px rgba(0,0,0,0.12);
 }
@@ -44,131 +46,190 @@ body {
 
 #highRow { 
     max-width: 935px; margin: 0 auto 30px; padding: 0 20px; 
-    display: none; gap: 15px; overflow-x: auto; scrollbar-width: none; 
+    display: none; gap: 20px; overflow-x: auto; scrollbar-width: none; 
 }
 .h-circle { 
-    width: 74px; height: 74px; border-radius: 50%; border: 1px solid #dbdbdb; 
+    width: 74px; height: 74px; border-radius: 50%; border: 2px solid #dbdbdb; 
     padding: 3px; background: #fff; flex-shrink: 0; cursor: pointer;
     transition: transform 0.2s ease;
 }
-.h-circle:hover { transform: scale(1.05); }
+.h-circle:hover { transform: scale(1.05); border-color: #bbb; }
 .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
-/* --- 2. Sticky Top Bar & Filters --- */
+/* --- 2. Sticky Glassmorphism Header --- */
 .top-bar { 
     max-width: 935px; margin: 0 auto; padding: 15px 20px; 
     display: flex; align-items: center; gap: 10px;
     position: sticky; top: 0; background: rgba(255,255,255,0.85);
     backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-    z-index: 1000; border-bottom: 1px solid transparent;
+    z-index: 1000; transition: border 0.3s;
 }
-/* Adds a border only when scrolling (handled by JS or simple visual) */
 .top-bar.scrolled { border-bottom: 1px solid var(--border); }
 
-.refresh-btn { background: #000; color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-.refresh-btn:hover { opacity: 0.8; }
+.refresh-btn { background: #000; color: white; border: none; padding: 10px 22px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 14px; }
+.refresh-btn:hover { opacity: 0.8; transform: translateY(-1px); }
 
 .icon-btn { background: var(--surface); border: none; width: 42px; height: 42px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
 .icon-btn:hover { background: #eeeef2; }
 
-.filter-row { display: none; padding: 15px 20px; gap: 10px; max-width: 935px; margin: 0 auto; border-top: 1px solid var(--border); }
+/* --- 3. Aesthetic Filters & Platform Badges --- */
+.filter-row { display: none; padding: 15px 20px; gap: 12px; max-width: 935px; margin: 0 auto; border-top: 1px solid var(--border); }
 .filter-row.active { display: flex; }
 
 .dropdown-container { position: relative; }
 .dropdown-trigger { 
-    padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border); 
-    background: #fff; cursor: pointer; font-size: 13px; font-weight: 600; 
-    display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 150px;
+    background: #ffffff; border: 1px solid var(--border); padding: 10px 16px; 
+    border-radius: 12px; font-size: 13px; font-weight: 600; color: var(--text);
+    cursor: pointer; display: flex; align-items: center; justify-content: space-between; 
+    gap: 10px; min-width: 170px; transition: 0.2s;
 }
+.dropdown-trigger:hover { border-color: #bbb; background: var(--surface); }
+
 .dropdown-menu { 
-    position: absolute; top: calc(100% + 8px); left: 0; background: white; 
+    position: absolute; top: calc(100% + 8px); left: 0; background: rgba(255, 255, 255, 0.98); 
     border: 1px solid var(--border); border-radius: 14px; display: none; 
-    padding: 8px; z-index: 3000; box-shadow: var(--shadow); min-width: 210px;
+    padding: 6px; z-index: 3000; box-shadow: var(--shadow); min-width: 240px;
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
 }
-.dropdown-menu.show { display: block; }
+.dropdown-menu.show { display: block; animation: slideUp 0.2s ease-out; }
+
 .dropdown-item {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.2s;
+    padding: 10px 12px; margin: 2px; border-radius: 10px; cursor: pointer; 
+    font-size: 13px; font-weight: 500; transition: 0.15s; color: var(--text-muted);
 }
-.dropdown-item:hover { background: var(--surface); }
-.count-pill { background: #efeff3; color: var(--text-muted); padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.dropdown-item:hover { background: var(--surface); color: var(--text); }
+.dropdown-item.active { background: #f0f7ff; color: var(--accent); }
 
-/* --- 3. Settings & Color Palette --- */
+.count-badge { 
+    background: #f0f0f3; color: #8e8e93; padding: 2px 8px; 
+    border-radius: 6px; font-size: 10px; font-weight: 800; min-width: 18px; text-align: center;
+}
+.dropdown-item.active .count-badge { background: var(--accent); color: white; }
+
+.status-indicator { width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; display: inline-block; }
+.select-all-btn { color: var(--accent); font-weight: 800; font-size: 11px; text-transform: uppercase; padding: 12px; cursor: pointer; border-bottom: 1px solid var(--border); margin-bottom: 5px; text-align: center; letter-spacing: 0.5px; }
+
+/* --- 4. Fixed Settings & Color Manager --- */
 .settings-menu { 
-    position: absolute; top: 60px; right: 20px; width: 280px; 
+    position: fixed; top: 80px; right: 20px; width: 300px; 
     background: white; border-radius: 20px; box-shadow: var(--shadow); 
     display: none; z-index: 2000; padding: 24px; border: 1px solid var(--border); 
 }
-.settings-menu.open { display: block; }
-.setting-item { margin-bottom: 18px; }
-.setting-label { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; }
+.settings-menu.open { display: block; animation: slideUp 0.2s ease-out; }
 
-#colorManagerUI { display: none; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px; }
-#colorList { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 15px 0; }
+#colorList { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin: 15px 0; }
 .color-swatch-wrapper {
-    width: 36px; height: 36px; border-radius: 50%; overflow: hidden;
-    border: 2px solid white; box-shadow: 0 0 0 1px var(--border); cursor: pointer; position: relative;
+    width: 42px; height: 42px; border-radius: 50%; overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.1); cursor: pointer; position: relative; transition: 0.2s;
 }
-.color-swatch-wrapper input[type="color"] { position: absolute; top: -5px; left: -5px; width: 60px; height: 60px; cursor: pointer; border: none; background: none; }
-.add-color-btn {
-    width: 100%; padding: 12px; border: 2px dashed var(--border); 
-    background: transparent; border-radius: 12px; color: var(--text-muted);
-    font-weight: 700; cursor: pointer; font-size: 12px; transition: 0.2s;
+.color-swatch-wrapper:hover { transform: scale(1.1); }
+.color-swatch-wrapper input[type="color"] {
+    position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    cursor: pointer; border: none; padding: 0; background: none;
 }
-.add-color-btn:hover { border-color: #bbb; background: var(--surface); }
+.delete-color {
+    position: absolute; top: -2px; right: -2px; background: var(--danger);
+    color: white; width: 16px; height: 16px; border-radius: 50%;
+    font-size: 10px; display: none; align-items: center; justify-content: center;
+    z-index: 10; border: 1px solid white; font-weight: 800;
+}
+.color-swatch-wrapper:hover .delete-color { display: flex; }
 
-/* --- 4. The Grid & Overlays --- */
-.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
-.item { aspect-ratio: 1/1; background: var(--grey-empty); position: relative; cursor: pointer; overflow: hidden; }
-
+/* --- 5. Bottom-Slide Hover Overlay --- */
 .item-overlay {
-    position: absolute; inset: 0; background: rgba(0,0,0,0.5);
-    display: flex; flex-direction: column; justify-content: center;
-    align-items: center; text-align: center; color: white;
-    opacity: 0; transition: opacity 0.3s ease; padding: 20px; z-index: 10;
-    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 20px;
+    box-sizing: border-box;
+    color: white;
+    z-index: 10;
+    opacity: 0;
+    transform: translateY(15px);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
 }
-.item:hover .item-overlay { opacity: 1; }
-.ov-pillar { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800; margin-bottom: 6px; }
-.ov-title { font-size: 14px; font-weight: 700; line-height: 1.4; max-width: 80%; }
-.ov-date { font-size: 11px; margin-top: 10px; opacity: 0.8; font-weight: 500; }
 
-.carousel-track { display: flex; width: 100%; height: 100%; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+.item:hover .item-overlay {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.ov-pillar {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 4px;
+}
+
+.ov-title {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.ov-date {
+    font-size: 11px;
+    font-weight: 500;
+    opacity: 0.8;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ov-date::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    background: var(--accent);
+    border-radius: 50%;
+}
+
+/* --- 6. Grid & Carousels --- */
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; min-height: 500px; }
+.item { aspect-ratio: 1/1; background: var(--grey-empty); position: relative; cursor: pointer; overflow: hidden; }
+.item.dragging { opacity: 0.4; transform: scale(0.95); border: 2px solid var(--accent); }
+
+.carousel-track { display: flex; width: 100%; height: 100%; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
 .slide { min-width: 100%; height: 100%; position: relative; }
 .slide img, .slide video { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .nav-btn {
     position: absolute; top: 50%; transform: translateY(-50%);
-    background: rgba(255,255,255,0.9); border: none; width: 28px; height: 28px;
-    border-radius: 50%; cursor: pointer; z-index: 15; font-size: 16px;
+    background: rgba(255,255,255,0.95); border: none; width: 32px; height: 32px;
+    border-radius: 50%; cursor: pointer; z-index: 15; font-size: 18px;
     display: flex; align-items: center; justify-content: center; font-weight: bold;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15); opacity: 0; transition: 0.2s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2); opacity: 0; transition: 0.2s;
 }
 .item:hover .nav-btn { opacity: 1; }
-.prev-btn { left: 10px; } .next-btn { right: 10px; }
+.prev-btn { left: 12px; } .next-btn { right: 12px; }
 
-/* --- 5. Empty States --- */
-.item.empty { 
-    background: var(--surface); border: 1px dashed #dcdce0; 
-    display: flex; flex-direction: column; align-items: center; justify-content: center; 
-}
-.empty-text { font-size: 10px; font-weight: 700; color: #ccc; text-transform: uppercase; margin-top: 10px; letter-spacing: 0.5px; }
-
-/* --- 6. Switches & Misc --- */
+/* --- 7. Apple Style Switches & Lightbox --- */
 .switch { position: relative; width: 44px; height: 24px; }
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider { position: absolute; cursor: pointer; inset: 0; background: #e9e9eb; border-radius: 30px; transition: .3s; }
-.slider:before { content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-input:checked + .slider { background: #34c759; }
+.slider:before { content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
+input:checked + .slider { background: var(--success); }
 input:checked + .slider:before { transform: translateX(20px); }
 
-/* --- 7. Lightbox --- */
 #previewLightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 9999; justify-content: center; align-items: center; }
-#lightboxContent { width: 100%; height: 100%; position: relative; }
-.lb-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; height: 100%; scrollbar-width: none; }
-.lb-slide { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; scroll-snap-align: start; }
-.lb-slide img, .lb-slide video { max-width: 90%; max-height: 85vh; object-fit: contain; border-radius: 4px; }
-.close-preview { position: absolute; top: 25px; right: 25px; color: white; font-size: 40px; cursor: pointer; z-index: 10001; font-weight: 200; }
+.close-preview { position: absolute; top: 30px; right: 30px; color: white; font-size: 44px; cursor: pointer; z-index: 10001; font-weight: 200; }
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
         
     </style>
 </head>
@@ -221,42 +282,37 @@ input:checked + .slider:before { transform: translateX(20px); }
                     <div class="setting-label">Canva Previews <label class="switch"><input type="checkbox" id="canvaT" onchange="updateUI()"><span class="slider"></span></label></div>
                 </div>
                 
-                <div id="colorManagerUI">
-                    <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Brand Palette</div>
-                    <div id="colorList"></div>
-                    <button class="add-color-btn" onclick="window.addColor(event)">+ Add New Color</button>
-                </div>
-            </div>
+                <div class="settings-menu" id="setMenu" onclick="event.stopPropagation()">
+    <div id="colorManagerUI">
+        <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Brand Palette</div>
+        <div id="colorList"></div>
+        <button class="add-color-btn" onclick="window.addColor(event)">+ Add New Color</button>
+    </div>
+</div>
         </div>
     </div>
 
-    <div class="filter-row" id="filterArea">
-        <div class="dropdown-container">
-            <div class="dropdown-trigger" onclick="toggleMenu('platMenu', event)">
-                <span id="platCurrent">All Platforms</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 9l-7 7-7-7"/></svg>
-            </div>
-            <div class="dropdown-menu" id="platMenu">
-                <div class="dropdown-item" onclick="setPlat('all')">All Platforms</div>
-                <div class="dropdown-item" onclick="setPlat('instagram')">Instagram</div>
-                <div class="dropdown-item" onclick="setPlat('tiktok')">TikTok</div>
-            </div>
+  <div class="filter-row" id="filterArea">
+    <div class="dropdown-container">
+        <div class="dropdown-trigger" onclick="toggleMenu('platMenu', event)">
+            <span id="platCurrent">All Platforms</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 9l-7 7-7-7"/></svg>
         </div>
-
-        <div class="dropdown-container">
-            <div class="dropdown-trigger" onclick="toggleMenu('statMenu', event)">
-                <span>Status Filters</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 9l-7 7-7-7"/></svg>
+        <div class="dropdown-menu" id="platMenu">
             </div>
-            <div class="dropdown-menu" id="statMenu">
-                <div class="dropdown-item" onclick="toggleAllStats(event)" style="border-bottom: 1px solid var(--surface); margin-bottom: 5px;">
-                    <strong style="color: var(--accent);">Select All</strong>
-                </div>
-                <div id="statusOptions"></div>
-            </div>
-        </div>
     </div>
 
+    <div class="dropdown-container">
+        <div class="dropdown-trigger" onclick="toggleMenu('statMenu', event)">
+            <span>Filter Status</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 9l-7 7-7-7"/></svg>
+        </div>
+        <div class="dropdown-menu" id="statMenu">
+            <div class="select-all-btn" onclick="toggleAllStats(event)">Toggle All Content</div>
+            <div id="statusOptions"></div>
+        </div>
+    </div>
+</div>
     <div id="grid" class="grid"></div>
 
     <div id="previewLightbox">
@@ -272,6 +328,7 @@ let gridData = [], currentPlat = 'all', activeStats = [], dragItem = null;
 
 // --- 1. INITIALIZATION ---
 async function init() {
+    // Load Toggle States
     ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'].forEach(id => {
         const saved = localStorage.getItem(id);
         const el = document.getElementById(id);
@@ -300,7 +357,7 @@ async function init() {
     } catch (e) { console.error("Init Failed:", e); }
 }
 
-// --- 2. GRID RENDERING (RESTORED CAROUSEL & HOVER) ---
+// --- 2. GRID RENDERING & CUSTOM LAYOUT ---
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
@@ -316,22 +373,28 @@ function doRender() {
 
     if (isCustom) {
         const savedOrder = JSON.parse(localStorage.getItem('gridOrder') || "[]");
-        filtered.sort((a, b) => {
-            const indexA = savedOrder.indexOf(a.files[0]?.url);
-            const indexB = savedOrder.indexOf(b.files[0]?.url);
-            return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
-        });
+        if (savedOrder.length > 0) {
+            filtered.sort((a, b) => {
+                const indexA = savedOrder.indexOf(a.files[0]?.url);
+                const indexB = savedOrder.indexOf(b.files[0]?.url);
+                return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+            });
+        }
+        document.getElementById('resetOrderBtn').style.display = 'block';
+    } else {
+        document.getElementById('resetOrderBtn').style.display = 'none';
     }
 
     let html = filtered.map((item, idx) => {
         const dataIdx = gridData.indexOf(item);
         const files = item.files || [];
         const hasMult = files.length > 1;
+        const mainUrl = files[0]?.url;
         const dateStr = item.date ? new Date(item.date).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : '';
 
         if (isMap) {
             const color = window.brandColors[window.shuffledIndices[idx % window.shuffledIndices.length] % window.brandColors.length];
-            return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; text-align:center; padding:15px; font-size:11px;">${item.name.toUpperCase()}</div>`;
+            return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; text-align:center; padding:15px; font-size:11px; text-transform:uppercase;">${item.name}</div>`;
         }
 
         const slidesHtml = files.map(f => {
@@ -341,26 +404,28 @@ function doRender() {
             return `<div class="slide">${f.isVideo ? `<video src="${f.url}" muted loop playsinline autoplay></video>` : `<img src="${f.url}">`}</div>`;
         }).join('');
 
-        return `
-            <div class="item" draggable="${isCustom}" 
-                 ondragstart="handleDragStart(event, '${files[0]?.url}')" 
-                 ondrop="handleDrop(event, '${files[0]?.url}')" 
-                 ondragover="event.preventDefault()" 
-                 onclick="openPreview(${dataIdx})">
-                <div class="item-overlay">
-                    <div class="ov-pillar">${item.pillar || 'CONTENT'}</div>
-                    <div class="ov-title">${item.name}</div>
-                    <div class="ov-date">${dateStr}</div>
-                </div>
-                <div class="carousel-track" id="track-${dataIdx}" data-idx="0">${slidesHtml}</div>
-                ${hasMult ? `
-                    <button class="nav-btn prev-btn" onclick="moveSlide(${dataIdx}, -1, event)">‹</button>
-                    <button class="nav-btn next-btn" onclick="moveSlide(${dataIdx}, 1, event)">›</button>
-                ` : ''}
-            </div>`;
+       // Locate this section inside your doRender function's map:
+return `
+    <div class="item" draggable="${isCustom}" 
+         ondragstart="handleDragStart(event, '${mainUrl}')" 
+         ondrop="handleDrop(event, '${mainUrl}')" 
+         ondragover="event.preventDefault()" 
+         onclick="openPreview(${dataIdx})">
+        
+        <div class="item-overlay">
+            <div class="ov-pillar">${item.pillar || 'Content'}</div>
+            <div class="ov-title">${item.name}</div>
+            <div class="ov-date">${dateStr || 'Draft'}</div>
+        </div>
+
+        <div class="carousel-track" id="track-${dataIdx}" data-idx="0">${slidesHtml}</div>
+        ${hasMult ? `
+            <button class="nav-btn prev-btn" onclick="moveSlide(${dataIdx}, -1, event)">‹</button>
+            <button class="nav-btn next-btn" onclick="moveSlide(${dataIdx}, 1, event)">›</button>
+        ` : ''}
+    </div>`;
     }).join('');
 
-    // Fill to 3x3 grid
     const minItems = 9;
     if (filtered.length < minItems) {
         for (let i = 0; i < (minItems - filtered.length); i++) {
@@ -368,58 +433,96 @@ function doRender() {
         }
     }
     grid.innerHTML = html;
+    
+    // Refresh Dynamic Counts
+    renderPlatformOptions();
+    renderStatusOptions();
 }
 
-// --- 3. STORY & PREVIEW LOGIC (FIXED CLICK) ---
-function openStory(groupName) {
-    const stories = gridData.filter(i => i.type === "Story" && i.highlightGroup === groupName);
-    if (!stories.length) return;
-
-    const lb = document.getElementById('previewLightbox');
-    const allFiles = stories.flatMap(s => s.files);
-    document.getElementById('lightboxContent').innerHTML = `
-        <div class="lb-track">
-            ${allFiles.map(f => `<div class="lb-slide">${f.isVideo ? `<video src="${f.url}" controls autoplay loop></video>` : `<img src="${f.url}">`}</div>`).join('')}
-        </div>`;
-    lb.style.display = 'flex';
+// --- 3. DRAG & DROP ---
+function handleDragStart(e, url) {
+    dragItem = url;
+    e.dataTransfer.effectAllowed = "move";
+    e.target.closest('.item').classList.add('dragging');
 }
 
-function moveSlide(idx, dir, e) {
-    e.stopPropagation();
-    const track = document.getElementById(`track-${idx}`);
-    const slides = track.querySelectorAll('.slide');
-    let current = parseInt(track.dataset.idx || 0);
-    current = (current + dir + slides.length) % slides.length;
-    track.dataset.idx = current;
-    track.style.transform = `translateX(-${current * 100}%)`;
+function handleDrop(e, targetUrl) {
+    e.preventDefault();
+    document.querySelectorAll('.item').forEach(i => i.classList.remove('dragging'));
+    if (dragItem === targetUrl) return;
+
+    let currentOrder = JSON.parse(localStorage.getItem('gridOrder') || "[]");
+    if (currentOrder.length === 0) {
+        currentOrder = gridData.filter(i => i.type !== "Story").map(i => i.files[0]?.url);
+    }
+
+    const draggedIdx = currentOrder.indexOf(dragItem);
+    const targetIdx = currentOrder.indexOf(targetUrl);
+
+    if (draggedIdx > -1 && targetIdx > -1) {
+        currentOrder.splice(draggedIdx, 1);
+        currentOrder.splice(targetIdx, 0, dragItem);
+        localStorage.setItem('gridOrder', JSON.stringify(currentOrder));
+        doRender();
+    }
 }
 
-// --- 4. FILTERS & COLOR MANAGER ---
+window.resetGridOrder = () => {
+    if(confirm("Reset to chronological order?")) {
+        localStorage.removeItem('gridOrder');
+        doRender();
+    }
+};
+
+// --- 4. AESTHETIC FILTERS WITH COUNTS ---
 function setupStatusFilters() {
     const stats = [...new Set(gridData.map(i => i.status))];
     activeStats = [...stats];
-    renderStatusOptions();
+}
+
+function renderPlatformOptions() {
+    const plats = ['all', 'instagram', 'tiktok'];
+    const menu = document.getElementById('platMenu');
+    menu.innerHTML = plats.map(p => {
+        const count = p === 'all' 
+            ? gridData.filter(i => i.type !== "Story").length
+            : gridData.filter(i => i.type !== "Story" && i.platforms.includes(p)).length;
+        return `
+        <div class="dropdown-item ${currentPlat === p ? 'active' : ''}" onclick="setPlat('${p}')">
+            <span>${p.charAt(0).toUpperCase() + p.slice(1)}</span>
+            <span class="count-badge">${count}</span>
+        </div>`;
+    }).join('');
 }
 
 function renderStatusOptions() {
     const stats = [...new Set(gridData.map(i => i.status))];
-    document.getElementById('statusOptions').innerHTML = stats.map(s => {
+    const container = document.getElementById('statusOptions');
+    container.innerHTML = stats.map(s => {
         const count = gridData.filter(item => item.status === s && item.type !== 'Story').length;
+        const isActive = activeStats.includes(s);
         return `
-        <div class="dropdown-item" onclick="toggleStat('${s}', event)">
-            <span>${s}</span>
-            <div style="display:flex; align-items:center; gap:10px;">
-                <span class="count-pill">${count}</span>
-                <input type="checkbox" ${activeStats.includes(s) ? 'checked' : ''} style="pointer-events:none">
+        <div class="dropdown-item ${isActive ? 'active' : ''}" onclick="toggleStat('${s}', event)">
+            <div style="display:flex; align-items:center;">
+                <span class="status-indicator" style="background:${getStatusColor(s)}"></span>
+                <span>${s}</span>
             </div>
+            <span class="count-badge">${count}</span>
         </div>`;
     }).join('');
+}
+
+function getStatusColor(s) {
+    const sL = s.toLowerCase();
+    if (sL.includes('done') || sL.includes('post')) return '#34c759';
+    if (sL.includes('progress') || sL.includes('edit')) return '#0095f6';
+    if (sL.includes('idea') || sL.includes('draft')) return '#ffcc00';
+    return '#8e8e93';
 }
 
 function toggleStat(s, e) {
     e.stopPropagation();
     activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s];
-    renderStatusOptions();
     doRender();
 }
 
@@ -427,11 +530,35 @@ function toggleAllStats(e) {
     e.stopPropagation();
     const all = [...new Set(gridData.map(i => i.status))];
     activeStats = (activeStats.length === all.length) ? [] : all;
-    renderStatusOptions();
     doRender();
 }
 
-// --- 5. UI HELPERS ---
+// --- 5. COLOR MANAGEMENT ---
+window.brandColors = ["#E6E6FA", "#F0FFF0", "#FFF0F5", "#D1D1D6"];
+window.renderColorControls = () => {
+    const list = document.getElementById('colorList');
+    list.innerHTML = window.brandColors.map((c, i) => `
+        <div class="color-swatch-wrapper" style="background:${c}">
+            <input type="color" value="${c}" onchange="window.brandColors[${i}]=this.value; doRender();" onclick="event.stopPropagation()">
+            <div class="delete-color" onclick="window.removeColor(${i}, event)">×</div>
+        </div>`).join('');
+};
+window.removeColor = (index, e) => {
+    e.stopPropagation();
+    if (window.brandColors.length > 1) {
+        window.brandColors.splice(index, 1);
+        window.renderColorControls();
+        doRender();
+    }
+};
+window.addColor = (e) => {
+    e.stopPropagation();
+    window.brandColors.push("#efefef");
+    window.renderColorControls();
+    doRender();
+};
+
+// --- 6. CORE UI HELPERS ---
 function renderProfile(data) {
     const b = data.bio;
     document.getElementById('pfpImg').src = b.profilePicture || "";
@@ -455,55 +582,50 @@ function setPlat(p) {
 }
 
 function updateUI() {
-    ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'].forEach(id => localStorage.setItem(id, document.getElementById(id).checked));
+    ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'].forEach(id => {
+        localStorage.setItem(id, document.getElementById(id).checked);
+    });
     document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none';
     document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none';
     document.getElementById('colorManagerUI').style.display = document.getElementById('mapT').checked ? 'block' : 'none';
     if (gridData.length) doRender();
 }
 
-// Drag & Drop
-function handleDragStart(e, id) { dragItem = id; e.target.closest('.item').classList.add('dragging'); }
-function handleDrop(e, id) {
-    e.preventDefault();
-    let order = JSON.parse(localStorage.getItem('gridOrder') || "[]");
-    const allUrls = gridData.filter(i => i.type !== "Story").map(i => i.files[0]?.url);
-    if (!order.length) order = allUrls;
-    const fromIdx = order.indexOf(dragItem);
-    const toIdx = order.indexOf(id);
-    order.splice(toIdx, 0, order.splice(fromIdx, 1)[0]);
-    localStorage.setItem('gridOrder', JSON.stringify(order));
-    doRender();
+function moveSlide(idx, dir, e) {
+    e.stopPropagation();
+    const track = document.getElementById(`track-${idx}`);
+    const slides = track.querySelectorAll('.slide');
+    let current = parseInt(track.dataset.idx || 0);
+    current = (current + dir + slides.length) % slides.length;
+    track.dataset.idx = current;
+    track.style.transform = `translateX(-${current * 100}%)`;
 }
 
-// Previews
 function openPreview(idx) {
     const item = gridData[idx];
     const lb = document.getElementById('previewLightbox');
     document.getElementById('lightboxContent').innerHTML = `
-        <div class="lb-track">
-            ${item.files.map(f => `<div class="lb-slide">${f.isVideo ? `<video src="${f.url}" controls autoplay></video>` : `<img src="${f.url}">`}</div>`).join('')}
-        </div>`;
+        <div class="lb-track">${item.files.map(f => `<div class="lb-slide">${f.isVideo ? `<video src="${f.url}" controls autoplay></video>` : `<img src="${f.url}">`}</div>`).join('')}</div>`;
     lb.style.display = 'flex';
 }
 
-// Color Management
-window.brandColors = ["#E6E6FA", "#F0FFF0", "#FFF0F5"];
-window.renderColorControls = () => {
-    document.getElementById('colorList').innerHTML = window.brandColors.map((c, i) => `
-        <div class="color-swatch-wrapper" style="background:${c}">
-            <input type="color" value="${c}" onchange="window.brandColors[${i}]=this.value; doRender();">
-        </div>`).join('');
-};
-window.addColor = (e) => { e.stopPropagation(); window.brandColors.push("#cccccc"); window.renderColorControls(); doRender(); };
-window.generateRandomMap = () => { window.shuffledIndices = Array.from({length: 100}, () => Math.floor(Math.random() * 50)); };
+function openStory(groupName) {
+    const stories = gridData.filter(i => i.type === "Story" && i.highlightGroup === groupName);
+    if (!stories.length) return;
+    const lb = document.getElementById('previewLightbox');
+    const allFiles = stories.flatMap(s => s.files);
+    document.getElementById('lightboxContent').innerHTML = `<div class="lb-track">${allFiles.map(f => `<div class="lb-slide">${f.isVideo ? `<video src="${f.url}" controls autoplay loop></video>` : `<img src="${f.url}">`}</div>`).join('')}</div>`;
+    lb.style.display = 'flex';
+}
 
 function toggleMenu(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
 function toggleSettings(e) { e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
+
 window.onclick = () => {
     document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
-    document.getElementById('setMenu').classList.remove('open');
 };
+
+window.generateRandomMap = () => { window.shuffledIndices = Array.from({length: 100}, () => Math.floor(Math.random() * 50)); };
 
 init();
     </script>
