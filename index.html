@@ -123,13 +123,36 @@
         .slide img, .slide video { width: 100%; height: 100%; object-fit: cover; }
         .slide iframe { position: absolute; top: 50%; left: 50%; width: 140%; height: 140%; border: none; transform: translate(-50%, -50%) scale(1.1); pointer-events: none; }
 
-        /* Lightbox */
-            #previewLightbox { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center; cursor:zoom-out; }
-            #lightboxContent { width:90%; height:90%; display:flex; align-items:center; justify-content:center; pointer-events: none; } /* Allows the click to pass through to the background div to close it */
-        
-        #lightboxContent iframe, 
-        #lightboxContent img, 
-        #lightboxContent video { pointer-events: auto; /* Re-enables interaction for the actual content */}
+       /* Fix Video sizing in preview */
+#lightboxContent video {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 8px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+}
+
+/* Dedicated Close Button */
+.close-preview {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    background: white;
+    color: black;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 10002;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: transform 0.2s;
+}
+
+.close-preview:hover { transform: scale(1.1); }
     </style>
 </head>
 <body>
@@ -210,9 +233,11 @@
 
     <div id="grid" class="grid"></div>
 
-    <div id="previewLightbox" onclick="this.style.display='none'">
-    <div id="lightboxContent"></div>
-    </div>
+    <div id="previewLightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center;">
+    <div class="close-preview" onclick="document.getElementById('previewLightbox').style.display='none'">×</div>
+    
+    <div id="lightboxContent" style="width:90%; height:90%; display:flex; align-items:center; justify-content:center;"></div>
+</div>
 
     <script>
        const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
@@ -284,17 +309,14 @@ function openPreview(index) {
     const canvaOn = document.getElementById('canvaT').checked;
     let html = "";
 
-    // Add a Close Button (X) for extra clarity
-    const closeBtn = `<div onclick="document.getElementById('previewLightbox').style.display='none'" 
-                        style="position:absolute; top:20px; right:20px; color:white; font-size:30px; cursor:pointer; font-weight:bold; z-index:10001;">×</div>`;
-
     if (canvaOn && file.url.includes('canva.com')) {
         let embed = getCanvaEmbedUrl(file.url);
-        html = `${closeBtn}<iframe src="${embed}" allowfullscreen referrerpolicy="no-referrer"></iframe>`;
+        html = `<iframe src="${embed}" allowfullscreen referrerpolicy="no-referrer" style="width:100%; height:100%; border:none;"></iframe>`;
     } else if (file.isVideo) {
-        html = `${closeBtn}<video src="${file.url}" controls autoplay loop style="max-height:100%; max-width:100%;"></video>`;
+        // Added styling to force the video to stay within bounds
+        html = `<video src="${file.url}" controls autoplay loop style="max-width:100%; max-height:100%; outline:none;"></video>`;
     } else {
-        html = `${closeBtn}<img src="${file.url}" style="max-height:100%; max-width:100%; object-fit:contain;">`;
+        html = `<img src="${file.url}" style="max-width:100%; max-height:100%; object-fit:contain;">`;
     }
 
     content.innerHTML = html;
