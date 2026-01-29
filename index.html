@@ -77,7 +77,21 @@ input:checked + .slider { background-color: #000; }
 input:checked + .slider:before { transform: translateX(18px); }
 
 /* --- Filters & Checkbox Correction --- */
-.filter-row { display: flex; padding: 15px 20px; gap: 12px; max-width: 935px; margin: 0 auto; border-top: 1px solid #f0f0f2; }
+/* Start the filter row as hidden to prevent flickering */
+.filter-row { 
+    display: none; 
+    padding: 15px 20px; 
+    gap: 12px; 
+    max-width: 935px; 
+    margin: 0 auto; 
+    border-top: 1px solid #f0f0f2; 
+    align-items: center;
+}
+
+/* This class will be toggled by the JS */
+.filter-row.active { 
+    display: flex; 
+}
 .dropdown-container { position: relative; font-size: 14px; font-weight: 600; }
 .dropdown-trigger { padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border); background: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px; min-width: 140px; justify-content: space-between; }
 .dropdown-menu { position: absolute; top: 110%; left: 0; background: white; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); z-index: 3000; min-width: 220px; display: none; padding: 8px; }
@@ -252,7 +266,7 @@ let dragTimeout;
 
 // --- 1. INITIALIZATION ---
 async function init() {
-    // A. Restore Visual Toggles (Bio, Highlights, etc.)
+    // A. Restore Visual Toggles
     const toggleIds = ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'];
     toggleIds.forEach(id => {
         const savedState = localStorage.getItem(id);
@@ -260,14 +274,20 @@ async function init() {
         if (savedState !== null && el) el.checked = savedState === 'true';
     });
 
-    // B. Restore Platform Filter choice
+    // B. Restore Filter Row Visibility (The "Collapse" preference)
+    const filterRowActive = localStorage.getItem('filterRowActive') === 'true';
+    if (filterRowActive) {
+        document.getElementById('filterRow').classList.add('active');
+    }
+
+    // C. Restore Filter Choices
     const savedPlat = localStorage.getItem('currentPlat');
     if (savedPlat) {
         currentPlat = savedPlat;
         document.getElementById('platCurrent').innerText = currentPlat === 'all' ? 'All Platforms' : currentPlat.charAt(0).toUpperCase() + currentPlat.slice(1);
     }
 
-    // C. Apply UI visibility immediately to stop flicker
+    // D. Apply UI visibility immediately
     updateUI(); 
 
     try {
@@ -275,10 +295,9 @@ async function init() {
         const data = await res.json();
         gridData = data.grid || [];
         
-        // D. Populate Profile & Counts
         renderProfile(data);
 
-        // E. Restore Status Filter choices
+        // Restore Status Filters
         const stats = [...new Set(gridData.map(i => i.status))];
         const savedStats = localStorage.getItem('activeStats');
         activeStats = savedStats ? JSON.parse(savedStats) : [...stats];
@@ -299,7 +318,15 @@ async function init() {
     } catch (e) { console.error("Initialization Failed:", e); }
 }
 
-// --- 2. CORE RENDERING ENGINE ---
+// --- 2. FILTER BAR TOGGLE (New Logic) ---
+function toggleFilterRow(e) {
+    if (e) e.stopPropagation();
+    const row = document.getElementById('filterRow');
+    const isActive = row.classList.toggle('active');
+    localStorage.setItem('filterRowActive', isActive); // Save preference
+}
+
+// --- 3. CORE RENDERING ENGINE ---
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
@@ -360,7 +387,7 @@ function doRender() {
     if (isCustom) initDragging();
 }
 
-// --- 3. UI, FILTERS & PERSISTENCE ---
+// --- 4. UI, FILTERS & PERSISTENCE ---
 function updateUI() { 
     const states = {
         bioT: document.getElementById('bioT').checked,
@@ -383,7 +410,7 @@ function setPlat(p) {
     currentPlat = p; 
     localStorage.setItem('currentPlat', p); 
     document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
-    document.getElementById('platMenu').classList.remove('show'); // Auto-collapse
+    document.getElementById('platMenu').classList.remove('show');
     doRender(); 
 }
 
@@ -422,7 +449,7 @@ function renderProfile(data) {
     document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
 }
 
-// --- 4. DRAG & DROP ENGINE ---
+// --- 5. DRAG & DROP ENGINE ---
 function initDragging() {
     const grid = document.getElementById('grid');
     const items = grid.querySelectorAll('.item:not(.empty)');
@@ -444,7 +471,7 @@ function initDragging() {
     });
 }
 
-// --- 5. LIGHTBOX & HELPERS ---
+// --- 6. LIGHTBOX & HELPERS ---
 function openPreview(idx) {
     const item = gridData[idx];
     if (!item || isDragging) return;
@@ -472,7 +499,7 @@ function getCanvaEmbedUrl(url) {
 
 function toggleSettings(e) { if (e) e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
 
-// Brand Color Methods
+// Brand Color Logic
 window.brandColors = ["#FFD1DC", "#AEEEEE"];
 window.generateRandomMap = () => { window.shuffledIndices = Array.from({ length: 300 }, () => Math.floor(Math.random() * window.brandColors.length)); };
 window.updateColor = (idx, val) => { window.brandColors[idx] = val; doRender(); };
