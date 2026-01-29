@@ -208,6 +208,9 @@
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
                     Show Highlights <label class="switch"><input type="checkbox" id="highT" onchange="updateUI()"><span class="slider"></span></label>
                 </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600; border-top: 1px solid #eee; padding-top: 15px;">
+        Custom Layout <label class="switch"><input type="checkbox" id="customOrderT" onchange="toggleOrder()"><span class="slider"></span></label>
+    </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
                     Content Map <label class="switch"><input type="checkbox" id="mapT" onchange="updateUI()"><span class="slider"></span></label>
                 </div>
@@ -255,9 +258,6 @@
     
     <div id="lightboxContent" style="width:90%; height:90%; display:flex; align-items:center; justify-content:center;"></div>
 </div>
-</div>
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600; border-top: 1px solid #eee; padding-top: 15px;">
-    Custom Layout <label class="switch"><input type="checkbox" id="customOrderT" onchange="toggleOrder()"><span class="slider"></span></label>
 </div>
     <script>
        const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
