@@ -277,23 +277,12 @@ input:checked + .slider:before { transform: translateX(20px); }
 const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [], dragItem = null;
 
-// --- 1. INITIALIZATION ---
 async function init() {
-    // Load Toggle States from LocalStorage
     ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'].forEach(id => {
         const saved = localStorage.getItem(id);
         const el = document.getElementById(id);
         if (saved !== null && el) el.checked = saved === 'true';
     });
-
-    // Sticky Scroll Logic
-    window.addEventListener('scroll', () => {
-        const topBar = document.getElementById('stickyTopBar');
-        if (window.scrollY > 20) topBar.classList.add('scrolled');
-        else topBar.classList.remove('scrolled');
-    });
-
-    updateUI(); 
 
     try {
         const res = await fetch(API);
@@ -301,14 +290,15 @@ async function init() {
         gridData = data.grid || [];
         
         renderProfile(data);
-        setupStatusFilters();
+        // Initialize active stats so filters work immediately
+        activeStats = [...new Set(gridData.map(i => i.status))];
+        
         window.generateRandomMap();
         window.renderColorControls();
         doRender(); 
     } catch (e) { console.error("Init Failed:", e); }
 }
 
-// --- 2. GRID RENDERING ---
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
@@ -322,38 +312,24 @@ function doRender() {
         return isPost && platMatch && statMatch;
     });
 
-    // Handle Custom Layout Sorting
-    if (isCustom) {
-        const savedOrder = JSON.parse(localStorage.getItem('gridOrder') || "[]");
-        if (savedOrder.length > 0) {
-            filtered.sort((a, b) => {
-                const indexA = savedOrder.indexOf(a.files[0]?.url);
-                const indexB = savedOrder.indexOf(b.files[0]?.url);
-                return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
-            });
-        }
-        document.getElementById('resetOrderBtn').style.display = 'block';
-    } else {
-        document.getElementById('resetOrderBtn').style.display = 'none';
-    }
-
     let html = filtered.map((item, idx) => {
         const dataIdx = gridData.indexOf(item);
         const files = item.files || [];
         const hasMult = files.length > 1;
         const mainUrl = files[0]?.url;
+        
+        // Formatting Date for Hover
         const dateStr = item.date ? new Date(item.date).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : 'Draft';
+        const pillarStr = item.pillar || 'General';
 
-        // Content Map View
         if (isMap) {
             const color = window.brandColors[window.shuffledIndices[idx % window.shuffledIndices.length] % window.brandColors.length];
             return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; text-align:center; padding:15px; font-size:11px; text-transform:uppercase;">${item.name}</div>`;
         }
 
-        // Media Slides (Image, Video, or Canva)
         const slidesHtml = files.map(f => {
+            // CANVA RENDERING ENGINE
             if (canvaOn && f.url.includes('canva.com')) {
-                // Transform standard Canva link to Embeddable View link
                 const embedUrl = f.url.split('?')[0].replace('/design/', '/view?embed=');
                 return `<div class="slide"><iframe src="${embedUrl}" allowfullscreen></iframe></div>`;
             }
@@ -362,18 +338,16 @@ function doRender() {
 
         return `
             <div class="item" draggable="${isCustom}" 
-                 ondragstart="handleDragStart(event, '${mainUrl}')" 
-                 ondrop="handleDrop(event, '${mainUrl}')" 
-                 ondragover="event.preventDefault()" 
                  onclick="openPreview(${dataIdx})">
                 
                 <div class="item-overlay">
-                    <div class="ov-pillar">${item.pillar || 'CONTENT'}</div>
+                    <div class="ov-pillar">${pillarStr}</div>
                     <div class="ov-title">${item.name}</div>
                     <div class="ov-date">${dateStr}</div>
                 </div>
 
                 <div class="carousel-track" id="track-${dataIdx}" data-idx="0">${slidesHtml}</div>
+                
                 ${hasMult ? `
                     <button class="nav-btn prev-btn" onclick="moveSlide(${dataIdx}, -1, event)">‹</button>
                     <button class="nav-btn next-btn" onclick="moveSlide(${dataIdx}, 1, event)">›</button>
@@ -386,116 +360,55 @@ function doRender() {
     renderStatusOptions();
 }
 
-// --- 3. DRAG & DROP LOGIC ---
-function handleDragStart(e, url) {
-    dragItem = url;
-    e.dataTransfer.effectAllowed = "move";
-    e.target.closest('.item').classList.add('dragging');
-}
-
-function handleDrop(e, targetUrl) {
-    e.preventDefault();
-    document.querySelectorAll('.item').forEach(i => i.classList.remove('dragging'));
-    if (dragItem === targetUrl) return;
-
-    let currentOrder = JSON.parse(localStorage.getItem('gridOrder') || "[]");
-    if (currentOrder.length === 0) {
-        currentOrder = gridData.filter(i => i.type !== "Story").map(i => i.files[0]?.url);
-    }
-
-    const draggedIdx = currentOrder.indexOf(dragItem);
-    const targetIdx = currentOrder.indexOf(targetUrl);
-
-    if (draggedIdx > -1 && targetIdx > -1) {
-        currentOrder.splice(draggedIdx, 1);
-        currentOrder.splice(targetIdx, 0, dragItem);
-        localStorage.setItem('gridOrder', JSON.stringify(currentOrder));
-        doRender();
-    }
-}
-
-window.resetGridOrder = () => {
-    if(confirm("Reset layout to original Notion order?")) {
-        localStorage.removeItem('gridOrder');
-        doRender();
-    }
-};
-
-// --- 4. FILTERS & STATUS ---
-function setupStatusFilters() {
-    activeStats = [...new Set(gridData.map(i => i.status))];
-}
-
-function renderPlatformOptions() {
-    const plats = ['all', 'instagram', 'tiktok'];
-    const menu = document.getElementById('platMenu');
-    menu.innerHTML = plats.map(p => {
-        const count = p === 'all' 
-            ? gridData.filter(i => i.type !== "Story").length
-            : gridData.filter(i => i.type !== "Story" && i.platforms.includes(p)).length;
-        return `<div class="dropdown-item ${currentPlat === p ? 'active' : ''}" onclick="setPlat('${p}')">
-            <span>${p.charAt(0).toUpperCase() + p.slice(1)}</span>
-            <span class="count-badge">${count}</span>
-        </div>`;
-    }).join('');
-}
-
+// --- Status Filter as Checkbox ---
 function renderStatusOptions() {
     const stats = [...new Set(gridData.map(i => i.status))];
     const container = document.getElementById('statusOptions');
     container.innerHTML = stats.map(s => {
-        const count = gridData.filter(item => item.status === s && item.type !== 'Story').length;
         const isActive = activeStats.includes(s);
-        return `<div class="dropdown-item ${isActive ? 'active' : ''}" onclick="toggleStat('${s}', event)">
-            <div style="display:flex; align-items:center;">
+        return `
+        <div class="dropdown-item" onclick="toggleStat('${s}', event)">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <input type="checkbox" ${isActive ? 'checked' : ''} style="pointer-events:none;">
                 <span class="status-indicator" style="background:${getStatusColor(s)}"></span>
                 <span>${s}</span>
             </div>
-            <span class="count-badge">${count}</span>
         </div>`;
     }).join('');
 }
 
-function getStatusColor(s) {
-    const sL = s.toLowerCase();
-    if (sL.includes('done') || sL.includes('post')) return '#34c759';
-    if (sL.includes('progress') || sL.includes('edit')) return '#0095f6';
-    if (sL.includes('idea') || sL.includes('draft')) return '#ffcc00';
-    return '#8e8e93';
+// --- Preview & Story Fix ---
+function openPreview(idx) {
+    const item = gridData[idx];
+    const lb = document.getElementById('previewLightbox');
+    const content = document.getElementById('lightboxContent');
+    
+    const mediaHtml = item.files.map(f => {
+        if (f.url.includes('canva.com')) {
+            const eUrl = f.url.split('?')[0].replace('/design/', '/view?embed=');
+            return `<div class="lb-slide"><iframe src="${eUrl}" style="width:100%; height:80vh; border:none;"></iframe></div>`;
+        }
+        return `<div class="lb-slide">${f.isVideo ? `<video src="${f.url}" controls autoplay></video>` : `<img src="${f.url}">`}</div>`;
+    }).join('');
+
+    content.innerHTML = `<div class="lb-track">${mediaHtml}</div>`;
+    lb.style.display = 'flex';
 }
 
-// --- 5. UI HELPERS ---
-function setPlat(p) {
-    currentPlat = p;
-    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
-    doRender();
-}
-
-function toggleStat(s, e) {
-    e.stopPropagation();
-    activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s];
-    doRender();
-}
-
-function toggleAllStats(e) {
-    e.stopPropagation();
-    const all = [...new Set(gridData.map(i => i.status))];
-    activeStats = (activeStats.length === all.length) ? [] : all;
-    doRender();
-}
-
-function updateUI() {
-    ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'].forEach(id => {
-        localStorage.setItem(id, document.getElementById(id).checked);
-    });
-    document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none';
-    document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none';
-    document.getElementById('colorManagerUI').style.display = document.getElementById('mapT').checked ? 'block' : 'none';
-    if (gridData.length) doRender();
+function openStory(groupName) {
+    const stories = gridData.filter(i => i.type === "Story" && i.highlightGroup === groupName);
+    if (!stories.length) return;
+    const lb = document.getElementById('previewLightbox');
+    const allFiles = stories.flatMap(s => s.files);
+    document.getElementById('lightboxContent').innerHTML = `
+        <div class="lb-track">
+            ${allFiles.map(f => `<div class="lb-slide">${f.isVideo ? `<video src="${f.url}" controls autoplay loop></video>` : `<img src="${f.url}">`}</div>`).join('')}
+        </div>`;
+    lb.style.display = 'flex';
 }
 
 function moveSlide(idx, dir, e) {
-    e.stopPropagation();
+    e.stopPropagation(); // Stops the preview from opening when clicking arrows
     const track = document.getElementById(`track-${idx}`);
     const slides = track.querySelectorAll('.slide');
     let current = parseInt(track.dataset.idx || 0);
@@ -504,54 +417,11 @@ function moveSlide(idx, dir, e) {
     track.style.transform = `translateX(-${current * 100}%)`;
 }
 
-// --- 6. COLOR & PROFILE ---
-window.brandColors = ["#E6E6FA", "#F0FFF0", "#FFF0F5", "#D1D1D6"];
-window.renderColorControls = () => {
-    const list = document.getElementById('colorList');
-    list.innerHTML = window.brandColors.map((c, i) => `
-        <div class="color-swatch-wrapper" style="background:${c}">
-            <input type="color" value="${c}" onchange="window.brandColors[${i}]=this.value; doRender();" onclick="event.stopPropagation()">
-        </div>`).join('');
-};
-window.addColor = (e) => {
-    e.stopPropagation();
-    window.brandColors.push("#efefef");
-    window.renderColorControls();
-    doRender();
-};
-
-function renderProfile(data) {
-    const b = data.bio;
-    document.getElementById('pfpImg').src = b.profilePicture || "";
-    document.getElementById('bioUser').innerText = b.username || "";
-    document.getElementById('bioDisplay').innerText = b.displayName || "";
-    document.getElementById('bioDesc').innerText = b.bioText || "";
-    document.getElementById('bioLink').innerText = b.linkDisplay || "";
-    document.getElementById('bioLink').href = b.linkUrl || "#";
-
-    document.getElementById('highRow').innerHTML = (data.highlights || []).map(h => `
-        <div onclick="openStory('${h.name}')" style="text-align:center; flex-shrink:0; cursor:pointer;">
-            <div class="h-circle"><img src="${h.image}" class="h-img"></div>
-            <div style="font-size:11px; font-weight:700; margin-top:8px; color:var(--text-muted);">${h.name}</div>
-        </div>`).join('');
-}
-
-function openPreview(idx) {
-    const item = gridData[idx];
-    const lb = document.getElementById('previewLightbox');
-    document.getElementById('lightboxContent').innerHTML = `
-        <div class="lb-track">${item.files.map(f => `<div class="lb-slide">${f.isVideo ? `<video src="${f.url}" controls autoplay></video>` : `<img src="${f.url}">`}</div>`).join('')}</div>`;
-    lb.style.display = 'flex';
-}
-
-function toggleMenu(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
-function toggleSettings(e) { e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
-
-window.onclick = () => {
-    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
-};
-
-window.generateRandomMap = () => { window.shuffledIndices = Array.from({length: 100}, () => Math.floor(Math.random() * 50)); };
+// Global functions needed for HTML buttons
+window.toggleStat = toggleStat;
+window.moveSlide = moveSlide;
+window.openPreview = openPreview;
+window.openStory = openStory;
 
 init();
     </script>
