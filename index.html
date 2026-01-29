@@ -524,6 +524,7 @@ function renderProfile(data) {
     const b = data.bio;
     if (!b) return;
 
+    // 1. Basic Bio Info
     document.getElementById('pfpImg').src = b.profilePicture || "";
     document.getElementById('bioUser').innerText = b.username || "";
     document.getElementById('bioDisplay').innerText = b.displayName || "";
@@ -531,17 +532,47 @@ function renderProfile(data) {
     document.getElementById('bioLink').innerText = b.linkDisplay || "";
     document.getElementById('bioLink').href = b.linkUrl || "#";
 
+    // 2. Highlights Logic
     const highRow = document.getElementById('highRow');
     if (highRow && data.highlights) {
         highRow.innerHTML = data.highlights.map(h => `
-            <div onclick="openStory('${h.name.replace(/'/g, "\\'")}')" style="text-align:center; flex-shrink:0; cursor:pointer;">
+            <div class="h-item" data-name="${h.name}" style="text-align:center; flex-shrink:0; cursor:pointer;">
                 <div class="h-circle"><img src="${h.image}" class="h-img"></div>
                 <div style="font-size:11px; font-weight:700; margin-top:8px; color:var(--text-muted);">${h.name}</div>
             </div>`).join('');
-    }
-    console.log("Profile rendered. GridData length:", gridData.length);
-}
 
+        // 3. Add Event Listeners directly to the circles
+        document.querySelectorAll('.h-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const groupName = this.getAttribute('data-name');
+                
+                // Filter stories from gridData
+                const stories = gridData.filter(i => 
+                    i.type === "Story" && i.highlightGroup === groupName
+                );
+
+                if (stories.length > 0) {
+                    const lb = document.getElementById('previewLightbox');
+                    const content = document.getElementById('lightboxContent');
+                    const allFiles = stories.flatMap(s => s.files);
+
+                    content.innerHTML = `<div class="lb-track">
+                        ${allFiles.map(f => `
+                            <div class="lb-slide">
+                                ${f.isVideo ? `<video src="${f.url}" controls autoplay loop></video>` : `<img src="${f.url}">`}
+                            </div>`).join('')}
+                    </div>`;
+                    
+                    lb.style.display = 'flex';
+                    lb.style.zIndex = "9999"; // Ensure it pops to the very front
+                } else {
+                    console.log("No stories found for:", groupName);
+                }
+            });
+        });
+    }
+}
 function openPreview(idx) {
     const item = gridData[idx];
     const lb = document.getElementById('previewLightbox');
