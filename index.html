@@ -522,6 +522,8 @@ window.addColor = (e) => {
 
 function renderProfile(data) {
     const b = data.bio;
+    if (!b) return;
+
     document.getElementById('pfpImg').src = b.profilePicture || "";
     document.getElementById('bioUser').innerText = b.username || "";
     document.getElementById('bioDisplay').innerText = b.displayName || "";
@@ -529,11 +531,15 @@ function renderProfile(data) {
     document.getElementById('bioLink').innerText = b.linkDisplay || "";
     document.getElementById('bioLink').href = b.linkUrl || "#";
 
-    document.getElementById('highRow').innerHTML = (data.highlights || []).map(h => `
-        <div onclick="openStory('${h.name}')" style="text-align:center; flex-shrink:0; cursor:pointer;">
-            <div class="h-circle"><img src="${h.image}" class="h-img"></div>
-            <div style="font-size:11px; font-weight:700; margin-top:8px; color:var(--text-muted);">${h.name}</div>
-        </div>`).join('');
+    const highRow = document.getElementById('highRow');
+    if (highRow && data.highlights) {
+        highRow.innerHTML = data.highlights.map(h => `
+            <div onclick="openStory('${h.name.replace(/'/g, "\\'")}')" style="text-align:center; flex-shrink:0; cursor:pointer;">
+                <div class="h-circle"><img src="${h.image}" class="h-img"></div>
+                <div style="font-size:11px; font-weight:700; margin-top:8px; color:var(--text-muted);">${h.name}</div>
+            </div>`).join('');
+    }
+    console.log("Profile rendered. GridData length:", gridData.length);
 }
 
 function openPreview(idx) {
@@ -554,22 +560,24 @@ window.onclick = () => {
 window.generateRandomMap = () => { window.shuffledIndices = Array.from({length: 100}, () => Math.floor(Math.random() * 50)); };
 // Add this to the bottom of your script
 function openStory(groupName) {
-    // 1. Find all "Story" type items from Notion that match this highlight name
-    const stories = gridData.filter(i => i.type === "Story" && i.highlightGroup === groupName);
+    console.log("Attempting to open highlight:", groupName);
+    
+    // Filter stories
+    const stories = gridData.filter(i => 
+        i.type === "Story" && 
+        String(i.highlightGroup).trim() === String(groupName).trim()
+    );
     
     if (stories.length === 0) {
-        console.warn("No stories found for:", groupName);
+        alert("No stories found for " + groupName + ". Check if 'Type' is 'Story' in Notion.");
         return;
     }
 
-    // 2. Target the Lightbox (the same one used for grid posts)
     const lb = document.getElementById('previewLightbox');
     const content = document.getElementById('lightboxContent');
     
-    // 3. Extract all images/videos from the matching stories
     const allFiles = stories.flatMap(s => s.files);
 
-    // 4. Inject them into the lightbox
     content.innerHTML = `
         <div class="lb-track">
             ${allFiles.map(f => `
@@ -581,11 +589,10 @@ function openStory(groupName) {
                 </div>`).join('')}
         </div>`;
     
-    // 5. Show the lightbox
     lb.style.display = 'flex';
 }
 
-// Make it globally accessible for the onclick event
+// Crucial: Make sure the browser can find it
 window.openStory = openStory;
 init();
     </script>
