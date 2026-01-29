@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pro Planner v22 - Left Aligned Stack</title>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Planner v22 - Left Aligned Stack</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         :root { --bg: #ffffff; --surface: #f3f3f7; --text: #1a1a1a; --grey-empty: #efefef; --border: #e0e0e6; }
@@ -124,7 +130,9 @@
 </head>
 <body>
     <div id="bioSection">
-        <div class="pfp-container"><img id="pfpImg" class="pfp-img" src=""></div>
+        <div class="pfp-container">
+            <img id="pfpImg" class="pfp-img" src="">
+        </div>
         <h1 id="bioUser"></h1>
         <p id="bioDisplay" style="font-weight:600; margin-bottom: 5px;"></p>
         <p id="bioDesc" style="font-size:14px; color:#1a1a1a; max-width:600px; line-height:1.4; margin-bottom:10px; white-space: pre-wrap;"></p>
@@ -132,320 +140,274 @@
     </div>
 
     <div id="highRow"></div>
+
     <div class="top-bar">
         <button class="refresh-btn" onclick="location.reload()">Refresh</button>
         <button class="icon-btn" onclick="document.getElementById('filterArea').classList.toggle('active')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><rect x="2" y="10" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="10" y="8" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="18" y="12" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5">
+                <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
+                <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
+                <rect x="2" y="10" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/>
+                <rect x="10" y="8" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/>
+                <rect x="18" y="12" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/>
+            </svg>
         </button>
+        
         <div style="margin-left:auto; position:relative;">
             <button class="icon-btn" onclick="toggleSettings(event)">•••</button>
-            <div class="settings-menu" id="setMenu">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
-                    Show Bio <label class="switch"><input type="checkbox" id="bioT" onchange="updateUI()"><span class="slider"></span></label>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
-                    Show Highlights <label class="switch"><input type="checkbox" id="highT" onchange="updateUI()"><span class="slider"></span></label>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
-                    Content Map <label class="switch"><input type="checkbox" id="mapT" onchange="updateUI()"><span class="slider"></span></label>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; font-weight:600;">
-                    Direct Canva Previews <label class="switch"><input type="checkbox" id="canvaT" onchange="updateUI()"><span class="slider"></span></label>
-                </div>
-                
-                <div class="brand-color-section" id="colorManagerUI" style="display:none;">
-                    <div style="font-size: 11px; font-weight: 800; color: #888; margin-bottom: 10px; text-transform: uppercase;">Brand Palette</div>
-                    <div id="colorList"></div>
-                    <button class="add-btn" onclick="addColor()">+ Add Color</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="filter-row" id="filterArea">
-        <div class="dropdown-container">
-            <div class="dropdown-trigger" onclick="toggleMenu('platMenu', event)">
-                <span id="platCurrent">All Platforms</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 9l-7 7-7-7"/></svg>
-            </div>
-            <div class="dropdown-menu" id="platMenu">
-                <div class="dropdown-item" onclick="setPlat('all')">All Platforms <span class="count-pill" id="cnt-all">0</span></div>
-                <div class="dropdown-item" onclick="setPlat('instagram')">Instagram <span class="count-pill" id="cnt-ig">0</span></div>
-                <div class="dropdown-item" onclick="setPlat('tiktok')">TikTok <span class="count-pill" id="cnt-tt">0</span></div>
-            </div>
-        </div>
-
-        <div class="dropdown-container">
-            <div class="dropdown-trigger" onclick="toggleMenu('statMenu', event)">
-                <span>Status</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 9l-7 7-7-7"/></svg>
-            </div>
-            <div class="dropdown-menu" id="statMenu" style="padding: 12px;">
-                <div id="statusOptions"></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="grid" class="grid"></div>
-
-    <div id="previewLightbox" onclick="this.style.display='none'">
-        <div id="lightboxContent"></div>
-    </div>
-
-    <script>
-        <div class="top-bar">
-        <button class="refresh-btn" onclick="location.reload()">Refresh</button>
-        <button class="icon-btn" onclick="document.getElementById('filterArea').classList.toggle('active')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><rect x="2" y="10" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="10" y="8" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/><rect x="18" y="12" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/></svg>
-        </button>
-        <div style="margin-left:auto; position:relative;">
-            <button class="icon-btn" onclick="toggleSettings(event)">•••</button>
-            <div class="settings-menu" id="setMenu">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
-                    Show Bio <label class="switch"><input type="checkbox" id="bioT" onchange="updateUI()"><span class="slider"></span></label>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
-                    Show Highlights <label class="switch"><input type="checkbox" id="highT" onchange="updateUI()"><span class="slider"></span></label>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
-                    Content Map <label class="switch"><input type="checkbox" id="mapT" onchange="updateUI()"><span class="slider"></span></label>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; font-weight:600;">
-                    Direct Canva Previews <label class="switch"><input type="checkbox" id="canvaT" onchange="updateUI()"><span class="slider"></span></label>
-                </div>
-                
-                <div class="brand-color-section" id="colorManagerUI" style="display:none;">
-                    <div style="font-size: 11px; font-weight: 800; color: #888; margin-bottom: 10px; text-transform: uppercase;">Brand Palette</div>
-                    <div id="colorList"></div>
-                    <button class="add-btn" onclick="addColor()">+ Add Color</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="filter-row" id="filterArea">
-        <div class="dropdown-container">
-            <div class="dropdown-trigger" onclick="toggleMenu('platMenu', event)">
-                <span id="platCurrent">All Platforms</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 9l-7 7-7-7"/></svg>
-            </div>
-            <div class="dropdown-menu" id="platMenu">
-                <div class="dropdown-item" onclick="setPlat('all')">All Platforms <span class="count-pill" id="cnt-all">0</span></div>
-                <div class="dropdown-item" onclick="setPlat('instagram')">Instagram <span class="count-pill" id="cnt-ig">0</span></div>
-                <div class="dropdown-item" onclick="setPlat('tiktok')">TikTok <span class="count-pill" id="cnt-tt">0</span></div>
-            </div>
-        </div>
-
-        <div class="dropdown-container">
-            <div class="dropdown-trigger" onclick="toggleMenu('statMenu', event)">
-                <span>Status</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 9l-7 7-7-7"/></svg>
-            </div>
-            <div class="dropdown-menu" id="statMenu" style="padding: 12px;">
-                <div id="statusOptions"></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="grid" class="grid"></div>
-
-    <div id="previewLightbox" onclick="this.style.display='none'">
-        <div id="lightboxContent"></div>
-    </div>
-
-    <script>
-        const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
-        let gridData = [], currentPlat = 'all', activeStats = [];
-        let brandColors = ["#FFD1DC", "#AEEEEE", "#FFECB3", "#D1FFD7", "#E0BBE4"]; 
-        let shuffledIndices = [];
-
-        // UI Interactions
-        function toggleSettings(e) { 
-            e.stopPropagation(); 
-            document.getElementById('setMenu').classList.toggle('open'); 
-        }
-
-        function toggleMenu(id, e) { 
-            e.stopPropagation(); 
-            document.querySelectorAll('.dropdown-menu').forEach(m => {
-                if(m.id !== id) m.classList.remove('show');
-            });
-            document.getElementById(id).classList.toggle('show'); 
-        }
-
-        function updateUI() { 
-            document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none'; 
-            document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none'; 
-            document.getElementById('colorManagerUI').style.display = document.getElementById('mapT').checked ? 'block' : 'none';
-            doRender(); 
-        }
-
-        // Color Management & Shuffle
-        function shuffleColors() { 
-            shuffledIndices = Array.from({ length: 150 }, () => Math.floor(Math.random() * brandColors.length)); 
-            doRender(); 
-        }
-
-        function renderColorControls() {
-            const container = document.getElementById('colorList');
-            container.innerHTML = brandColors.map((color, idx) => `
-                <div class="color-row">
-                    <div class="color-picker-wrapper">
-                        <input type="color" class="color-picker" value="${color}" onchange="updateColor(${idx}, this.value)">
-                    </div>
-                    <span style="font-size:12px; font-weight:700; flex:1; color:#555;">Color ${idx+1}</span>
-                    ${brandColors.length > 2 ? `<button class="remove-btn" onclick="removeColor(${idx})">×</button>` : ''}
-                </div>`).join('');
-        }
-
-        function addColor() { brandColors.push("#e0e0e0"); shuffleColors(); renderColorControls(); }
-        function removeColor(idx) { brandColors.splice(idx, 1); shuffleColors(); renderColorControls(); }
-        function updateColor(idx, val) { brandColors[idx] = val; doRender(); }
-
-        // THE ULTIMATE CANVA FIX: Forces the clean embed structure
-        function getCanvaEmbedUrl(originalUrl) {
-            if (!originalUrl || !originalUrl.includes('canva.com')) return originalUrl;
-            const regex = /\/design\/([A-Za-z0-9_-]+)/;
-            const match = originalUrl.match(regex);
-            if (match && match[1]) {
-                return `https://www.canva.com/design/${match[1]}/view?embed`;
-            }
-            return originalUrl.split('?')[0] + '/view?embed';
-        }
-
-        function openPreview(index) {
-            const item = gridData[index];
-            if (!item) return;
-            const content = document.getElementById('lightboxContent');
-            const file = item.files[0];
-            const canvaOn = document.getElementById('canvaT').checked;
-            let html = "";
-
-            if (canvaOn && file.url.includes('canva.com')) {
-                let embedUrl = getCanvaEmbedUrl(file.url);
-                html = `<iframe src="${embedUrl}" allowfullscreen referrerpolicy="no-referrer" style="width:100%; height:100%; border:none; background:#000;"></iframe>`;
-            } else if (file.isVideo) {
-                html = `<video src="${file.url}" controls autoplay loop style="max-height:100%; max-width:100%;"></video>`;
-            } else {
-                html = `<img src="${file.url}" style="max-height:100%; max-width:100%; object-fit:contain;">`;
-            }
-            content.innerHTML = html;
-            document.getElementById('previewLightbox').style.display = 'flex';
-        }
-
-        // FAIL-SAFE DATA FETCHING
-        async function init() {
-            document.getElementById('canvaT').checked = true;
-            const gridContainer = document.getElementById('grid');
-            gridContainer.innerHTML = '<p style="text-align:center; padding:50px; color:#888;">Connecting to Notion...</p>';
-
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-
-                const r = await fetch(API, { signal: controller.signal }); 
-                const res = await r.json();
-                clearTimeout(timeoutId);
-
-                gridData = res.grid;
-                
-                if (!gridData || gridData.length === 0) {
-                    gridContainer.innerHTML = '<p style="text-align:center; padding:50px;">No data found in Notion database.</p>';
-                    return;
-                }
-
-                // Set Bio
-                document.getElementById('pfpImg').src = res.bio.profilePicture || "";
-                document.getElementById('bioUser').innerText = "@" + (res.bio.username || "username");
-                document.getElementById('bioDisplay').innerText = res.bio.displayName || "";
-                document.getElementById('bioDesc').innerText = res.bio.bioText || "";
-                document.getElementById('bioLink').innerText = res.bio.linkDisplay || "";
-                document.getElementById('bioLink').href = res.bio.linkUrl || "#";
-
-                // Set Highlights
-                const hData = res.highlights || [];
-                document.getElementById('highRow').innerHTML = hData.map(h => `
-                    <div style="text-align:center; min-width:75px;">
-                        <div class="h-circle"><img src="${h.image}" class="h-img"></div>
-                        <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h.name}</span>
-                    </div>`).join('');
-
-                const stats = [...new Set(gridData.map(i => i.status))];
-                activeStats = [...stats];
-                renderStatusOptions(stats);
-                updateCounts();
-                renderColorControls();
-                shuffleColors();
-            } catch(e) { 
-                console.error("Critical Fetch Error:", e);
-                gridContainer.innerHTML = `<p style="text-align:center; padding:50px; color:red;">Connection Error: ${e.message}<br><small>Check if your Worker is running.</small></p>`;
-            }
-        }
-
-        function renderStatusOptions(stats) {
-            document.getElementById('statusOptions').innerHTML = stats.map(s => `
-                <label class="dropdown-item" onclick="event.stopPropagation()">
-                    <div class="item-left">
-                        <input type="checkbox" checked onchange="toggleStat('${s}')">
-                        <div class="check-box"></div>
-                        <span>${s}</span>
-                    </div>
-                    <span class="count-pill">${gridData.filter(i => i.status === s).length}</span>
-                </label>`).join('');
-        }
-
-        function updateCounts() {
-            document.getElementById('cnt-all').innerText = gridData.length;
-            document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
-            document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
-        }
-
-        function setPlat(p) { 
-            currentPlat = p; 
-            document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
-            doRender(); 
-        }
-
-        function toggleStat(s) { 
-            activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s]; 
-            doRender(); 
-        }
-
-        function doRender() {
-            const grid = document.getElementById('grid');
-            const isMap = document.getElementById('mapT').checked;
-            const canvaOn = document.getElementById('canvaT').checked;
-            const filtered = gridData.filter(i => (currentPlat === 'all' || i.platforms.includes(currentPlat)) && activeStats.includes(i.status));
             
-            grid.innerHTML = filtered.map((item, i) => {
-                const dataIdx = gridData.indexOf(item);
-                if (isMap) {
-                    const color = brandColors[shuffledIndices[i % brandColors.length]];
-                    return `<div class="item" onclick="openPreview(${dataIdx})" style="background:${color}; cursor:pointer;">
-                                <span class="map-mode-label">${item.status}</span>
-                            </div>`;
-                }
-                const slides = item.files.map(f => {
-                    if (canvaOn && f.url.includes('canva.com')) {
-                        let base = getCanvaEmbedUrl(f.url);
-                        return `<div class="slide"><iframe src="${base}" referrerpolicy="no-referrer"></iframe></div>`;
-                    }
-                    return `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop muted playsinline></video>` : `<img src="${f.url}">`}</div>`;
-                }).join('');
-                return `<div class="item" onclick="openPreview(${dataIdx})" style="cursor:pointer;">
-                    ${item.files.length > 1 ? `<div style="position:absolute; top:12px; right:12px; color:white; z-index:10; font-weight:bold; text-shadow: 0 0 4px rgba(0,0,0,0.5);">▢▢</div>` : ''}
-                    <div class="carousel-track">${slides}</div></div>`;
-            }).join('');
+            <div class="settings-menu" id="setMenu">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
+                    Show Bio <label class="switch"><input type="checkbox" id="bioT" onchange="updateUI()"><span class="slider"></span></label>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
+                    Show Highlights <label class="switch"><input type="checkbox" id="highT" onchange="updateUI()"><span class="slider"></span></label>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
+                    Content Map <label class="switch"><input type="checkbox" id="mapT" onchange="updateUI()"><span class="slider"></span></label>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-weight:600;">
+                    Direct Canva Previews <label class="switch"><input type="checkbox" id="canvaT" onchange="updateUI()"><span class="slider"></span></label>
+                </div>
+                
+                <div class="brand-color-section" id="colorManagerUI" style="display:none;">
+                    <div style="font-size: 11px; font-weight: 800; color: #888; margin-bottom: 10px; text-transform: uppercase;">Brand Palette</div>
+                    <div id="colorList"></div>
+                    <button class="add-btn" onclick="addColor()">+ Add Color</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-row" id="filterArea">
+        <div class="dropdown-container">
+            <div class="dropdown-trigger" onclick="toggleMenu('platMenu', event)">
+                <span id="platCurrent">All Platforms</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 9l-7 7-7-7"/></svg>
+            </div>
+            <div class="dropdown-menu" id="platMenu">
+                <div class="dropdown-item" onclick="setPlat('all')">All Platforms <span class="count-pill" id="cnt-all">0</span></div>
+                <div class="dropdown-item" onclick="setPlat('instagram')">Instagram <span class="count-pill" id="cnt-ig">0</span></div>
+                <div class="dropdown-item" onclick="setPlat('tiktok')">TikTok <span class="count-pill" id="cnt-tt">0</span></div>
+            </div>
+        </div>
+
+        <div class="dropdown-container">
+            <div class="dropdown-trigger" onclick="toggleMenu('statMenu', event)">
+                <span>Status</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 9l-7 7-7-7"/></svg>
+            </div>
+            <div class="dropdown-menu" id="statMenu" style="padding: 12px;">
+                <div id="statusOptions"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="grid" class="grid"></div>
+
+    <div id="previewLightbox" onclick="this.style.display='none'">
+        <div id="lightboxContent" onclick="event.stopPropagation()"></div>
+    </div>
+
+    <script>
+       const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
+let gridData = [], currentPlat = 'all', activeStats = [];
+let brandColors = ["#FFD1DC", "#AEEEEE", "#FFECB3", "#D1FFD7", "#E0BBE4"]; 
+let shuffledIndices = [];
+
+// UI Control Functions
+function toggleSettings(e) { 
+    e.stopPropagation(); 
+    document.getElementById('setMenu').classList.toggle('open'); 
+}
+
+function toggleMenu(id, e) { 
+    e.stopPropagation(); 
+    document.querySelectorAll('.dropdown-menu').forEach(m => {
+        if(m.id !== id) m.classList.remove('show');
+    });
+    document.getElementById(id).classList.toggle('show'); 
+}
+
+function updateUI() { 
+    document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none'; 
+    document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none'; 
+    document.getElementById('colorManagerUI').style.display = document.getElementById('mapT').checked ? 'block' : 'none';
+    doRender(); 
+}
+
+// Color Palette Logic
+function shuffleColors() { 
+    shuffledIndices = Array.from({ length: 150 }, () => Math.floor(Math.random() * brandColors.length)); 
+    doRender(); 
+}
+
+function renderColorControls() {
+    const container = document.getElementById('colorList');
+    container.innerHTML = brandColors.map((color, idx) => `
+        <div class="color-row">
+            <div class="color-picker-wrapper">
+                <input type="color" class="color-picker" value="${color}" onchange="updateColor(${idx}, this.value)">
+            </div>
+            <span style="font-size:12px; font-weight:700; flex:1; color:#555;">Color ${idx+1}</span>
+            ${brandColors.length > 2 ? `<button class="remove-btn" onclick="removeColor(${idx})">×</button>` : ''}
+        </div>`).join('');
+}
+
+function addColor() { brandColors.push("#e0e0e0"); renderColorControls(); shuffleColors(); }
+function removeColor(idx) { brandColors.splice(idx, 1); renderColorControls(); shuffleColors(); }
+function updateColor(idx, val) { brandColors[idx] = val; doRender(); }
+
+// The Canva Link Fix
+function getCanvaEmbedUrl(url) {
+    if (!url || !url.includes('canva.com')) return url;
+    // Extract only the design ID to bypass 403 Forbidden errors
+    const match = url.match(/design\/([A-Za-z0-9_-]+)/);
+    if (match && match[1]) {
+        return `https://www.canva.com/design/${match[1]}/view?embed`;
+    }
+    return url.split('?')[0] + '/view?embed';
+}
+
+// Lightbox/Preview
+function openPreview(index) {
+    const item = gridData[index];
+    if (!item) return;
+    const content = document.getElementById('lightboxContent');
+    const file = item.files[0];
+    const canvaOn = document.getElementById('canvaT').checked;
+    let html = "";
+
+    if (canvaOn && file.url.includes('canva.com')) {
+        let embed = getCanvaEmbedUrl(file.url);
+        html = `<iframe src="${embed}" allowfullscreen referrerpolicy="no-referrer"></iframe>`;
+    } else if (file.isVideo) {
+        html = `<video src="${file.url}" controls autoplay loop></video>`;
+    } else {
+        html = `<img src="${file.url}" style="max-width:100%; max-height:100%; object-fit:contain;">`;
+    }
+    content.innerHTML = html;
+    document.getElementById('previewLightbox').style.display = 'flex';
+}
+
+// Initialization & Data Loading
+async function init() {
+    document.getElementById('canvaT').checked = true;
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '<p style="grid-column: span 3; text-align:center; padding:50px;">Loading from Notion...</p>';
+
+    try {
+        const response = await fetch(API);
+        const data = await response.json();
+        
+        gridData = data.grid || [];
+        
+        // Bio Population
+        document.getElementById('pfpImg').src = data.bio.profilePicture || "";
+        document.getElementById('bioUser').innerText = "@" + (data.bio.username || "user");
+        document.getElementById('bioDisplay').innerText = data.bio.displayName || "";
+        document.getElementById('bioDesc').innerText = data.bio.bioText || "";
+        document.getElementById('bioLink').innerText = data.bio.linkDisplay || "";
+        document.getElementById('bioLink').href = data.bio.linkUrl || "#";
+
+        // Highlights Population
+        const hData = data.highlights || [];
+        document.getElementById('highRow').innerHTML = hData.map(h => `
+            <div style="text-align:center; min-width:75px;">
+                <div class="h-circle"><img src="${h.image}" class="h-img"></div>
+                <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h.name}</span>
+            </div>`).join('');
+
+        const stats = [...new Set(gridData.map(i => i.status))];
+        activeStats = [...stats];
+        
+        renderStatusOptions(stats);
+        renderColorControls();
+        updateCounts();
+        shuffleColors();
+    } catch (err) {
+        console.error("Fetch Error:", err);
+        grid.innerHTML = '<p style="grid-column: span 3; text-align:center; padding:50px; color:red;">Connection Error. Check your Worker URL.</p>';
+    }
+}
+
+function renderStatusOptions(stats) {
+    document.getElementById('statusOptions').innerHTML = stats.map(s => `
+        <label class="dropdown-item" onclick="event.stopPropagation()">
+            <div class="item-left">
+                <input type="checkbox" checked onchange="toggleStat('${s}')">
+                <div class="check-box"></div>
+                <span>${s}</span>
+            </div>
+            <span class="count-pill">${gridData.filter(i => i.status === s).length}</span>
+        </label>`).join('');
+}
+
+function updateCounts() {
+    document.getElementById('cnt-all').innerText = gridData.length;
+    document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
+    document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
+}
+
+function setPlat(p) { 
+    currentPlat = p; 
+    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
+    doRender(); 
+}
+
+function toggleStat(s) { 
+    activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s]; 
+    doRender(); 
+}
+
+// Rendering Logic
+function doRender() {
+    const grid = document.getElementById('grid');
+    const isMap = document.getElementById('mapT').checked;
+    const canvaOn = document.getElementById('canvaT').checked;
+    const filtered = gridData.filter(i => (currentPlat === 'all' || i.platforms.includes(currentPlat)) && activeStats.includes(i.status));
+    
+    if (filtered.length === 0) {
+        grid.innerHTML = '<p style="grid-column: span 3; text-align:center; padding:50px; color:#999;">no content</p>';
+        return;
+    }
+
+    grid.innerHTML = filtered.map((item, i) => {
+        const dataIdx = gridData.indexOf(item);
+        if (isMap) {
+            const color = brandColors[shuffledIndices[i % brandColors.length]];
+            return `<div class="item" onclick="openPreview(${dataIdx})" style="background:${color}; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                        <span style="color:white; font-weight:800; font-size:12px; text-transform:uppercase; text-align:center;">${item.status}</span>
+                    </div>`;
         }
 
-        window.onclick = function(event) {
-            if (!event.target.closest('.dropdown-container') && !event.target.closest('.settings-menu') && !event.target.closest('.icon-btn')) {
-                document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
-                document.getElementById('setMenu').classList.remove('open');
+        const slides = item.files.map(f => {
+            if (canvaOn && f.url.includes('canva.com')) {
+                let base = getCanvaEmbedUrl(f.url);
+                return `<div class="slide"><iframe src="${base}" referrerpolicy="no-referrer"></iframe></div>`;
             }
-        };
+            return `<div class="slide">
+                ${f.isVideo ? `<video src="${f.url}" loop muted playsinline autoplay></video>` : `<img src="${f.url}">`}
+            </div>`;
+        }).join('');
 
-        init();
+        return `<div class="item" onclick="openPreview(${dataIdx})" style="cursor:pointer;">
+            ${item.files.length > 1 ? `<div style="position:absolute; top:10px; right:10px; color:white; z-index:10; font-weight:bold; text-shadow:0 0 4px rgba(0,0,0,0.5)">▢▢</div>` : ''}
+            <div class="carousel-track">${slides}</div>
+        </div>`;
+    }).join('');
+}
+
+// Global click handler to close menus
+window.onclick = function(event) {
+    if (!event.target.closest('.dropdown-container') && !event.target.closest('.settings-menu') && !event.target.closest('.icon-btn')) {
+        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+        document.getElementById('setMenu').classList.remove('open');
+    }
+};
+
+init();
     </script>
 </body>
 </html>
