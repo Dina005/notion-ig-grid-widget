@@ -100,13 +100,22 @@ input:checked + .check-box::after { content: '✓'; color: white; font-size: 10p
 /* --- Color Manager --- */
 .brand-color-section { border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px; }
 .color-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-.color-picker-wrapper { 
-    width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; 
-    box-shadow: 0 0 0 1px #ddd; position: relative; overflow: hidden; flex-shrink: 0; 
-    cursor: pointer; transition: transform 0.1s ease;
+/* Refined Color Picker - Edge to Edge */
+.color-picker-wrapper { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); /* Subtle outer ring */
+    position: relative; overflow: hidden; flex-shrink: 0; cursor: pointer; transition: transform 0.1s ease;background: #fff; /* Fallback */}
+
+.color-picker-wrapper:hover {  transform: scale(1.1); border-color: #000;}
+.color-picker { position: absolute; top: -10px; left: -10px; width: 50px; /* Oversized to ensure total coverage */height: 50px; border: none; padding: 0;
+               margin: 0; cursor: pointer; background: none; appearance: none; -webkit-appearance: none;}
+
+/* Removes internal browser padding for the color swatch */
+.color-picker::-webkit-color-swatch-wrapper {
+    padding: 0;
 }
-.color-picker-wrapper:hover { transform: scale(1.1); box-shadow: 0 0 0 1px #000; }
-.color-picker { position: absolute; top: -5px; left: -5px; width: 40px; height: 40px; border: none; cursor: pointer; background: none; }
+.color-picker::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%;
+}
 .add-btn { width: 100%; padding: 10px; background: #f3f3f7; border: 1px dashed #ccc; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 10px; }
 .remove-btn { background: none; border: none; color: #ff4d4d; font-weight: bold; cursor: pointer; padding: 5px; }
 
