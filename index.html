@@ -260,7 +260,7 @@ input:checked + .check-box::after { content: '✓'; color: white; font-size: 10p
        const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [], isDragging = false;
 
-// 1. Color State (Defaulting to 2 Colors as requested)
+// 1. Color State (Defaulting to 2 Colors)
 window.brandColors = ["#FFD1DC", "#AEEEEE"]; 
 window.shuffledIndices = [];
 
@@ -289,7 +289,6 @@ function toggleOrder() { doRender(); }
 
 // --- STICKY CONTENT MAP LOGIC ---
 window.generateRandomMap = function() {
-    // Generates a large randomized pool based on CURRENT palette length
     const count = window.brandColors.length;
     window.shuffledIndices = Array.from({ length: 300 }, () => Math.floor(Math.random() * count));
 };
@@ -328,7 +327,7 @@ window.updateColor = function(idx, val) {
     doRender();
 };
 
-// --- DRAG & DROP ENGINE (Distance-Based) ---
+// --- DRAG & DROP ENGINE ---
 function initDragging() {
     const grid = document.getElementById('grid');
     const items = grid.querySelectorAll('.item');
@@ -399,9 +398,18 @@ function doRender() {
 
     grid.innerHTML = filtered.map((item, i) => {
         const dataIdx = gridData.indexOf(item);
+        
+        // 1. DATA PARSING (Handles Notion property variations)
         const contentTitle = (item.name && item.name.trim() !== "") ? item.name : "No Content";
-        const pillar = item.pillar || "General";
-        const postDate = item.date ? new Date(item.date).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : "";
+        const pillar = item.pillar || item.Pillar || item["Content Pillar"] || "General";
+        
+        let postDate = "";
+        if (item.date) {
+            const d = new Date(item.date);
+            if (!isNaN(d.getTime())) {
+                postDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
+        }
 
         // --- CONTENT MAP MODE ---
         if (isMap) {
@@ -410,7 +418,7 @@ function doRender() {
             const color = window.brandColors[safeIdx];
 
             return `<div class="item" draggable="${isCustom}" data-id="${item.files[0].url}" onclick="if(!isDragging) openPreview(${dataIdx})" style="background:${color}; display:flex; align-items:center; justify-content:center; padding:12px; box-sizing:border-box;">
-                        <span style="color:white; font-weight:700; font-size:13px; text-align:center; line-height:1.3; text-shadow: 0 1px 2px rgba(0,0,0,0.15);">${contentTitle}</span>
+                        <span style="color:white; font-weight:700; font-size:13px; text-align:center; line-height:1.3; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; text-shadow: 0 1px 2px rgba(0,0,0,0.15);">${contentTitle}</span>
                     </div>`;
         }
 
@@ -428,8 +436,8 @@ function doRender() {
                 <div class="overlay">
                     <div class="ov-title">${contentTitle}</div>
                     <div class="ov-meta">
-                        <span>${pillar}</span>
-                        <span>${postDate}</span>
+                        <span style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px;">${pillar}</span>
+                        <span style="font-weight: 800;">${postDate}</span>
                     </div>
                 </div>
             </div>`;
@@ -437,6 +445,7 @@ function doRender() {
     
     if (isCustom) initDragging();
 }
+
 // --- INITIALIZATION ---
 function openPreview(idx) {
     const item = gridData[idx];
@@ -459,7 +468,6 @@ async function init() {
         const data = await res.json();
         gridData = data.grid || [];
         
-        // Populate Bio
         document.getElementById('pfpImg').src = data.bio.profilePicture || "";
         document.getElementById('bioUser').innerText = "@" + (data.bio.username || "user");
         document.getElementById('bioDisplay').innerText = data.bio.displayName || "";
@@ -467,14 +475,12 @@ async function init() {
         document.getElementById('bioLink').innerText = data.bio.linkDisplay || "";
         document.getElementById('bioLink').href = data.bio.linkUrl || "#";
 
-        // Populate Highlights
         document.getElementById('highRow').innerHTML = (data.highlights || []).map(h => `
             <div style="text-align:center; min-width:75px;">
                 <div class="h-circle"><img src="${h.image}" class="h-img"></div>
                 <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h.name}</span>
             </div>`).join('');
 
-        // Populate Status Filter with Counts
         const stats = [...new Set(gridData.map(i => i.status))];
         activeStats = [...stats];
         document.getElementById('statusOptions').innerHTML = stats.map(s => `
@@ -486,17 +492,14 @@ async function init() {
                 <span class="count-pill">${gridData.filter(i => i.status === s).length}</span>
             </label>`).join('');
 
-        // Platform Counts
         document.getElementById('cnt-all').innerText = gridData.length;
         document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
         document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
 
-        // Start Color System
         window.generateRandomMap();
         window.renderColorControls();
-        
         doRender();
-    } catch (e) { console.error("Initialization Failed:", e); }
+    } catch (e) { console.error("Init Error:", e); }
 }
 
 function toggleStat(s) { 
@@ -510,7 +513,6 @@ function setPlat(p) {
     doRender(); 
 }
 
-// Global Click listener for closing menus
 window.onclick = function(e) {
     if (!e.target.closest('.dropdown-container') && !e.target.closest('.settings-menu') && !e.target.closest('.icon-btn')) {
         document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
