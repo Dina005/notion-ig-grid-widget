@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pro Planner v22 - Left Aligned Stack</title>
     <style>
-   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root { 
     --bg: #ffffff; 
@@ -30,7 +30,7 @@ body {
     overflow-x: hidden;
 }
 
-/* Bio Section - Left Aligned Stack */
+/* --- Bio Section (Left Aligned) --- */
 #bioSection { 
     max-width: 935px; 
     margin: 40px auto 20px; 
@@ -51,7 +51,7 @@ body {
 .pfp-img { width: 100%; height: 100%; object-fit: cover; }
 #bioUser { font-size: 32px; font-weight: 800; margin: 0 0 10px 0; }
 
-/* Highlights */
+/* --- Highlights --- */
 #highRow { 
     max-width: 935px; margin: 0 auto 30px; 
     padding: 0 20px; display: none; gap: 15px; 
@@ -64,7 +64,7 @@ body {
 }
 .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
-/* Navigation & Settings */
+/* --- Navigation & Settings --- */
 .top-bar { max-width: 935px; margin: 20px auto 10px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
 .refresh-btn { background: #000; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
 .icon-btn { background: var(--surface); border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -76,15 +76,15 @@ body {
 }
 .settings-menu.open { display: block; }
 
-/* Toggles */
+/* --- Toggles & Switches --- */
 .switch { position: relative; width: 40px; height: 22px; display: inline-block; }
 .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e5ea; transition: .3s; border-radius: 20px; }
 .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
 input:checked + .slider { background-color: #000; }
 input:checked + .slider:before { transform: translateX(18px); }
-input { display: none; }
+input[type="checkbox"] { display: none; }
 
-/* Filters */
+/* --- Filters & Checkboxes --- */
 .filter-row { display: none; padding: 15px 20px; gap: 12px; max-width: 935px; margin: 0 auto; border-top: 1px solid #f0f0f2; }
 .filter-row.active { display: flex; }
 .dropdown-container { position: relative; font-size: 14px; font-weight: 600; }
@@ -93,132 +93,41 @@ input { display: none; }
 .dropdown-menu.show { display: block; }
 .dropdown-item { padding: 10px 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
 .dropdown-item:hover { background: var(--surface); }
-        /* Status Filter Styling */
-.item-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
 
-.count-pill {
-    background: var(--surface);
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 11px;
-    color: #888;
-    font-weight: 700;
-}
+.item-left { display: flex; align-items: center; gap: 10px; }
+.check-box { width: 18px; height: 18px; border: 2px solid #ddd; border-radius: 4px; position: relative; }
+input:checked + .check-box { background: #000; border-color: #000; }
+input:checked + .check-box::after { content: '✓'; color: white; font-size: 12px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.count-pill { background: var(--surface); padding: 2px 8px; border-radius: 10px; font-size: 11px; color: #888; font-weight: 700; }
 
-/* Custom Checkbox Look */
-.dropdown-item input[type="checkbox"] {
-    display: none; /* Hide default */
-}
-
-.check-box {
-    width: 18px;
-    height: 18px;
-    border: 2px solid #ddd;
-    border-radius: 4px;
-    position: relative;
-    transition: 0.2s;
-}
-
-input:checked + .check-box {
-    background: #000;
-    border-color: #000;
-}
-
-input:checked + .check-box::after {
-    content: '✓';
-    color: white;
-    font-size: 12px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-/* Grid & Drag/Drop */
+/* --- Grid & Dragging --- */
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
 .item { aspect-ratio: 1/1; background: var(--grey-empty); position: relative; cursor: grab; user-select: none; transition: transform 0.2s; }
 .item.dragging { opacity: 0.4; transform: scale(0.9); filter: grayscale(1); z-index: 100; }
-.item > * { pointer-events: none; } /* Prevents children from breaking drag */
-.carousel-track { display: flex; width: 100%; height: 100%; overflow: hidden; pointer-events: none; }
+.item * { pointer-events: none; }
+#grid .item { pointer-events: auto; }
+
+.carousel-track { display: flex; width: 100%; height: 100%; overflow: hidden; }
 .slide { min-width: 100%; height: 100%; position: relative; }
 .slide img, .slide video { width: 100%; height: 100%; object-fit: cover; }
 .slide iframe { position: absolute; top: 50%; left: 50%; width: 150%; height: 150%; border: none; transform: translate(-50%, -50%); }
 
-/* Lightbox & Minimalist X */
+/* --- Content Map / Color Manager --- */
+.brand-color-section { border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px; }
+.color-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.color-picker-wrapper { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px #ddd; position: relative; overflow: hidden; flex-shrink: 0; }
+.color-picker { position: absolute; top: -5px; left: -5px; width: 40px; height: 40px; border: none; cursor: pointer; background: none; }
+.add-btn { width: 100%; padding: 10px; background: #f3f3f7; border: 1px dashed #ccc; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+.remove-btn { background: none; border: none; color: #ff4d4d; font-weight: bold; cursor: pointer; padding: 5px; }
+
+/* --- Lightbox --- */
 #previewLightbox { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center; }
 #lightboxContent { width:90%; height:90%; display:flex; align-items:center; justify-content:center; }
 .close-preview { position: fixed; top: 30px; right: 30px; color: white; font-size: 40px; font-weight: 200; cursor: pointer; z-index: 10002; text-shadow: 0 0 15px rgba(0,0,0,0.5); }
-
-/* Brand Color Manager */
-.color-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-.color-picker-wrapper { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #eee; position: relative; overflow: hidden; }
-.color-picker { position: absolute; top: -5px; left: -5px; width: 44px; height: 44px; border: none; cursor: pointer; }
-/* Color Manager Styling */
-.brand-color-section {
-    border-top: 1px solid #eee;
-    padding-top: 15px;
-    margin-top: 15px;
-}
-
-.color-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 8px;
-}
-
-.color-picker-wrapper {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 2px solid #fff;
-    box-shadow: 0 0 0 1px #ddd;
-    position: relative;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
-.color-picker {
-    position: absolute;
-    top: -5px;
-    left: -5px;
-    width: 40px;
-    height: 40px;
-    border: none;
-    cursor: pointer;
-    background: none;
-}
-
-.add-btn {
-    width: 100%;
-    padding: 10px;
-    background: #f3f3f7;
-    border: 1px dashed #ccc;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-.add-btn:hover { background: #e8e8ef; }
-
-.remove-btn {
-    background: none;
-    border: none;
-    color: #ff4d4d;
-    font-weight: bold;
-    cursor: pointer;
-    padding: 5px;
-}
     </style>
 </head>
 <body>
-   <div id="bioSection">
+  <div id="bioSection">
         <div class="pfp-container">
             <img id="pfpImg" class="pfp-img" src="">
         </div>
@@ -246,7 +155,6 @@ input:checked + .check-box::after {
         
         <div style="margin-left:auto; position:relative;">
             <button class="icon-btn" onclick="toggleSettings(event)">•••</button>
-            
             <div class="settings-menu" id="setMenu">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
                     Show Bio <label class="switch"><input type="checkbox" id="bioT" onchange="updateUI()"><span class="slider"></span></label>
@@ -254,21 +162,21 @@ input:checked + .check-box::after {
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
                     Show Highlights <label class="switch"><input type="checkbox" id="highT" onchange="updateUI()"><span class="slider"></span></label>
                 </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
+                    Content Map <label class="switch"><input type="checkbox" id="mapT" onchange="updateUI()"><span class="slider"></span></label>
+                </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600; border-top: 1px solid #eee; padding-top: 15px;">
                     Custom Layout <label class="switch"><input type="checkbox" id="customOrderT" onchange="toggleOrder()"><span class="slider"></span></label>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; font-weight:600;">
-                    Direct Canva Previews <label class="switch"><input type="checkbox" id="canvaT" onchange="updateUI()"><span class="slider"></span></label>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
-                    Content Map <label class="switch"><input type="checkbox" id="mapT" onchange="updateUI()"><span class="slider"></span></label>
+                    Canva Previews <label class="switch"><input type="checkbox" id="canvaT" onchange="updateUI()"><span class="slider"></span></label>
                 </div>
                 
                 <div class="brand-color-section" id="colorManagerUI" style="display:none;">
-    <div style="font-size: 11px; font-weight: 800; color: #888; margin-bottom: 10px; text-transform: uppercase;">Brand Palette</div>
-    <div id="colorList"></div>
-    <button class="add-btn" onclick="addColor()">+ Add Color</button>
-</div>
+                    <div style="font-size: 11px; font-weight: 800; color: #888; margin-bottom: 10px; text-transform: uppercase;">Brand Palette</div>
+                    <div id="colorList"></div>
+                    <button class="add-btn" onclick="addColor()">+ Add Color</button>
+                </div>
             </div>
         </div>
     </div>
@@ -306,10 +214,12 @@ input:checked + .check-box::after {
     <script>
        const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [], isDragging = false;
-let brandColors = ["#FFD1DC", "#AEEEEE", "#FFECB3", "#D1FFD7", "#E0BBE4"]; 
-let shuffledIndices = [];
 
-// --- 1. UI CONTROL FUNCTIONS ---
+// Color State
+window.brandColors = ["#FFD1DC", "#AEEEEE", "#FFECB3", "#D1FFD7", "#E0BBE4"]; 
+window.shuffledIndices = [];
+
+// --- 1. UI CONTROL ---
 function toggleSettings(e) { 
     e.stopPropagation(); 
     document.getElementById('setMenu').classList.toggle('open'); 
@@ -332,25 +242,50 @@ function updateUI() {
 
 function toggleOrder() { doRender(); }
 
-// --- 2. THE CANVA ENGINE ---
-function getCanvaEmbedUrl(url) {
-    if (!url || !url.includes('canva.com')) return url;
-    const match = url.match(/design\/([A-Za-z0-9_-]+)/);
-    if (match && match[1]) return `https://www.canva.com/design/${match[1]}/view?embed`;
-    return url.split('?')[0] + '/view?embed';
-}
+// --- 2. CONTENT MAP LOGIC ---
+window.generateRandomMap = function() {
+    window.shuffledIndices = Array.from({ length: 200 }, () => Math.floor(Math.random() * window.brandColors.length));
+};
 
-// --- 3. DRAG & DROP LOGIC ---
+window.renderColorControls = function() {
+    const container = document.getElementById('colorList');
+    if (!container) return;
+    container.innerHTML = window.brandColors.map((color, idx) => `
+        <div class="color-row">
+            <div class="color-picker-wrapper">
+                <input type="color" class="color-picker" value="${color}" onchange="window.updateColor(${idx}, this.value)">
+            </div>
+            <span style="font-size:12px; font-weight:700; flex:1; color:#555;">Color ${idx + 1}</span>
+            ${window.brandColors.length > 1 ? `<button class="remove-btn" onclick="window.removeColor(${idx})">×</button>` : ''}
+        </div>`).join('');
+};
+
+window.addColor = function() {
+    window.brandColors.push("#E5E5E5");
+    window.generateRandomMap();
+    window.renderColorControls();
+    doRender();
+};
+
+window.removeColor = function(idx) {
+    window.brandColors.splice(idx, 1);
+    window.generateRandomMap();
+    window.renderColorControls();
+    doRender();
+};
+
+window.updateColor = function(idx, val) {
+    window.brandColors[idx] = val;
+    doRender();
+};
+
+// --- 3. DRAG & DROP ENGINE ---
 function initDragging() {
     const grid = document.getElementById('grid');
     const items = grid.querySelectorAll('.item');
 
     items.forEach(item => {
-        item.addEventListener('dragstart', () => {
-            isDragging = true;
-            item.classList.add('dragging');
-        });
-
+        item.addEventListener('dragstart', () => { isDragging = true; item.classList.add('dragging'); });
         item.addEventListener('dragend', () => {
             setTimeout(() => { isDragging = false; }, 100);
             item.classList.remove('dragging');
@@ -362,13 +297,9 @@ function initDragging() {
         e.preventDefault();
         const draggingItem = document.querySelector('.dragging');
         if (!draggingItem) return;
-
         const afterElement = getDragAfterElement(grid, e.clientX, e.clientY);
-        if (afterElement == null) {
-            grid.appendChild(draggingItem);
-        } else {
-            grid.insertBefore(draggingItem, afterElement);
-        }
+        if (afterElement == null) grid.appendChild(draggingItem);
+        else grid.insertBefore(draggingItem, afterElement);
     });
 }
 
@@ -379,12 +310,8 @@ function getDragAfterElement(container, x, y) {
         const centerX = box.left + box.width / 2;
         const centerY = box.top + box.height / 2;
         const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
-
-        if (distance < closest.distance) {
-            return { distance: distance, element: child };
-        } else {
-            return closest;
-        }
+        if (distance < closest.distance) return { distance: distance, element: child };
+        else return closest;
     }, { distance: Number.POSITIVE_INFINITY }).element;
 }
 
@@ -394,7 +321,13 @@ function saveCurrentOrder() {
     localStorage.setItem('customGridOrder', JSON.stringify(orderIds));
 }
 
-// --- 4. DATA RENDERING ---
+// --- 4. CORE RENDERING ---
+function getCanvaEmbedUrl(url) {
+    if (!url || !url.includes('canva.com')) return url;
+    const match = url.match(/design\/([A-Za-z0-9_-]+)/);
+    return match ? `https://www.canva.com/design/${match[1]}/view?embed` : url.split('?')[0] + '/view?embed';
+}
+
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
@@ -418,57 +351,42 @@ function doRender() {
     grid.innerHTML = filtered.map((item, i) => {
         const dataIdx = gridData.indexOf(item);
         if (isMap) {
-            const color = brandColors[shuffledIndices[i % brandColors.length]];
-            return `<div class="item" draggable="${isCustom}" data-id="${item.files[0].url}" onclick="if(!isDragging) openPreview(${dataIdx})" style="background:${color}; display:flex; align-items:center; justify-content:center;">
-                        <span style="color:white; font-weight:800; font-size:12px; text-transform:uppercase; text-align:center;">${item.status}</span>
+            const color = window.brandColors[window.shuffledIndices[i % window.brandColors.length]];
+            return `<div class="item" draggable="${isCustom}" data-id="${item.files[0].url}" onclick="if(!isDragging) openPreview(${dataIdx})" style="background:${color}; display:flex; align-items:center; justify-content:center; padding:10px;">
+                        <span style="color:white; font-weight:800; font-size:11px; text-transform:uppercase; text-align:center; line-height:1.2;">${item.status}</span>
                     </div>`;
         }
-
         const slides = item.files.map(f => {
-            if (canvaOn && f.url.includes('canva.com')) {
-                return `<div class="slide"><iframe src="${getCanvaEmbedUrl(f.url)}" referrerpolicy="no-referrer"></iframe></div>`;
-            }
+            if (canvaOn && f.url.includes('canva.com')) return `<div class="slide"><iframe src="${getCanvaEmbedUrl(f.url)}" referrerpolicy="no-referrer"></iframe></div>`;
             return `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop muted playsinline autoplay></video>` : `<img src="${f.url}">`}</div>`;
         }).join('');
-
         return `<div class="item" draggable="${isCustom}" data-id="${item.files[0].url}" onclick="if(!isDragging) openPreview(${dataIdx})">
             ${item.files.length > 1 ? `<div style="position:absolute; top:10px; right:10px; color:white; z-index:10; font-weight:bold; text-shadow:0 0 4px rgba(0,0,0,0.5)">▢▢</div>` : ''}
             <div class="carousel-track">${slides}</div>
         </div>`;
     }).join('');
-
     if (isCustom) initDragging();
 }
 
-// --- 5. LIGHTBOX & PREVIEW ---
-function openPreview(index) {
-    const item = gridData[index];
+// --- 5. INITIALIZATION ---
+function openPreview(idx) {
+    const item = gridData[idx];
     if (!item) return;
     const content = document.getElementById('lightboxContent');
     const file = item.files[0];
     const canvaOn = document.getElementById('canvaT').checked;
-    let html = "";
-
-    if (canvaOn && file.url.includes('canva.com')) {
-        html = `<iframe src="${getCanvaEmbedUrl(file.url)}" allowfullscreen referrerpolicy="no-referrer" style="width:100%; height:100%; border:none;"></iframe>`;
-    } else if (file.isVideo) {
-        html = `<video src="${file.url}" controls autoplay loop style="max-width:100%; max-height:100%;"></video>`;
-    } else {
-        html = `<img src="${file.url}" style="max-width:100%; max-height:100%; object-fit:contain;">`;
-    }
-
-    content.innerHTML = html;
+    content.innerHTML = (canvaOn && file.url.includes('canva.com')) 
+        ? `<iframe src="${getCanvaEmbedUrl(file.url)}" allowfullscreen referrerpolicy="no-referrer" style="width:100%; height:100%; border:none;"></iframe>`
+        : file.isVideo ? `<video src="${file.url}" controls autoplay loop style="max-width:100%; max-height:100%;"></video>`
+        : `<img src="${file.url}" style="max-width:100%; max-height:100%; object-fit:contain;">`;
     document.getElementById('previewLightbox').style.display = 'flex';
 }
-        
 
-// --- 6. INITIALIZATION ---
 async function init() {
     try {
-        const response = await fetch(API);
-        const data = await response.json();
+        const res = await fetch(API);
+        const data = await res.json();
         gridData = data.grid || [];
-        
         document.getElementById('pfpImg').src = data.bio.profilePicture || "";
         document.getElementById('bioUser').innerText = "@" + (data.bio.username || "user");
         document.getElementById('bioDisplay').innerText = data.bio.displayName || "";
@@ -476,8 +394,7 @@ async function init() {
         document.getElementById('bioLink').innerText = data.bio.linkDisplay || "";
         document.getElementById('bioLink').href = data.bio.linkUrl || "#";
 
-        const hData = data.highlights || [];
-        document.getElementById('highRow').innerHTML = hData.map(h => `
+        document.getElementById('highRow').innerHTML = (data.highlights || []).map(h => `
             <div style="text-align:center; min-width:75px;">
                 <div class="h-circle"><img src="${h.image}" class="h-img"></div>
                 <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h.name}</span>
@@ -485,106 +402,28 @@ async function init() {
 
         const stats = [...new Set(gridData.map(i => i.status))];
         activeStats = [...stats];
-        shuffledIndices = Array.from({ length: 150 }, () => Math.floor(Math.random() * brandColors.length));
-        
-        renderStatusOptions(stats);
-        updateCounts();
-        doRender();
-    } catch (err) {
-        console.error("Fetch Error:", err);
-        document.getElementById('grid').innerHTML = '<p style="text-align:center; padding:50px;">Check your Worker URL.</p>';
-    }
-    // Initial Randomization for the Content Map
-function generateRandomMap() {
-    // Generates a large enough list of random color indices
-    shuffledIndices = Array.from({ length: 200 }, () => Math.floor(Math.random() * brandColors.length));
-}
-
-function renderColorControls() {
-    const container = document.getElementById('colorList');
-    if (!container) return;
-
-    container.innerHTML = brandColors.map((color, idx) => `
-        <div class="color-row">
-            <div class="color-picker-wrapper">
-                <input type="color" class="color-picker" value="${color}" onchange="updateColor(${idx}, this.value)">
-            </div>
-            <span style="font-size:12px; font-weight:700; flex:1; color:#555;">Color ${idx + 1}</span>
-            ${brandColors.length > 1 ? `<button class="remove-btn" onclick="removeColor(${idx})">×</button>` : ''}
-        </div>
-    `).join('');
-}
-
-function addColor() {
-    // Add a default light grey color
-    brandColors.push("#E5E5E5");
-    renderColorControls();
-    generateRandomMap(); // Re-randomize when palette changes
-    doRender();
-}
-
-function removeColor(idx) {
-    brandColors.splice(idx, 1);
-    renderColorControls();
-    generateRandomMap(); // Re-randomize when palette changes
-    doRender();
-}
-
-function updateColor(idx, val) {
-    brandColors[idx] = val;
-    // No need to re-randomize here, just re-render with the new hex code
-    doRender();
-}
-
-// Update the init function call
-// Make sure this is called inside your async init() function:
-// generateRandomMap();
-// renderColorControls();
-}
-
-function renderStatusOptions(stats) {
-    const container = document.getElementById('statusOptions');
-    
-    container.innerHTML = stats.map(s => {
-        // Calculate how many items have this status
-        const count = gridData.filter(i => i.status === s).length;
-        const isChecked = activeStats.includes(s) ? 'checked' : '';
-
-        return `
+        document.getElementById('statusOptions').innerHTML = stats.map(s => `
             <label class="dropdown-item" onclick="event.stopPropagation()">
                 <div class="item-left">
-                    <input type="checkbox" ${isChecked} onchange="toggleStat('${s}')">
-                    <div class="check-box"></div>
-                    <span style="font-weight:600; font-size:13px;">${s}</span>
+                    <input type="checkbox" checked onchange="toggleStat('${s}')">
+                    <div class="check-box"></div><span style="font-weight:600; font-size:13px;">${s}</span>
                 </div>
-                <span class="count-pill">${count}</span>
-            </label>
-        `;
-    }).join('');
-}
-function toggleStat(s) { 
-    // Add or remove status from active list
-    if (activeStats.includes(s)) {
-        activeStats = activeStats.filter(x => x !== s);
-    } else {
-        activeStats.push(s);
-    }
-    doRender(); 
-}
+                <span class="count-pill">${gridData.filter(i => i.status === s).length}</span>
+            </label>`).join('');
 
-function updateCounts() {
-    // Updates the platform filter numbers
-    if (document.getElementById('cnt-all')) {
         document.getElementById('cnt-all').innerText = gridData.length;
         document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
         document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
-    }
+
+        window.generateRandomMap();
+        window.renderColorControls();
+        doRender();
+    } catch (e) { console.error(e); }
 }
 
-function updateCounts() {
-    document.getElementById('cnt-all').innerText = gridData.length;
-    document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
-    document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
+function toggleStat(s) { 
+    activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s]; 
+    doRender(); 
 }
 
 function setPlat(p) { 
