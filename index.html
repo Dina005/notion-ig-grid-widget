@@ -134,25 +134,24 @@
 /* Dedicated Close Button */
 .close-preview {
     position: fixed;
-    top: 20px;
-    right: 20px;
-    width: 44px;
-    height: 44px;
-    background: white;
-    color: black;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    font-weight: bold;
+    top: 30px;
+    right: 30px;
+    background: none; /* Removed the circle */
+    color: white; /* Made it white */
+    font-size: 38px; /* Slightly larger for easier clicking */
+    font-weight: 300; /* Thinner, more modern look */
     cursor: pointer;
     z-index: 10002;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    transition: transform 0.2s;
+    line-height: 1;
+    text-shadow: 0 0 10px rgba(0,0,0,0.5); /* Shadow for visibility on light backgrounds */
+    transition: opacity 0.2s, transform 0.2s;
+    user-select: none;
 }
 
-.close-preview:hover { transform: scale(1.1); }
+.close-preview:hover { 
+    opacity: 0.7; 
+    transform: scale(1.1); 
+}
     </style>
 </head>
 <body>
@@ -233,10 +232,11 @@
 
     <div id="grid" class="grid"></div>
 
-    <div id="previewLightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center;">
+   <div id="previewLightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center;">
     <div class="close-preview" onclick="document.getElementById('previewLightbox').style.display='none'">×</div>
     
     <div id="lightboxContent" style="width:90%; height:90%; display:flex; align-items:center; justify-content:center;"></div>
+</div>
 </div>
 
     <script>
