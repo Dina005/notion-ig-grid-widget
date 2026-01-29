@@ -355,16 +355,21 @@ function doRender() {
         const dataIdx = gridData.indexOf(item);
         
         if (isMap) {
-            // Picks color index and ensures it wraps correctly if palette size changes
+            // Pick color logic
             const rawIdx = window.shuffledIndices[i % window.shuffledIndices.length];
             const safeIdx = rawIdx % window.brandColors.length;
             const color = window.brandColors[safeIdx];
 
-            return `<div class="item" draggable="${isCustom}" data-id="${item.files[0].url}" onclick="if(!isDragging) openPreview(${dataIdx})" style="background:${color}; display:flex; align-items:center; justify-content:center; padding:10px;">
-                        <span style="color:white; font-weight:800; font-size:11px; text-transform:uppercase; text-align:center; line-height:1.2; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">${item.status}</span>
+            // Use 'name' from Notion, fallback to 'No Content' if empty
+            const contentTitle = (item.name && item.name.trim() !== "") ? item.name : "No Content";
+
+            return `<div class="item" draggable="${isCustom}" data-id="${item.files[0].url}" onclick="if(!isDragging) openPreview(${dataIdx})" style="background:${color}; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:15px; box-sizing:border-box; overflow:hidden;">
+                        <span style="color:white; font-weight:800; font-size:10px; text-transform:uppercase; margin-bottom:4px; opacity:0.8; letter-spacing:0.5px;">${item.status}</span>
+                        <span style="color:white; font-weight:600; font-size:12px; text-align:center; line-height:1.2; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">${contentTitle}</span>
                     </div>`;
         }
 
+        // Standard Grid Mode
         const slides = item.files.map(f => {
             if (canvaOn && f.url.includes('canva.com')) return `<div class="slide"><iframe src="${getCanvaEmbedUrl(f.url)}" referrerpolicy="no-referrer"></iframe></div>`;
             return `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop muted playsinline autoplay></video>` : `<img src="${f.url}">`}</div>`;
@@ -378,7 +383,6 @@ function doRender() {
     
     if (isCustom) initDragging();
 }
-
 // --- INITIALIZATION ---
 function openPreview(idx) {
     const item = gridData[idx];
