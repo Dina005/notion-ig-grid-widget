@@ -123,6 +123,52 @@ input:checked + .check-box::after { content: '✓'; color: white; font-size: 10p
 #previewLightbox { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center; }
 #lightboxContent { width:90%; height:90%; display:flex; align-items:center; justify-content:center; }
 .close-preview { position: fixed; top: 30px; right: 30px; color: white; font-size: 40px; font-weight: 200; cursor: pointer; z-index: 10002; }
+
+/* Hover Overlay Container */
+.overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.85));
+    color: white;
+    padding: 15px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    pointer-events: none; /* Allows clicks to pass through to the item */
+    z-index: 5;
+}
+
+/* Show overlay on hover */
+.item:hover .overlay {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.ov-title {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.ov-meta {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.9;
+    display: flex;
+    justify-content: space-between;
+}
+        
     </style>
 </head>
 <body>
@@ -353,32 +399,40 @@ function doRender() {
 
     grid.innerHTML = filtered.map((item, i) => {
         const dataIdx = gridData.indexOf(item);
-        
+        const contentTitle = (item.name && item.name.trim() !== "") ? item.name : "No Content";
+        const pillar = item.pillar || "General";
+        const postDate = item.date ? new Date(item.date).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : "";
+
+        // --- CONTENT MAP MODE ---
         if (isMap) {
-            // Pick color logic
             const rawIdx = window.shuffledIndices[i % window.shuffledIndices.length];
             const safeIdx = rawIdx % window.brandColors.length;
             const color = window.brandColors[safeIdx];
 
-            // Use 'name' from Notion, fallback to 'No Content' if empty
-            const contentTitle = (item.name && item.name.trim() !== "") ? item.name : "No Content";
-
-            return `<div class="item" draggable="${isCustom}" data-id="${item.files[0].url}" onclick="if(!isDragging) openPreview(${dataIdx})" style="background:${color}; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:15px; box-sizing:border-box; overflow:hidden;">
-                        <span style="color:white; font-weight:800; font-size:10px; text-transform:uppercase; margin-bottom:4px; opacity:0.8; letter-spacing:0.5px;">${item.status}</span>
-                        <span style="color:white; font-weight:600; font-size:12px; text-align:center; line-height:1.2; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">${contentTitle}</span>
+            return `<div class="item" draggable="${isCustom}" data-id="${item.files[0].url}" onclick="if(!isDragging) openPreview(${dataIdx})" style="background:${color}; display:flex; align-items:center; justify-content:center; padding:12px; box-sizing:border-box;">
+                        <span style="color:white; font-weight:700; font-size:13px; text-align:center; line-height:1.3; text-shadow: 0 1px 2px rgba(0,0,0,0.15);">${contentTitle}</span>
                     </div>`;
         }
 
-        // Standard Grid Mode
+        // --- STANDARD GRID MODE (With Hover) ---
         const slides = item.files.map(f => {
             if (canvaOn && f.url.includes('canva.com')) return `<div class="slide"><iframe src="${getCanvaEmbedUrl(f.url)}" referrerpolicy="no-referrer"></iframe></div>`;
             return `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop muted playsinline autoplay></video>` : `<img src="${f.url}">`}</div>`;
         }).join('');
 
-        return `<div class="item" draggable="${isCustom}" data-id="${item.files[0].url}" onclick="if(!isDragging) openPreview(${dataIdx})">
-            ${item.files.length > 1 ? `<div style="position:absolute; top:10px; right:10px; color:white; z-index:10; font-weight:bold; text-shadow:0 0 4px rgba(0,0,0,0.5)">▢▢</div>` : ''}
-            <div class="carousel-track">${slides}</div>
-        </div>`;
+        return `
+            <div class="item" draggable="${isCustom}" data-id="${item.files[0].url}" onclick="if(!isDragging) openPreview(${dataIdx})">
+                ${item.files.length > 1 ? `<div style="position:absolute; top:10px; right:10px; color:white; z-index:10; font-weight:bold; text-shadow:0 0 4px rgba(0,0,0,0.5)">▢▢</div>` : ''}
+                <div class="carousel-track">${slides}</div>
+                
+                <div class="overlay">
+                    <div class="ov-title">${contentTitle}</div>
+                    <div class="ov-meta">
+                        <span>${pillar}</span>
+                        <span>${postDate}</span>
+                    </div>
+                </div>
+            </div>`;
     }).join('');
     
     if (isCustom) initDragging();
