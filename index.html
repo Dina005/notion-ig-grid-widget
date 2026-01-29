@@ -171,6 +171,53 @@ input:checked + .slider:before { transform: translateX(18px); }
     object-fit: contain; box-shadow: 0 0 40px rgba(0,0,0,0.5); 
 }
 .close-preview { position: fixed; top: 30px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
+        /* Carousel Container */
+.carousel-track {
+    display: flex;
+    transition: transform 0.3s ease-in-out;
+    height: 100%;
+    width: 100%;
+}
+
+/* Navigation Arrows */
+.nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    z-index: 5;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.nav-btn:hover { background: #fff; }
+.prev-btn { left: 8px; }
+.next-btn { right: 8px; }
+
+/* Hide arrows if only one image exists */
+.item:not(.has-multiple) .nav-btn,
+#previewLightbox:not(.has-multiple) .nav-btn {
+    display: none;
+}
+
+/* Lightbox specific arrows */
+.lb-nav {
+    width: 45px;
+    height: 45px;
+    font-size: 24px;
+    background: rgba(255,255,255,0.15);
+    color: white;
+}
+.lb-nav:hover { background: rgba(255,255,255,0.3); }
         
     </style>
 </head>
@@ -262,11 +309,11 @@ input:checked + .slider:before { transform: translateX(18px); }
     <script>
 const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [], isDragging = false;
-let dragTimeout;
+let currentLightboxItemIdx = 0, currentSlideIdx = 0;
 
 // --- 1. INITIALIZATION ---
 async function init() {
-    // A. Restore Visual Toggles
+    // Restore Visual Toggles
     const toggleIds = ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'];
     toggleIds.forEach(id => {
         const savedState = localStorage.getItem(id);
@@ -274,20 +321,18 @@ async function init() {
         if (savedState !== null && el) el.checked = savedState === 'true';
     });
 
-    // B. Restore Filter Row Visibility (The "Collapse" preference)
-    const filterRowActive = localStorage.getItem('filterRowActive') === 'true';
-    if (filterRowActive) {
+    // Restore Filter Bar Visibility
+    if (localStorage.getItem('filterRowActive') === 'true') {
         document.getElementById('filterRow').classList.add('active');
     }
 
-    // C. Restore Filter Choices
+    // Restore Platform Choice
     const savedPlat = localStorage.getItem('currentPlat');
     if (savedPlat) {
         currentPlat = savedPlat;
         document.getElementById('platCurrent').innerText = currentPlat === 'all' ? 'All Platforms' : currentPlat.charAt(0).toUpperCase() + currentPlat.slice(1);
     }
 
-    // D. Apply UI visibility immediately
     updateUI(); 
 
     try {
@@ -318,15 +363,7 @@ async function init() {
     } catch (e) { console.error("Initialization Failed:", e); }
 }
 
-// --- 2. FILTER BAR TOGGLE (New Logic) ---
-function toggleFilterRow(e) {
-    if (e) e.stopPropagation();
-    const row = document.getElementById('filterRow');
-    const isActive = row.classList.toggle('active');
-    localStorage.setItem('filterRowActive', isActive); // Save preference
-}
-
-// --- 3. CORE RENDERING ENGINE ---
+// --- 2. CORE RENDERING (With Carousel Support) ---
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
@@ -360,26 +397,31 @@ function doRender() {
         if (item.isPlaceholder) return `<div class="item empty"><span class="empty-text">No Content</span></div>`;
 
         const dataIdx = gridData.indexOf(item);
-        const title = (item.name && isNaN(item.name)) ? item.name : "Content Item";
-        const pillar = item["Content Pillar"] || "General";
-        const date = item["Publish Date"] ? new Date(item["Publish Date"]).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : "";
-        const file = item.files[0];
+        const files = item.files || [];
+        const hasMultiple = files.length > 1;
 
         if (isMap) {
             const color = window.brandColors[window.shuffledIndices[i % window.shuffledIndices.length] % window.brandColors.length];
-            return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; padding:15px; color:white; font-weight:700; text-align:center;">${title}</div>`;
+            return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; padding:15px; color:white; font-weight:700; text-align:center;">${item.name || "Content"}</div>`;
         }
 
-        let mediaHtml = (canvaOn && file.url.includes('canva.com')) 
-            ? `<div class="slide"><iframe src="${getCanvaEmbedUrl(file.url)}"></iframe></div>`
-            : `<div class="slide">${file.isVideo ? `<video src="${file.url}" loop muted playsinline autoplay></video>` : `<img src="${file.url}">`}</div>`;
+        const slidesHtml = files.map(file => {
+            if (canvaOn && file.url.includes('canva.com')) {
+                return `<div class="slide"><iframe src="${getCanvaEmbedUrl(file.url)}"></iframe></div>`;
+            }
+            return `<div class="slide">${file.isVideo ? `<video src="${file.url}" muted loop playsinline autoplay></video>` : `<img src="${file.url}">`}</div>`;
+        }).join('');
 
         return `
-            <div class="item" draggable="${isCustom}" data-id="${file.url}" onclick="if(!isDragging) openPreview(${dataIdx})">
-                <div class="carousel-track">${mediaHtml}</div>
+            <div class="item ${hasMultiple ? 'has-multiple' : ''}" draggable="${isCustom}" data-id="${files[0]?.url}" onclick="if(!isDragging) openPreview(${dataIdx})">
+                <div class="carousel-track" id="track-${dataIdx}">${slidesHtml}</div>
+                ${hasMultiple ? `
+                    <button class="nav-btn prev-btn" onclick="moveSlide(${dataIdx}, -1, event)">‹</button>
+                    <button class="nav-btn next-btn" onclick="moveSlide(${dataIdx}, 1, event)">›</button>
+                ` : ''}
                 <div class="overlay">
-                    <div class="ov-title">${title}</div>
-                    <div class="ov-meta"><span>${pillar}</span><span style="font-weight:800;">${date}</span></div>
+                    <div class="ov-title">${item.name || "Content"}</div>
+                    <div class="ov-meta"><span>${item["Content Pillar"] || "General"}</span></div>
                 </div>
             </div>`;
     }).join('');
@@ -387,7 +429,68 @@ function doRender() {
     if (isCustom) initDragging();
 }
 
-// --- 4. UI, FILTERS & PERSISTENCE ---
+// --- 3. CAROUSEL & SLIDE LOGIC ---
+function moveSlide(dataIdx, dir, event) {
+    if (event) event.stopPropagation();
+    const track = document.getElementById(`track-${dataIdx}`);
+    const slides = track.querySelectorAll('.slide');
+    if (!track.dataset.idx) track.dataset.idx = 0;
+    
+    let idx = parseInt(track.dataset.idx) + dir;
+    if (idx >= slides.length) idx = 0;
+    if (idx < 0) idx = slides.length - 1;
+
+    track.dataset.idx = idx;
+    track.style.transform = `translateX(-${idx * 100}%)`;
+}
+
+// --- 4. PREVIEW & LIGHTBOX ---
+function openPreview(idx) {
+    const item = gridData[idx];
+    if (!item || isDragging) return;
+    
+    currentLightboxItemIdx = idx;
+    currentSlideIdx = 0;
+    const lightbox = document.getElementById('previewLightbox');
+    
+    // Remove old arrows if they exist to prevent duplicates
+    document.querySelectorAll('.lb-nav').forEach(a => a.remove());
+
+    renderLightboxSlide();
+    lightbox.style.display = 'flex';
+}
+
+function renderLightboxSlide() {
+    const item = gridData[currentLightboxItemIdx];
+    const file = item.files[currentSlideIdx];
+    const content = document.getElementById('lightboxContent');
+    const canvaOn = document.getElementById('canvaT').checked;
+
+    content.innerHTML = '';
+    if (canvaOn && file.url.includes('canva.com')) {
+        content.innerHTML = `<iframe src="${getCanvaEmbedUrl(file.url)}" allowfullscreen style="width:80vw; height:80vh; border:none; border-radius:8px;"></iframe>`;
+    } else {
+        content.innerHTML = file.isVideo ? `<video src="${file.url}" controls autoplay loop></video>` : `<img src="${file.url}">`;
+    }
+
+    if (item.files.length > 1 && !document.querySelector('.lb-nav')) {
+        const lb = document.getElementById('previewLightbox');
+        lb.insertAdjacentHTML('beforeend', `
+            <button class="nav-btn lb-nav prev-btn" onclick="moveLightbox(-1)">‹</button>
+            <button class="nav-btn lb-nav next-btn" onclick="moveLightbox(1)">›</button>
+        `);
+    }
+}
+
+function moveLightbox(dir) {
+    const item = gridData[currentLightboxItemIdx];
+    currentSlideIdx += dir;
+    if (currentSlideIdx >= item.files.length) currentSlideIdx = 0;
+    if (currentSlideIdx < 0) currentSlideIdx = item.files.length - 1;
+    renderLightboxSlide();
+}
+
+// --- 5. UI, FILTERS & UTILS ---
 function updateUI() { 
     const states = {
         bioT: document.getElementById('bioT').checked,
@@ -396,14 +499,17 @@ function updateUI() {
         canvaT: document.getElementById('canvaT').checked,
         customOrderT: document.getElementById('customOrderT').checked
     };
-
     Object.keys(states).forEach(key => localStorage.setItem(key, states[key]));
-
     document.getElementById('bioSection').style.display = states.bioT ? 'flex' : 'none'; 
     document.getElementById('highRow').style.display = states.highT ? 'flex' : 'none'; 
     document.getElementById('colorManagerUI').style.display = states.mapT ? 'block' : 'none';
-    
     if(gridData.length > 0) doRender(); 
+}
+
+function toggleFilterRow(e) {
+    if (e) e.stopPropagation();
+    const isActive = document.getElementById('filterRow').classList.toggle('active');
+    localStorage.setItem('filterRowActive', isActive);
 }
 
 function setPlat(p) { 
@@ -449,7 +555,6 @@ function renderProfile(data) {
     document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
 }
 
-// --- 5. DRAG & DROP ENGINE ---
 function initDragging() {
     const grid = document.getElementById('grid');
     const items = grid.querySelectorAll('.item:not(.empty)');
@@ -471,21 +576,6 @@ function initDragging() {
     });
 }
 
-// --- 6. LIGHTBOX & HELPERS ---
-function openPreview(idx) {
-    const item = gridData[idx];
-    if (!item || isDragging) return;
-    const content = document.getElementById('lightboxContent');
-    const file = item.files[0];
-    content.innerHTML = '';
-    if (document.getElementById('canvaT').checked && file.url.includes('canva.com')) {
-        content.innerHTML = `<iframe src="${getCanvaEmbedUrl(file.url)}" allowfullscreen style="width:80vw; height:80vh; border:none; border-radius:8px;"></iframe>`;
-    } else {
-        content.innerHTML = file.isVideo ? `<video src="${file.url}" controls autoplay loop></video>` : `<img src="${file.url}" alt="Preview">`;
-    }
-    document.getElementById('previewLightbox').style.display = 'flex';
-}
-
 function saveCurrentOrder() {
     const items = [...document.querySelectorAll('.item:not(.empty)')];
     const orderIds = items.map(item => item.getAttribute('data-id'));
@@ -499,12 +589,10 @@ function getCanvaEmbedUrl(url) {
 
 function toggleSettings(e) { if (e) e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
 
-// Brand Color Logic
+// Color Map Logic
 window.brandColors = ["#FFD1DC", "#AEEEEE"];
 window.generateRandomMap = () => { window.shuffledIndices = Array.from({ length: 300 }, () => Math.floor(Math.random() * window.brandColors.length)); };
 window.updateColor = (idx, val) => { window.brandColors[idx] = val; doRender(); };
-window.removeColor = (idx, e) => { if(e) e.stopPropagation(); window.brandColors.splice(idx, 1); window.renderColorControls(); doRender(); };
-window.addColor = (e) => { if(e) e.stopPropagation(); window.brandColors.push("#E5E5E5"); window.generateRandomMap(); window.renderColorControls(); doRender(); };
 window.renderColorControls = () => {
     const container = document.getElementById('colorList');
     if (!container) return;
