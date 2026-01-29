@@ -214,7 +214,7 @@ input:checked + .check-box::after { content: '✓'; color: white; font-size: 10p
        const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [], isDragging = false;
 
-// 1. Color State (Defaulting to 2 Colors)
+// 1. Color State (Defaulting to 2 Colors as requested)
 window.brandColors = ["#FFD1DC", "#AEEEEE"]; 
 window.shuffledIndices = [];
 
@@ -243,7 +243,9 @@ function toggleOrder() { doRender(); }
 
 // --- STICKY CONTENT MAP LOGIC ---
 window.generateRandomMap = function() {
-    window.shuffledIndices = Array.from({ length: 200 }, () => Math.floor(Math.random() * window.brandColors.length));
+    // Generates a large randomized pool based on CURRENT palette length
+    const count = window.brandColors.length;
+    window.shuffledIndices = Array.from({ length: 300 }, () => Math.floor(Math.random() * count));
 };
 
 window.renderColorControls = function() {
@@ -260,7 +262,7 @@ window.renderColorControls = function() {
 };
 
 window.addColor = function(e) {
-    if (e) e.stopPropagation(); // Keep menu sticky
+    if (e) e.stopPropagation(); 
     window.brandColors.push("#E5E5E5");
     window.generateRandomMap();
     window.renderColorControls();
@@ -268,7 +270,7 @@ window.addColor = function(e) {
 };
 
 window.removeColor = function(idx, e) {
-    if (e) e.stopPropagation(); // Keep menu sticky
+    if (e) e.stopPropagation(); 
     window.brandColors.splice(idx, 1);
     window.generateRandomMap();
     window.renderColorControls();
@@ -280,7 +282,7 @@ window.updateColor = function(idx, val) {
     doRender();
 };
 
-// --- DRAG & DROP ENGINE ---
+// --- DRAG & DROP ENGINE (Distance-Based) ---
 function initDragging() {
     const grid = document.getElementById('grid');
     const items = grid.querySelectorAll('.item');
@@ -351,21 +353,29 @@ function doRender() {
 
     grid.innerHTML = filtered.map((item, i) => {
         const dataIdx = gridData.indexOf(item);
+        
         if (isMap) {
-            const color = window.brandColors[window.shuffledIndices[i % window.brandColors.length]];
+            // Picks color index and ensures it wraps correctly if palette size changes
+            const rawIdx = window.shuffledIndices[i % window.shuffledIndices.length];
+            const safeIdx = rawIdx % window.brandColors.length;
+            const color = window.brandColors[safeIdx];
+
             return `<div class="item" draggable="${isCustom}" data-id="${item.files[0].url}" onclick="if(!isDragging) openPreview(${dataIdx})" style="background:${color}; display:flex; align-items:center; justify-content:center; padding:10px;">
-                        <span style="color:white; font-weight:800; font-size:11px; text-transform:uppercase; text-align:center; line-height:1.2;">${item.status}</span>
+                        <span style="color:white; font-weight:800; font-size:11px; text-transform:uppercase; text-align:center; line-height:1.2; text-shadow: 0 1px 2px rgba(0,0,0,0.2);">${item.status}</span>
                     </div>`;
         }
+
         const slides = item.files.map(f => {
             if (canvaOn && f.url.includes('canva.com')) return `<div class="slide"><iframe src="${getCanvaEmbedUrl(f.url)}" referrerpolicy="no-referrer"></iframe></div>`;
             return `<div class="slide">${f.isVideo ? `<video src="${f.url}" loop muted playsinline autoplay></video>` : `<img src="${f.url}">`}</div>`;
         }).join('');
+
         return `<div class="item" draggable="${isCustom}" data-id="${item.files[0].url}" onclick="if(!isDragging) openPreview(${dataIdx})">
             ${item.files.length > 1 ? `<div style="position:absolute; top:10px; right:10px; color:white; z-index:10; font-weight:bold; text-shadow:0 0 4px rgba(0,0,0,0.5)">▢▢</div>` : ''}
             <div class="carousel-track">${slides}</div>
         </div>`;
     }).join('');
+    
     if (isCustom) initDragging();
 }
 
@@ -376,10 +386,12 @@ function openPreview(idx) {
     const content = document.getElementById('lightboxContent');
     const file = item.files[0];
     const canvaOn = document.getElementById('canvaT').checked;
+    
     content.innerHTML = (canvaOn && file.url.includes('canva.com')) 
         ? `<iframe src="${getCanvaEmbedUrl(file.url)}" allowfullscreen referrerpolicy="no-referrer" style="width:100%; height:100%; border:none;"></iframe>`
         : file.isVideo ? `<video src="${file.url}" controls autoplay loop style="max-width:100%; max-height:100%;"></video>`
         : `<img src="${file.url}" style="max-width:100%; max-height:100%; object-fit:contain;">`;
+    
     document.getElementById('previewLightbox').style.display = 'flex';
 }
 
@@ -388,6 +400,8 @@ async function init() {
         const res = await fetch(API);
         const data = await res.json();
         gridData = data.grid || [];
+        
+        // Populate Bio
         document.getElementById('pfpImg').src = data.bio.profilePicture || "";
         document.getElementById('bioUser').innerText = "@" + (data.bio.username || "user");
         document.getElementById('bioDisplay').innerText = data.bio.displayName || "";
@@ -395,12 +409,14 @@ async function init() {
         document.getElementById('bioLink').innerText = data.bio.linkDisplay || "";
         document.getElementById('bioLink').href = data.bio.linkUrl || "#";
 
+        // Populate Highlights
         document.getElementById('highRow').innerHTML = (data.highlights || []).map(h => `
             <div style="text-align:center; min-width:75px;">
                 <div class="h-circle"><img src="${h.image}" class="h-img"></div>
                 <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h.name}</span>
             </div>`).join('');
 
+        // Populate Status Filter with Counts
         const stats = [...new Set(gridData.map(i => i.status))];
         activeStats = [...stats];
         document.getElementById('statusOptions').innerHTML = stats.map(s => `
@@ -412,14 +428,17 @@ async function init() {
                 <span class="count-pill">${gridData.filter(i => i.status === s).length}</span>
             </label>`).join('');
 
+        // Platform Counts
         document.getElementById('cnt-all').innerText = gridData.length;
         document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
         document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
 
+        // Start Color System
         window.generateRandomMap();
         window.renderColorControls();
+        
         doRender();
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Initialization Failed:", e); }
 }
 
 function toggleStat(s) { 
@@ -433,7 +452,7 @@ function setPlat(p) {
     doRender(); 
 }
 
-// Close dropdowns but ignore sticky menu clicks
+// Global Click listener for closing menus
 window.onclick = function(e) {
     if (!e.target.closest('.dropdown-container') && !e.target.closest('.settings-menu') && !e.target.closest('.icon-btn')) {
         document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
