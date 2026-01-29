@@ -552,7 +552,41 @@ window.onclick = () => {
 };
 
 window.generateRandomMap = () => { window.shuffledIndices = Array.from({length: 100}, () => Math.floor(Math.random() * 50)); };
+// Add this to the bottom of your script
+function openStory(groupName) {
+    // 1. Find all "Story" type items from Notion that match this highlight name
+    const stories = gridData.filter(i => i.type === "Story" && i.highlightGroup === groupName);
+    
+    if (stories.length === 0) {
+        console.warn("No stories found for:", groupName);
+        return;
+    }
 
+    // 2. Target the Lightbox (the same one used for grid posts)
+    const lb = document.getElementById('previewLightbox');
+    const content = document.getElementById('lightboxContent');
+    
+    // 3. Extract all images/videos from the matching stories
+    const allFiles = stories.flatMap(s => s.files);
+
+    // 4. Inject them into the lightbox
+    content.innerHTML = `
+        <div class="lb-track">
+            ${allFiles.map(f => `
+                <div class="lb-slide">
+                    ${f.isVideo ? 
+                        `<video src="${f.url}" controls autoplay loop></video>` : 
+                        `<img src="${f.url}">`
+                    }
+                </div>`).join('')}
+        </div>`;
+    
+    // 5. Show the lightbox
+    lb.style.display = 'flex';
+}
+
+// Make it globally accessible for the onclick event
+window.openStory = openStory;
 init();
     </script>
 </body>
