@@ -258,6 +258,21 @@
     
     <div id="lightboxContent" style="width:90%; height:90%; display:flex; align-items:center; justify-content:center;"></div>
 </div>
+    .item {
+    /* Prevents the browser from thinking you're selecting text while dragging */
+    user-select: none;
+    -webkit-user-drag: element;
+}
+
+.item * {
+    /* Prevents child elements (like images/iframes) from interfering with the drag */
+    pointer-events: none; 
+}
+
+/* Re-enable pointer events for the grid itself and the preview state */
+.grid .item {
+    pointer-events: auto;
+}
 </div>
     <script>
        const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
@@ -413,19 +428,7 @@ function toggleStat(s) {
     doRender(); 
 }
 
-// Toggle between Custom Order and Notion Date
-function toggleOrder() {
-    const isCustom = document.getElementById('customOrderT').checked;
-    if (!isCustom) {
-        if(confirm("Switch back to Notion date sorting? Your manual order will be saved but hidden.")) {
-            doRender();
-        } else {
-            document.getElementById('customOrderT').checked = true;
-        }
-    } else {
-        doRender();
-    }
-}
+
 
 function doRender() {
     const grid = document.getElementById('grid');
@@ -469,26 +472,12 @@ function doRender() {
         </div>`;
     }).join('');
 
-    if (isCustom) initDragging();
+  ;
 }
 
 let isDragging = false; // Flag to prevent preview opening while dragging
 
-function initDragging() {
-    const grid = document.getElementById('grid');
-    const items = grid.querySelectorAll('.item');
 
-    items.forEach(item => {
-        item.addEventListener('dragstart', () => {
-            isDragging = true;
-            item.classList.add('dragging');
-        });
-
-        item.addEventListener('dragend', () => {
-            isDragging = false;
-            item.classList.remove('dragging');
-            saveCurrentOrder();
-        });
     });
 
     grid.addEventListener('dragover', e => {
@@ -502,22 +491,75 @@ function initDragging() {
         }
     });
 }
+let isDragging = false;
 
-// More accurate "Drop Zone" calculation
+// 1. Silent Toggle (No popups or bars)
+function toggleOrder() {
+    doRender();
+}
+
+// 2. Refined Drag Engine
+function initDragging() {
+    const grid = document.getElementById('grid');
+    const items = grid.querySelectorAll('.item');
+
+    items.forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+            isDragging = true;
+            item.classList.add('dragging');
+            // Ensure the drag image doesn't look weird
+            e.dataTransfer.effectAllowed = 'move';
+        });
+
+        item.addEventListener('dragend', () => {
+            // Delay reset so the 'click' to open preview doesn't trigger
+            setTimeout(() => { isDragging = false; }, 100);
+            item.classList.remove('dragging');
+            saveCurrentOrder();
+        });
+    });
+
+    grid.addEventListener('dragover', e => {
+        e.preventDefault();
+        const draggingItem = document.querySelector('.dragging');
+        if (!draggingItem) return;
+
+        // Use the simplified 'After Element' logic
+        const afterElement = getDragAfterElement(grid, e.clientX, e.clientY);
+        
+        if (afterElement == null) {
+            grid.appendChild(draggingItem);
+        } else {
+            grid.insertBefore(draggingItem, afterElement);
+        }
+    });
+}
+
+// 3. Simplified "Slot" Detection
 function getDragAfterElement(container, x, y) {
     const draggableElements = [...container.querySelectorAll('.item:not(.dragging)')];
 
     return draggableElements.reduce((closest, child) => {
         const box = child.getBoundingClientRect();
-        const offset = x - box.left - box.width / 2; 
-        const verticalOffset = y - box.top - box.height / 2;
         
-        if (offset < 0 && verticalOffset < 0 && offset > closest.offset) {
-            return { offset: offset, element: child };
+        // We check if the mouse is in the left half or top half of the box
+        // This makes "dropping" feel like you are pushing the item aside
+        const horizontalInside = x < box.left + box.width / 2;
+        const verticalInside = y < box.bottom;
+
+        if (horizontalInside && verticalInside) {
+            if (closest.element == null) return { element: child };
+            return closest; // Keep the first match found
         } else {
             return closest;
         }
-    }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }, { element: null }).element;
+}
+
+function saveCurrentOrder() {
+    const items = [...document.querySelectorAll('.item')];
+    const orderIds = items.map(item => item.getAttribute('data-id'));
+    localStorage.setItem('customGridOrder', JSON.stringify(orderIds));
 }
 
 function saveCurrentOrder() {
