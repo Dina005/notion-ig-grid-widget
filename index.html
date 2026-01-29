@@ -279,81 +279,109 @@ let gridData = [], currentPlat = 'all', activeStats = [], dragItem = null;
 
 // --- 1. INITIALIZATION ---
 async function init() {
-    // Load Toggle States from LocalStorage
     ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'].forEach(id => {
         const saved = localStorage.getItem(id);
         const el = document.getElementById(id);
         if (saved !== null && el) el.checked = saved === 'true';
     });
 
-    // Sticky Scroll Logic
-    window.addEventListener('scroll', () => {
-        const topBar = document.getElementById('stickyTopBar');
-        if (window.scrollY > 20) topBar.classList.add('scrolled');
-        else topBar.classList.remove('scrolled');
-    });
-
-    updateUI(); 
-
     try {
         const res = await fetch(API);
         const data = await res.json();
         gridData = data.grid || [];
         
+        // Default all statuses to active
+        activeStats = [...new Set(gridData.map(i => i.status))];
+        
         renderProfile(data);
-        setupStatusFilters();
         window.generateRandomMap();
         window.renderColorControls();
-        doRender(); 
+        updateUI(); 
     } catch (e) { console.error("Init Failed:", e); }
 }
 
-// --- 2. GRID RENDERING ---
+// --- 2. THE HIGHLIGHTS FIX (CRITICAL) ---
+function renderProfile(data) {
+    const b = data.bio;
+    if (!b) return;
+
+    document.getElementById('pfpImg').src = b.profilePicture || "";
+    document.getElementById('bioUser').innerText = b.username || "";
+    document.getElementById('bioDisplay').innerText = b.displayName || "";
+    document.getElementById('bioDesc').innerText = b.bioText || "";
+    document.getElementById('bioLink').innerText = b.linkDisplay || "";
+    document.getElementById('bioLink').href = b.linkUrl || "#";
+
+    const highRow = document.getElementById('highRow');
+    if (highRow && data.highlights) {
+        // Create the circles
+        highRow.innerHTML = data.highlights.map(h => `
+            <div class="h-item" data-name="${h.name}" style="text-align:center; flex-shrink:0; cursor:pointer;">
+                <div class="h-circle"><img src="${h.image}" class="h-img"></div>
+                <div style="font-size:11px; font-weight:700; margin-top:8px; color:var(--text-muted);">${h.name}</div>
+            </div>`).join('');
+
+        // Attach the click event to each circle
+        document.querySelectorAll('.h-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const groupName = this.getAttribute('data-name');
+                openStory(groupName);
+            });
+        });
+    }
+}
+
+function openStory(groupName) {
+    // Search gridData for items where type is 'Story' and group matches
+    const stories = gridData.filter(i => 
+        i.type === "Story" && i.highlightGroup === groupName
+    );
+
+    if (stories.length === 0) {
+        alert(`No stories found for "${groupName}".\n\nCheck your Notion:\n1. Is the Type set to 'Story'?\n2. Is 'HighlightGroup' linked to "${groupName}"?`);
+        return;
+    }
+
+    const lb = document.getElementById('previewLightbox');
+    const content = document.getElementById('lightboxContent');
+    const allFiles = stories.flatMap(s => s.files);
+
+    content.innerHTML = `
+        <div class="lb-track">
+            ${allFiles.map(f => `
+                <div class="lb-slide">
+                    ${f.isVideo ? `<video src="${f.url}" controls autoplay loop></video>` : `<img src="${f.url}">`}
+                </div>`).join('')}
+        </div>`;
+    
+    lb.style.display = 'flex';
+}
+
+// --- 3. GRID & UI LOGIC ---
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
-    const isCustom = document.getElementById('customOrderT').checked;
     const canvaOn = document.getElementById('canvaT').checked;
 
     let filtered = gridData.filter(i => {
-        const isPost = i.type !== "Story"; 
+        const isPost = i.type !== "Story"; // Hide stories from main grid
         const platMatch = (currentPlat === 'all' || i.platforms.includes(currentPlat.toLowerCase()));
         const statMatch = activeStats.includes(i.status);
         return isPost && platMatch && statMatch;
     });
 
-    // Handle Custom Layout Sorting
-    if (isCustom) {
-        const savedOrder = JSON.parse(localStorage.getItem('gridOrder') || "[]");
-        if (savedOrder.length > 0) {
-            filtered.sort((a, b) => {
-                const indexA = savedOrder.indexOf(a.files[0]?.url);
-                const indexB = savedOrder.indexOf(b.files[0]?.url);
-                return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
-            });
-        }
-        document.getElementById('resetOrderBtn').style.display = 'block';
-    } else {
-        document.getElementById('resetOrderBtn').style.display = 'none';
-    }
-
-    let html = filtered.map((item, idx) => {
+    grid.innerHTML = filtered.map((item, idx) => {
         const dataIdx = gridData.indexOf(item);
         const files = item.files || [];
-        const hasMult = files.length > 1;
-        const mainUrl = files[0]?.url;
         const dateStr = item.date ? new Date(item.date).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : 'Draft';
 
-        // Content Map View
         if (isMap) {
             const color = window.brandColors[window.shuffledIndices[idx % window.shuffledIndices.length] % window.brandColors.length];
             return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; text-align:center; padding:15px; font-size:11px; text-transform:uppercase;">${item.name}</div>`;
         }
 
-        // Media Slides (Image, Video, or Canva)
         const slidesHtml = files.map(f => {
             if (canvaOn && f.url.includes('canva.com')) {
-                // Transform standard Canva link to Embeddable View link
                 const embedUrl = f.url.split('?')[0].replace('/design/', '/view?embed=');
                 return `<div class="slide"><iframe src="${embedUrl}" allowfullscreen></iframe></div>`;
             }
@@ -361,126 +389,35 @@ function doRender() {
         }).join('');
 
         return `
-            <div class="item" draggable="${isCustom}" 
-                 ondragstart="handleDragStart(event, '${mainUrl}')" 
-                 ondrop="handleDrop(event, '${mainUrl}')" 
-                 ondragover="event.preventDefault()" 
-                 onclick="openPreview(${dataIdx})">
-                
+            <div class="item" onclick="openPreview(${dataIdx})">
                 <div class="item-overlay">
                     <div class="ov-pillar">${item.pillar || 'CONTENT'}</div>
                     <div class="ov-title">${item.name}</div>
                     <div class="ov-date">${dateStr}</div>
                 </div>
-
                 <div class="carousel-track" id="track-${dataIdx}" data-idx="0">${slidesHtml}</div>
-                ${hasMult ? `
-                    <button class="nav-btn prev-btn" onclick="moveSlide(${dataIdx}, -1, event)">‹</button>
-                    <button class="nav-btn next-btn" onclick="moveSlide(${dataIdx}, 1, event)">›</button>
-                ` : ''}
             </div>`;
     }).join('');
-
-    grid.innerHTML = html;
-    renderPlatformOptions();
+    
     renderStatusOptions();
 }
 
-// --- 3. DRAG & DROP LOGIC ---
-function handleDragStart(e, url) {
-    dragItem = url;
-    e.dataTransfer.effectAllowed = "move";
-    e.target.closest('.item').classList.add('dragging');
-}
-
-function handleDrop(e, targetUrl) {
-    e.preventDefault();
-    document.querySelectorAll('.item').forEach(i => i.classList.remove('dragging'));
-    if (dragItem === targetUrl) return;
-
-    let currentOrder = JSON.parse(localStorage.getItem('gridOrder') || "[]");
-    if (currentOrder.length === 0) {
-        currentOrder = gridData.filter(i => i.type !== "Story").map(i => i.files[0]?.url);
-    }
-
-    const draggedIdx = currentOrder.indexOf(dragItem);
-    const targetIdx = currentOrder.indexOf(targetUrl);
-
-    if (draggedIdx > -1 && targetIdx > -1) {
-        currentOrder.splice(draggedIdx, 1);
-        currentOrder.splice(targetIdx, 0, dragItem);
-        localStorage.setItem('gridOrder', JSON.stringify(currentOrder));
-        doRender();
-    }
-}
-
-window.resetGridOrder = () => {
-    if(confirm("Reset layout to original Notion order?")) {
-        localStorage.removeItem('gridOrder');
-        doRender();
-    }
-};
-
-// --- 4. FILTERS & STATUS ---
-function setupStatusFilters() {
-    activeStats = [...new Set(gridData.map(i => i.status))];
-}
-
-function renderPlatformOptions() {
-    const plats = ['all', 'instagram', 'tiktok'];
-    const menu = document.getElementById('platMenu');
-    menu.innerHTML = plats.map(p => {
-        const count = p === 'all' 
-            ? gridData.filter(i => i.type !== "Story").length
-            : gridData.filter(i => i.type !== "Story" && i.platforms.includes(p)).length;
-        return `<div class="dropdown-item ${currentPlat === p ? 'active' : ''}" onclick="setPlat('${p}')">
-            <span>${p.charAt(0).toUpperCase() + p.slice(1)}</span>
-            <span class="count-badge">${count}</span>
-        </div>`;
-    }).join('');
-}
-
+// --- 4. HELPERS ---
 function renderStatusOptions() {
     const stats = [...new Set(gridData.map(i => i.status))];
     const container = document.getElementById('statusOptions');
     container.innerHTML = stats.map(s => {
-        const count = gridData.filter(item => item.status === s && item.type !== 'Story').length;
         const isActive = activeStats.includes(s);
-        return `<div class="dropdown-item ${isActive ? 'active' : ''}" onclick="toggleStat('${s}', event)">
-            <div style="display:flex; align-items:center;">
-                <span class="status-indicator" style="background:${getStatusColor(s)}"></span>
-                <span>${s}</span>
-            </div>
-            <span class="count-badge">${count}</span>
+        return `<div class="dropdown-item" onclick="toggleStat('${s}', event)">
+            <input type="checkbox" ${isActive ? 'checked' : ''} style="margin-right:8px; pointer-events:none;">
+            <span>${s}</span>
         </div>`;
     }).join('');
-}
-
-function getStatusColor(s) {
-    const sL = s.toLowerCase();
-    if (sL.includes('done') || sL.includes('post')) return '#34c759';
-    if (sL.includes('progress') || sL.includes('edit')) return '#0095f6';
-    if (sL.includes('idea') || sL.includes('draft')) return '#ffcc00';
-    return '#8e8e93';
-}
-
-// --- 5. UI HELPERS ---
-function setPlat(p) {
-    currentPlat = p;
-    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
-    doRender();
 }
 
 function toggleStat(s, e) {
     e.stopPropagation();
     activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s];
-    doRender();
-}
-
-function toggleAllStats(e) {
-    e.stopPropagation();
-    const all = [...new Set(gridData.map(i => i.status))];
-    activeStats = (activeStats.length === all.length) ? [] : all;
     doRender();
 }
 
@@ -490,89 +427,9 @@ function updateUI() {
     });
     document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none';
     document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none';
-    document.getElementById('colorManagerUI').style.display = document.getElementById('mapT').checked ? 'block' : 'none';
     if (gridData.length) doRender();
 }
 
-function moveSlide(idx, dir, e) {
-    e.stopPropagation();
-    const track = document.getElementById(`track-${idx}`);
-    const slides = track.querySelectorAll('.slide');
-    let current = parseInt(track.dataset.idx || 0);
-    current = (current + dir + slides.length) % slides.length;
-    track.dataset.idx = current;
-    track.style.transform = `translateX(-${current * 100}%)`;
-}
-
-// --- 6. COLOR & PROFILE ---
-window.brandColors = ["#E6E6FA", "#F0FFF0", "#FFF0F5", "#D1D1D6"];
-window.renderColorControls = () => {
-    const list = document.getElementById('colorList');
-    list.innerHTML = window.brandColors.map((c, i) => `
-        <div class="color-swatch-wrapper" style="background:${c}">
-            <input type="color" value="${c}" onchange="window.brandColors[${i}]=this.value; doRender();" onclick="event.stopPropagation()">
-        </div>`).join('');
-};
-window.addColor = (e) => {
-    e.stopPropagation();
-    window.brandColors.push("#efefef");
-    window.renderColorControls();
-    doRender();
-};
-
-function renderProfile(data) {
-    const b = data.bio;
-    if (!b) return;
-
-    // 1. Basic Bio Info
-    document.getElementById('pfpImg').src = b.profilePicture || "";
-    document.getElementById('bioUser').innerText = b.username || "";
-    document.getElementById('bioDisplay').innerText = b.displayName || "";
-    document.getElementById('bioDesc').innerText = b.bioText || "";
-    document.getElementById('bioLink').innerText = b.linkDisplay || "";
-    document.getElementById('bioLink').href = b.linkUrl || "#";
-
-    // 2. Highlights Logic
-    const highRow = document.getElementById('highRow');
-    if (highRow && data.highlights) {
-        highRow.innerHTML = data.highlights.map(h => `
-            <div class="h-item" data-name="${h.name}" style="text-align:center; flex-shrink:0; cursor:pointer;">
-                <div class="h-circle"><img src="${h.image}" class="h-img"></div>
-                <div style="font-size:11px; font-weight:700; margin-top:8px; color:var(--text-muted);">${h.name}</div>
-            </div>`).join('');
-
-        // 3. Add Event Listeners directly to the circles
-        document.querySelectorAll('.h-item').forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                const groupName = this.getAttribute('data-name');
-                
-                // Filter stories from gridData
-                const stories = gridData.filter(i => 
-                    i.type === "Story" && i.highlightGroup === groupName
-                );
-
-                if (stories.length > 0) {
-                    const lb = document.getElementById('previewLightbox');
-                    const content = document.getElementById('lightboxContent');
-                    const allFiles = stories.flatMap(s => s.files);
-
-                    content.innerHTML = `<div class="lb-track">
-                        ${allFiles.map(f => `
-                            <div class="lb-slide">
-                                ${f.isVideo ? `<video src="${f.url}" controls autoplay loop></video>` : `<img src="${f.url}">`}
-                            </div>`).join('')}
-                    </div>`;
-                    
-                    lb.style.display = 'flex';
-                    lb.style.zIndex = "9999"; // Ensure it pops to the very front
-                } else {
-                    console.log("No stories found for:", groupName);
-                }
-            });
-        });
-    }
-}
 function openPreview(idx) {
     const item = gridData[idx];
     const lb = document.getElementById('previewLightbox');
@@ -581,52 +438,11 @@ function openPreview(idx) {
     lb.style.display = 'flex';
 }
 
-function toggleMenu(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
-function toggleSettings(e) { e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
-
-window.onclick = () => {
-    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
-};
-
 window.generateRandomMap = () => { window.shuffledIndices = Array.from({length: 100}, () => Math.floor(Math.random() * 50)); };
-// Add this to the bottom of your script
-function openStory(groupName) {
-    console.log("Looking for stories in group:", groupName);
-    
-    // Filter the gridData for items where Type is 'Story' 
-    // AND the highlightGroup matches the name of the circle clicked
-    const stories = gridData.filter(i => 
-        i.type === "Story" && 
-        String(i.highlightGroup).trim() === String(groupName).trim()
-    );
+window.renderColorControls = () => {}; // Placeholder for color logic
+window.toggleSettings = () => document.getElementById('setMenu').classList.toggle('open');
+window.toggleMenu = (id) => document.getElementById(id).classList.toggle('show');
 
-    if (stories.length === 0) {
-        alert("No stories found for '" + groupName + "'. Make sure 'Type' is set to 'Story' in Notion for these items.");
-        return;
-    }
-
-    const lb = document.getElementById('previewLightbox');
-    const content = document.getElementById('lightboxContent');
-    
-    // Combine all files from all matching stories
-    const allFiles = stories.flatMap(s => s.files);
-
-    content.innerHTML = `
-        <div class="lb-track">
-            ${allFiles.map(f => `
-                <div class="lb-slide">
-                    ${f.isVideo ? 
-                        `<video src="${f.url}" controls autoplay loop></video>` : 
-                        `<img src="${f.url}">`
-                    }
-                </div>`).join('')}
-        </div>`;
-    
-    lb.style.display = 'flex';
-}
-
-// Make it global so the HTML onclick can find it
-window.openStory = openStory;
 init();
     </script>
 </body>
