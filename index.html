@@ -293,25 +293,26 @@ input:checked + .slider:before { transform: translateX(20px); }
     <script>
 const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [], draggedIdx = null;
+window.brandColors = ['#E9C46A', '#F4A261', '#E76F51', '#264653', '#2A9D8F']; // Default Palette
 
 // --- 1. INITIALIZATION ---
 async function init() {
-    // Load Toggle States
     ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'].forEach(id => {
         const saved = localStorage.getItem(id);
         const el = document.getElementById(id);
         if (saved !== null && el) el.checked = saved === 'true';
     });
 
+    // Load custom colors if saved
+    const savedColors = localStorage.getItem('brandPalette');
+    if (savedColors) window.brandColors = JSON.parse(savedColors);
+
     try {
         const res = await fetch(API);
         const data = await res.json();
         gridData = data.grid || [];
-        
-        // 1. Set default active statuses from Notion data
         activeStats = [...new Set(gridData.map(i => i.status))];
         
-        // 2. Load Custom Order if it exists
         const savedOrder = localStorage.getItem('customGridOrder');
         if (savedOrder) {
             const orderMap = JSON.parse(savedOrder);
@@ -322,75 +323,54 @@ async function init() {
             });
         }
 
-        // 3. Setup Brand Colors for Map
-        window.brandColors = ['#E9C46A', '#F4A261', '#E76F51', '#264653', '#2A9D8F'];
-
         renderProfile(data);
         renderPlatformFilter();
+        renderColorControls(); // Initialize color UI
         updateUI(); 
-    } catch (e) { 
-        console.error("Initialization Failed:", e); 
-    }
+    } catch (e) { console.error("Init Failed:", e); }
 }
 
-// --- 2. PROFILE & HIGHLIGHTS ---
-function renderProfile(data) {
-    const b = data.bio;
-    if (!b) return;
+// --- 2. COLOR MANAGEMENT ---
+window.renderColorControls = () => {
+    const list = document.getElementById('colorList');
+    if (!list) return;
+    list.innerHTML = window.brandColors.map((color, idx) => `
+        <div class="color-swatch-wrapper" style="position:relative; group">
+            <input type="color" value="${color}" onchange="updateColor(${idx}, this.value)" 
+                   style="width:100%; height:100%; border:none; cursor:pointer; border-radius:50%;">
+            <div onclick="removeColor(${idx})" style="position:absolute; top:-5px; right:-5px; background:red; color:white; border-radius:50%; width:16px; height:16px; font-size:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold;">×</div>
+        </div>
+    `).join('');
+};
 
-    document.getElementById('pfpImg').src = b.profilePicture || "";
-    document.getElementById('bioUser').innerText = b.username || "";
-    document.getElementById('bioDisplay').innerText = b.displayName || "";
-    document.getElementById('bioDesc').innerText = b.bioText || "";
-    document.getElementById('bioLink').innerText = b.linkDisplay || "";
-    document.getElementById('bioLink').href = b.linkUrl || "#";
-
-    const highRow = document.getElementById('highRow');
-    if (highRow && data.highlights) {
-        highRow.innerHTML = data.highlights.map(h => `
-            <div class="h-item" onclick="openStory('${h.name}')" style="text-align:center; flex-shrink:0; cursor:pointer;">
-                <div class="h-circle"><img src="${h.image}" class="h-img"></div>
-                <div style="font-size:11px; font-weight:700; margin-top:8px; color:var(--text-muted);">${h.name}</div>
-            </div>`).join('');
-    }
-}
-
-function openStory(groupName) {
-    const stories = gridData.filter(i => i.type === "Story" && i.highlightGroup === groupName);
-    if (stories.length === 0) return;
-
-    const lb = document.getElementById('previewLightbox');
-    const content = document.getElementById('lightboxContent');
-    const allFiles = stories.flatMap(s => s.files);
-
-    content.innerHTML = `
-        <div class="lb-track" style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:10px;">
-            ${allFiles.map(f => `
-                <div class="lb-slide" style="min-width:100%; display:flex; justify-content:center; scroll-snap-align:start;">
-                    ${f.isVideo ? 
-                        `<video src="${f.url}" controls autoplay style="max-height:80vh; border-radius:12px; width:auto;"></video>` : 
-                        `<img src="${f.url}" style="max-height:80vh; border-radius:12px; object-fit:contain;">`
-                    }
-                </div>`).join('')}
-        </div>`;
-    lb.style.display = 'flex';
-}
-
-// --- 3. FILTERING & RENDER ---
-function renderPlatformFilter() {
-    const plats = [...new Set(gridData.flatMap(i => i.platforms))];
-    const menu = document.getElementById('platMenu');
-    if(!menu) return;
-    menu.innerHTML = `<div class="dropdown-item" onclick="setPlat('all')">All Platforms</div>` + 
-        plats.map(p => `<div class="dropdown-item" onclick="setPlat('${p}')">${p.toUpperCase()}</div>`).join('');
-}
-
-window.setPlat = (p) => {
-    currentPlat = p;
-    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.toUpperCase();
+window.updateColor = (index, newColor) => {
+    window.brandColors[index] = newColor;
+    saveColors();
     doRender();
 };
 
+window.addColor = (e) => {
+    e.stopPropagation();
+    window.brandColors.push('#cccccc');
+    renderColorControls();
+    saveColors();
+    doRender();
+};
+
+window.removeColor = (index) => {
+    if (window.brandColors.length > 1) {
+        window.brandColors.splice(index, 1);
+        renderColorControls();
+        saveColors();
+        doRender();
+    }
+};
+
+function saveColors() {
+    localStorage.setItem('brandPalette', JSON.stringify(window.brandColors));
+}
+
+// --- 3. GRID RENDERING ---
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
@@ -406,24 +386,21 @@ function doRender() {
 
     grid.innerHTML = filtered.map((item, idx) => {
         const dataIdx = gridData.indexOf(item);
-        const files = item.files || [];
-        const dateStr = item.date ? new Date(item.date).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : 'Draft';
-
-        // Base attributes for Drag & Drop
         const dragAttrs = isCustom ? `draggable="true" ondragstart="handleDragStart(event, ${dataIdx})" ondragover="event.preventDefault()" ondrop="handleDrop(event, ${dataIdx})"` : '';
 
         if (isMap) {
+            // Use the dynamic brandColors array
             const color = window.brandColors[idx % window.brandColors.length];
             return `
-                <div class="item" ${dragAttrs} style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; text-align:center; padding:15px; font-size:11px; text-transform:uppercase;">
+                <div class="item" ${dragAttrs} style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; text-align:center; padding:15px; font-size:11px; text-transform:uppercase; transition: background 0.3s ease;">
                     ${item.name}
                 </div>`;
         }
 
-        const slidesHtml = files.map(f => {
+        const slidesHtml = (item.files || []).map(f => {
             if (canvaOn && f.url && f.url.includes('canva.com')) {
                 const embedUrl = f.url.split('?')[0].replace('/design/', '/view?embed=');
-                return `<div class="slide"><iframe src="${embedUrl}" allowfullscreen style="border:none; width:100%; height:100%;"></iframe></div>`;
+                return `<div class="slide"><iframe src="${embedUrl}" allowfullscreen></iframe></div>`;
             }
             return `<div class="slide">${f.isVideo ? `<video src="${f.url}" muted loop playsinline autoplay></video>` : `<img src="${f.url}">`}</div>`;
         }).join('');
@@ -433,7 +410,6 @@ function doRender() {
                 <div class="item-overlay">
                     <div class="ov-pillar">${item.pillar || 'CONTENT'}</div>
                     <div class="ov-title">${item.name}</div>
-                    <div class="ov-date">${dateStr}</div>
                 </div>
                 <div class="carousel-track">${slidesHtml || '<div class="slide" style="background:#eee;"></div>'}</div>
             </div>`;
@@ -442,86 +418,75 @@ function doRender() {
     renderStatusOptions();
 }
 
-// --- 4. DRAG & DROP LOGIC ---
-window.handleDragStart = (e, index) => {
-    draggedIdx = index;
-    e.dataTransfer.effectAllowed = 'move';
-};
+// --- 4. HELPERS & EVENT HANDLERS ---
+function renderProfile(data) {
+    const b = data.bio;
+    if (!b) return;
+    document.getElementById('pfpImg').src = b.profilePicture || "";
+    document.getElementById('bioUser').innerText = b.username || "";
+    document.getElementById('bioDisplay').innerText = b.displayName || "";
+    document.getElementById('bioDesc').innerText = b.bioText || "";
+    document.getElementById('bioLink').innerText = b.linkDisplay || "";
+    document.getElementById('bioLink').href = b.linkUrl || "#";
 
+    if (data.highlights) {
+        document.getElementById('highRow').innerHTML = data.highlights.map(h => `
+            <div class="h-item" onclick="openStory('${h.name}')" style="text-align:center; flex-shrink:0; cursor:pointer;">
+                <div class="h-circle"><img src="${h.image}" class="h-img"></div>
+                <div style="font-size:11px; font-weight:700; margin-top:8px; color:var(--text-muted);">${h.name}</div>
+            </div>`).join('');
+    }
+}
+
+function openStory(groupName) {
+    const stories = gridData.filter(i => i.type === "Story" && i.highlightGroup === groupName);
+    const lb = document.getElementById('previewLightbox');
+    const allFiles = stories.flatMap(s => s.files);
+    document.getElementById('lightboxContent').innerHTML = `<div class="lb-track" style="display:flex; overflow-x:auto;">${allFiles.map(f => `<div class="lb-slide" style="min-width:100%">${f.isVideo ? `<video src="${f.url}" controls autoplay></video>` : `<img src="${f.url}">`}</div>`).join('')}</div>`;
+    lb.style.display = 'flex';
+}
+
+window.handleDragStart = (e, index) => { draggedIdx = index; e.dataTransfer.effectAllowed = 'move'; };
 window.handleDrop = (e, targetIdx) => {
     e.preventDefault();
-    if (draggedIdx === null || draggedIdx === targetIdx) return;
-
     const movedItem = gridData.splice(draggedIdx, 1)[0];
     gridData.splice(targetIdx, 0, movedItem);
-
-    // Persist order
     localStorage.setItem('customGridOrder', JSON.stringify(gridData.map(i => i.name)));
     doRender();
 };
 
-window.resetGridOrder = () => {
-    localStorage.removeItem('customGridOrder');
-    location.reload();
-};
-
-// --- 5. UI CONTROLS ---
 function updateUI() {
     ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'].forEach(id => {
         const el = document.getElementById(id);
         if (el) localStorage.setItem(id, el.checked);
     });
-    
     document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none';
     document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none';
-    
-    // Show/Hide Reset button if Custom Order is active
-    const resetBtn = document.getElementById('resetOrderBtn');
-    if(resetBtn) resetBtn.style.display = document.getElementById('customOrderT').checked ? 'block' : 'none';
-
     doRender();
 }
+
+function renderPlatformFilter() {
+    const plats = [...new Set(gridData.flatMap(i => i.platforms))];
+    document.getElementById('platMenu').innerHTML = `<div class="dropdown-item" onclick="setPlat('all')">All Platforms</div>` + plats.map(p => `<div class="dropdown-item" onclick="setPlat('${p}')">${p.toUpperCase()}</div>`).join('');
+}
+
+window.setPlat = (p) => {
+    currentPlat = p;
+    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.toUpperCase();
+    doRender();
+};
 
 function renderStatusOptions() {
     const stats = [...new Set(gridData.map(i => i.status))];
-    const container = document.getElementById('statusOptions');
-    if (!container) return;
-    container.innerHTML = stats.map(s => {
-        const isActive = activeStats.includes(s);
-        return `<div class="dropdown-item" onclick="toggleStat('${s}', event)">
-            <input type="checkbox" ${isActive ? 'checked' : ''} style="margin-right:8px; pointer-events:none;">
-            <span>${s}</span>
-        </div>`;
-    }).join('');
+    document.getElementById('statusOptions').innerHTML = stats.map(s => `<div class="dropdown-item" onclick="toggleStat('${s}', event)"><input type="checkbox" ${activeStats.includes(s) ? 'checked' : ''} style="margin-right:8px; pointer-events:none;"><span>${s}</span></div>`).join('');
 }
 
-function toggleStat(s, e) {
-    e.stopPropagation();
-    activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s];
-    doRender();
-}
-
-function openPreview(idx) {
-    const item = gridData[idx];
-    const lb = document.getElementById('previewLightbox');
-    document.getElementById('lightboxContent').innerHTML = `
-        <div class="lb-track" style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory;">
-            ${item.files.map(f => `<div class="lb-slide" style="min-width:100%; scroll-snap-align:start;">
-                ${f.isVideo ? `<video src="${f.url}" controls autoplay style="width:100%"></video>` : `<img src="${f.url}" style="width:100%">`}
-            </div>`).join('')}
-        </div>`;
-    lb.style.display = 'flex';
-}
-
+window.toggleStat = (s, e) => { e.stopPropagation(); activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s]; doRender(); };
+window.openPreview = (idx) => { /* Reuse openStory logic or simplify for posts */ };
 window.closeLightbox = () => { document.getElementById('previewLightbox').style.display = 'none'; };
 window.toggleSettings = (e) => { e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); };
 window.toggleMenu = (id, e) => { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); };
-
-// Close dropdowns when clicking outside
-window.onclick = () => {
-    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
-    document.getElementById('setMenu').classList.remove('open');
-};
+window.onclick = () => { document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show')); document.getElementById('setMenu').classList.remove('open'); };
 
 init();
     </script>
