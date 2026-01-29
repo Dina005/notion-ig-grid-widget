@@ -21,7 +21,7 @@
     --border: #ececee; 
     --accent: #0095f6;
     --grey-empty: #efefef;
-    --shadow: 0 8px 30px rgba(0,0,0,0.08);
+    --shadow: 0 12px 40px rgba(0,0,0,0.12);
 }
 
 body { 
@@ -47,15 +47,29 @@ body {
     display: none; gap: 15px; overflow-x: auto; scrollbar-width: none; 
 }
 .h-circle { 
-    width: 64px; height: 64px; border-radius: 50%; border: 1px solid #dbdbdb; 
+    width: 74px; height: 74px; border-radius: 50%; border: 1px solid #dbdbdb; 
     padding: 3px; background: #fff; flex-shrink: 0; cursor: pointer;
+    transition: transform 0.2s ease;
 }
+.h-circle:hover { transform: scale(1.05); }
 .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
-/* --- 2. Top Bar & Filters --- */
-.top-bar { max-width: 935px; margin: 20px auto 10px; padding: 0 20px; display: flex; align-items: center; gap: 10px; }
-.refresh-btn { background: #000; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
-.icon-btn { background: var(--surface); border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+/* --- 2. Sticky Top Bar & Filters --- */
+.top-bar { 
+    max-width: 935px; margin: 0 auto; padding: 15px 20px; 
+    display: flex; align-items: center; gap: 10px;
+    position: sticky; top: 0; background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+    z-index: 1000; border-bottom: 1px solid transparent;
+}
+/* Adds a border only when scrolling (handled by JS or simple visual) */
+.top-bar.scrolled { border-bottom: 1px solid var(--border); }
+
+.refresh-btn { background: #000; color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+.refresh-btn:hover { opacity: 0.8; }
+
+.icon-btn { background: var(--surface); border: none; width: 42px; height: 42px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+.icon-btn:hover { background: #eeeef2; }
 
 .filter-row { display: none; padding: 15px 20px; gap: 10px; max-width: 935px; margin: 0 auto; border-top: 1px solid var(--border); }
 .filter-row.active { display: flex; }
@@ -69,19 +83,19 @@ body {
 .dropdown-menu { 
     position: absolute; top: calc(100% + 8px); left: 0; background: white; 
     border: 1px solid var(--border); border-radius: 14px; display: none; 
-    padding: 8px; z-index: 3000; box-shadow: var(--shadow); min-width: 200px;
+    padding: 8px; z-index: 3000; box-shadow: var(--shadow); min-width: 210px;
 }
 .dropdown-menu.show { display: block; }
 .dropdown-item {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500;
+    padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.2s;
 }
 .dropdown-item:hover { background: var(--surface); }
 .count-pill { background: #efeff3; color: var(--text-muted); padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 
 /* --- 3. Settings & Color Palette --- */
 .settings-menu { 
-    position: absolute; top: 55px; right: 20px; width: 280px; 
+    position: absolute; top: 60px; right: 20px; width: 280px; 
     background: white; border-radius: 20px; box-shadow: var(--shadow); 
     display: none; z-index: 2000; padding: 24px; border: 1px solid var(--border); 
 }
@@ -92,15 +106,16 @@ body {
 #colorManagerUI { display: none; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px; }
 #colorList { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 15px 0; }
 .color-swatch-wrapper {
-    width: 34px; height: 34px; border-radius: 50%; overflow: hidden;
+    width: 36px; height: 36px; border-radius: 50%; overflow: hidden;
     border: 2px solid white; box-shadow: 0 0 0 1px var(--border); cursor: pointer; position: relative;
 }
-.color-swatch-wrapper input[type="color"] { position: absolute; top: -5px; left: -5px; width: 50px; height: 50px; cursor: pointer; border: none; background: none; }
+.color-swatch-wrapper input[type="color"] { position: absolute; top: -5px; left: -5px; width: 60px; height: 60px; cursor: pointer; border: none; background: none; }
 .add-color-btn {
-    width: 100%; padding: 10px; border: 2px dashed var(--border); 
+    width: 100%; padding: 12px; border: 2px dashed var(--border); 
     background: transparent; border-radius: 12px; color: var(--text-muted);
-    font-weight: 700; cursor: pointer; font-size: 12px;
+    font-weight: 700; cursor: pointer; font-size: 12px; transition: 0.2s;
 }
+.add-color-btn:hover { border-color: #bbb; background: var(--surface); }
 
 /* --- 4. The Grid & Overlays --- */
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; }
@@ -110,38 +125,50 @@ body {
     position: absolute; inset: 0; background: rgba(0,0,0,0.5);
     display: flex; flex-direction: column; justify-content: center;
     align-items: center; text-align: center; color: white;
-    opacity: 0; transition: opacity 0.3s ease; padding: 20px; pointer-events: none;
-    z-index: 10; backdrop-filter: blur(4px);
+    opacity: 0; transition: opacity 0.3s ease; padding: 20px; z-index: 10;
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
 }
 .item:hover .item-overlay { opacity: 1; }
-.ov-pillar { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 800; margin-bottom: 4px; }
-.ov-title { font-size: 13px; font-weight: 700; line-height: 1.3; }
-.ov-date { font-size: 11px; margin-top: 8px; opacity: 0.8; }
+.ov-pillar { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800; margin-bottom: 6px; }
+.ov-title { font-size: 14px; font-weight: 700; line-height: 1.4; max-width: 80%; }
+.ov-date { font-size: 11px; margin-top: 10px; opacity: 0.8; font-weight: 500; }
 
-.carousel-track { display: flex; width: 100%; height: 100%; transition: transform 0.3s ease; }
+.carousel-track { display: flex; width: 100%; height: 100%; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
 .slide { min-width: 100%; height: 100%; position: relative; }
 .slide img, .slide video { width: 100%; height: 100%; object-fit: cover; display: block; }
-.slide iframe { width: 100%; height: 100%; border: none; pointer-events: none; }
+
+.nav-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: rgba(255,255,255,0.9); border: none; width: 28px; height: 28px;
+    border-radius: 50%; cursor: pointer; z-index: 15; font-size: 16px;
+    display: flex; align-items: center; justify-content: center; font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15); opacity: 0; transition: 0.2s;
+}
+.item:hover .nav-btn { opacity: 1; }
+.prev-btn { left: 10px; } .next-btn { right: 10px; }
 
 /* --- 5. Empty States --- */
-.item.empty { background: var(--surface); border: 1px dashed #d1d1d6; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.empty-text { font-size: 10px; font-weight: 700; color: #bbb; text-transform: uppercase; margin-top: 8px; }
+.item.empty { 
+    background: var(--surface); border: 1px dashed #dcdce0; 
+    display: flex; flex-direction: column; align-items: center; justify-content: center; 
+}
+.empty-text { font-size: 10px; font-weight: 700; color: #ccc; text-transform: uppercase; margin-top: 10px; letter-spacing: 0.5px; }
 
-/* --- 6. Switches & UI Components --- */
-.switch { position: relative; width: 42px; height: 24px; }
+/* --- 6. Switches & Misc --- */
+.switch { position: relative; width: 44px; height: 24px; }
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider { position: absolute; cursor: pointer; inset: 0; background: #e9e9eb; border-radius: 30px; transition: .3s; }
 .slider:before { content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 input:checked + .slider { background: #34c759; }
-input:checked + .slider:before { transform: translateX(18px); }
+input:checked + .slider:before { transform: translateX(20px); }
 
 /* --- 7. Lightbox --- */
-#previewLightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; justify-content: center; align-items: center; }
-#lightboxContent { width: 100%; height: 100%; }
+#previewLightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 9999; justify-content: center; align-items: center; }
+#lightboxContent { width: 100%; height: 100%; position: relative; }
 .lb-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; height: 100%; scrollbar-width: none; }
 .lb-slide { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; scroll-snap-align: start; }
-.lb-slide img, .lb-slide video { max-width: 90%; max-height: 85vh; object-fit: contain; }
-.close-preview { position: absolute; top: 20px; right: 20px; color: white; font-size: 35px; cursor: pointer; z-index: 10001; }
+.lb-slide img, .lb-slide video { max-width: 90%; max-height: 85vh; object-fit: contain; border-radius: 4px; }
+.close-preview { position: absolute; top: 25px; right: 25px; color: white; font-size: 40px; cursor: pointer; z-index: 10001; font-weight: 200; }
         
     </style>
 </head>
@@ -152,29 +179,31 @@ input:checked + .slider:before { transform: translateX(18px); }
             <img id="pfpImg" class="pfp-img" src="">
         </div>
         <h1 id="bioUser"></h1>
-        <p id="bioDisplay" style="font-weight:600; margin-bottom: 5px;"></p>
-        <p id="bioDesc" style="font-size:14px; color:#1a1a1a; max-width:600px; line-height:1.4; margin-bottom:10px; white-space: pre-wrap;"></p>
-        <a id="bioLink" style="font-weight:700; color:#00376b; text-decoration:none;" target="_blank"></a>
+        <div style="margin-bottom: 20px;">
+            <p id="bioDisplay" style="font-weight:700; margin: 0; font-size: 16px;"></p>
+            <p id="bioDesc" style="font-size:14px; color:var(--text); max-width:600px; line-height:1.4; margin: 5px 0; white-space: pre-wrap;"></p>
+            <a id="bioLink" style="font-weight:700; color:#00376b; text-decoration:none; font-size: 14px;" target="_blank"></a>
+        </div>
     </div>
 
     <div id="highRow"></div>
 
-    <div class="top-bar">
+    <div class="top-bar" id="stickyTopBar">
         <button class="refresh-btn" onclick="location.reload()">Refresh</button>
         
         <button class="icon-btn" onclick="document.getElementById('filterArea').classList.toggle('active')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5">
-                <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
-                <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
-                <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
-                <rect x="2" y="10" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/>
-                <rect x="10" y="8" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/>
-                <rect x="18" y="12" width="4" height="4" rx="1" fill="white" stroke="black" stroke-width="2"/>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2">
+                <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M2 14h4M10 12h4M18 16h4"/>
             </svg>
         </button>
         
         <div style="margin-left:auto; position:relative;">
-            <button class="icon-btn" onclick="toggleSettings(event)">•••</button>
+            <button class="icon-btn" onclick="toggleSettings(event)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2">
+                    <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
+                </svg>
+            </button>
+            
             <div class="settings-menu" id="setMenu">
                 <div class="setting-item">
                     <div class="setting-label">Show Bio <label class="switch"><input type="checkbox" id="bioT" onchange="updateUI()"><span class="slider"></span></label></div>
@@ -185,7 +214,7 @@ input:checked + .slider:before { transform: translateX(18px); }
                 <div class="setting-item">
                     <div class="setting-label">Content Map <label class="switch"><input type="checkbox" id="mapT" onchange="updateUI()"><span class="slider"></span></label></div>
                 </div>
-                <div class="setting-item" style="border-top: 1px solid #eee; padding-top: 15px;">
+                <div class="setting-item" style="border-top: 1px solid var(--border); padding-top: 15px;">
                     <div class="setting-label">Custom Layout <label class="switch"><input type="checkbox" id="customOrderT" onchange="updateUI()"><span class="slider"></span></label></div>
                 </div>
                 <div class="setting-item">
@@ -193,9 +222,9 @@ input:checked + .slider:before { transform: translateX(18px); }
                 </div>
                 
                 <div id="colorManagerUI">
-                    <div style="font-size: 12px; font-weight: 800; color: #999; text-transform: uppercase; letter-spacing: 0.5px;">Brand Palette</div>
+                    <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Brand Palette</div>
                     <div id="colorList"></div>
-                    <button class="add-color-btn" onclick="window.addColor(event)">+ Add Brand Color</button>
+                    <button class="add-color-btn" onclick="window.addColor(event)">+ Add New Color</button>
                 </div>
             </div>
         </div>
@@ -220,8 +249,8 @@ input:checked + .slider:before { transform: translateX(18px); }
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 9l-7 7-7-7"/></svg>
             </div>
             <div class="dropdown-menu" id="statMenu">
-                <div class="dropdown-item" onclick="toggleAllStats(event)">
-                    <strong>Select All</strong>
+                <div class="dropdown-item" onclick="toggleAllStats(event)" style="border-bottom: 1px solid var(--surface); margin-bottom: 5px;">
+                    <strong style="color: var(--accent);">Select All</strong>
                 </div>
                 <div id="statusOptions"></div>
             </div>
@@ -249,6 +278,13 @@ async function init() {
         if (saved !== null && el) el.checked = saved === 'true';
     });
 
+    // Sticky Scroll Effect
+    window.addEventListener('scroll', () => {
+        const topBar = document.getElementById('stickyTopBar');
+        if (window.scrollY > 20) topBar.classList.add('scrolled');
+        else topBar.classList.remove('scrolled');
+    });
+
     updateUI(); 
 
     try {
@@ -264,14 +300,13 @@ async function init() {
     } catch (e) { console.error("Init Failed:", e); }
 }
 
-// --- 2. GRID RENDERING (WITH HOVER & EMPTY STATES) ---
+// --- 2. GRID RENDERING (RESTORED CAROUSEL & HOVER) ---
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
     const isCustom = document.getElementById('customOrderT').checked;
     const canvaOn = document.getElementById('canvaT').checked;
 
-    // Filter logic
     let filtered = gridData.filter(i => {
         const isPost = i.type !== "Story"; 
         const platMatch = (currentPlat === 'all' || i.platforms.includes(currentPlat.toLowerCase()));
@@ -292,15 +327,13 @@ function doRender() {
         const dataIdx = gridData.indexOf(item);
         const files = item.files || [];
         const hasMult = files.length > 1;
-        const dateStr = item.date ? new Date(item.date).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : 'No Date';
+        const dateStr = item.date ? new Date(item.date).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : '';
 
-        // Content Map Mode
         if (isMap) {
             const color = window.brandColors[window.shuffledIndices[idx % window.shuffledIndices.length] % window.brandColors.length];
-            return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; text-align:center; padding:15px; font-size:11px; line-height:1.2;">${item.name.toUpperCase()}</div>`;
+            return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; text-align:center; padding:15px; font-size:11px;">${item.name.toUpperCase()}</div>`;
         }
 
-        // Standard Grid Mode
         const slidesHtml = files.map(f => {
             if (canvaOn && f.url.includes('canva.com')) {
                 return `<div class="slide"><iframe src="${f.url.split('?')[0]}/view?embed"></iframe></div>`;
@@ -309,49 +342,73 @@ function doRender() {
         }).join('');
 
         return `
-            <div class="item ${hasMult ? 'has-multiple' : ''}" draggable="${isCustom}" 
-                 ondragstart="handleDragStart(event, '${files[0]?.url}')" ondrop="handleDrop(event, '${files[0]?.url}')" 
-                 ondragover="event.preventDefault()" onclick="openPreview(${dataIdx})">
+            <div class="item" draggable="${isCustom}" 
+                 ondragstart="handleDragStart(event, '${files[0]?.url}')" 
+                 ondrop="handleDrop(event, '${files[0]?.url}')" 
+                 ondragover="event.preventDefault()" 
+                 onclick="openPreview(${dataIdx})">
                 <div class="item-overlay">
-                    <div class="ov-pillar">${item.pillar || 'Content'}</div>
+                    <div class="ov-pillar">${item.pillar || 'CONTENT'}</div>
                     <div class="ov-title">${item.name}</div>
                     <div class="ov-date">${dateStr}</div>
                 </div>
-                <div class="carousel-track" id="track-${dataIdx}">${slidesHtml}</div>
-                ${hasMult ? `<button class="nav-btn prev-btn" onclick="moveSlide(${dataIdx}, -1, event)">‹</button><button class="nav-btn next-btn" onclick="moveSlide(${dataIdx}, 1, event)">›</button>` : ''}
+                <div class="carousel-track" id="track-${dataIdx}" data-idx="0">${slidesHtml}</div>
+                ${hasMult ? `
+                    <button class="nav-btn prev-btn" onclick="moveSlide(${dataIdx}, -1, event)">‹</button>
+                    <button class="nav-btn next-btn" onclick="moveSlide(${dataIdx}, 1, event)">›</button>
+                ` : ''}
             </div>`;
     }).join('');
 
-    // --- 3. FIX: NO CONTENT / 3x3 MINIMUM DESIGN ---
+    // Fill to 3x3 grid
     const minItems = 9;
-    const currentCount = filtered.length;
-    if (currentCount < minItems) {
-        for (let i = 0; i < (minItems - currentCount); i++) {
-            html += `
-                <div class="item empty">
-                    <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                    <div class="empty-text">Empty Slot</div>
-                </div>`;
+    if (filtered.length < minItems) {
+        for (let i = 0; i < (minItems - filtered.length); i++) {
+            html += `<div class="item empty"><div class="empty-text">Draft Slot</div></div>`;
         }
     }
     grid.innerHTML = html;
 }
 
-// --- 4. STATUS FILTERS (WITH COUNTS & SELECT ALL) ---
+// --- 3. STORY & PREVIEW LOGIC (FIXED CLICK) ---
+function openStory(groupName) {
+    const stories = gridData.filter(i => i.type === "Story" && i.highlightGroup === groupName);
+    if (!stories.length) return;
+
+    const lb = document.getElementById('previewLightbox');
+    const allFiles = stories.flatMap(s => s.files);
+    document.getElementById('lightboxContent').innerHTML = `
+        <div class="lb-track">
+            ${allFiles.map(f => `<div class="lb-slide">${f.isVideo ? `<video src="${f.url}" controls autoplay loop></video>` : `<img src="${f.url}">`}</div>`).join('')}
+        </div>`;
+    lb.style.display = 'flex';
+}
+
+function moveSlide(idx, dir, e) {
+    e.stopPropagation();
+    const track = document.getElementById(`track-${idx}`);
+    const slides = track.querySelectorAll('.slide');
+    let current = parseInt(track.dataset.idx || 0);
+    current = (current + dir + slides.length) % slides.length;
+    track.dataset.idx = current;
+    track.style.transform = `translateX(-${current * 100}%)`;
+}
+
+// --- 4. FILTERS & COLOR MANAGER ---
 function setupStatusFilters() {
     const stats = [...new Set(gridData.map(i => i.status))];
     activeStats = [...stats];
-    renderStatusList();
+    renderStatusOptions();
 }
 
-function renderStatusList() {
+function renderStatusOptions() {
     const stats = [...new Set(gridData.map(i => i.status))];
     document.getElementById('statusOptions').innerHTML = stats.map(s => {
         const count = gridData.filter(item => item.status === s && item.type !== 'Story').length;
         return `
         <div class="dropdown-item" onclick="toggleStat('${s}', event)">
             <span>${s}</span>
-            <div style="display:flex; align-items:center; gap:8px;">
+            <div style="display:flex; align-items:center; gap:10px;">
                 <span class="count-pill">${count}</span>
                 <input type="checkbox" ${activeStats.includes(s) ? 'checked' : ''} style="pointer-events:none">
             </div>
@@ -362,70 +419,64 @@ function renderStatusList() {
 function toggleStat(s, e) {
     e.stopPropagation();
     activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s];
-    renderStatusList();
+    renderStatusOptions();
     doRender();
 }
 
 function toggleAllStats(e) {
     e.stopPropagation();
-    const allPossible = [...new Set(gridData.map(i => i.status))];
-    activeStats = (activeStats.length === allPossible.length) ? [] : allPossible;
-    renderStatusList();
+    const all = [...new Set(gridData.map(i => i.status))];
+    activeStats = (activeStats.length === all.length) ? [] : all;
+    renderStatusOptions();
     doRender();
 }
 
-// --- 5. COLOR MANAGER (AESTHETIC) ---
-window.brandColors = ["#E6E6FA", "#F0FFF0", "#FFF0F5", "#F0F8FF"];
-window.renderColorControls = () => {
-    document.getElementById('colorList').innerHTML = window.brandColors.map((c, i) => `
-        <div class="color-swatch-wrapper" style="background:${c}">
-            <input type="color" value="${c}" onchange="window.brandColors[${i}]=this.value; doRender();">
-        </div>
-    `).join('');
-};
-
-window.addColor = (e) => {
-    e.stopPropagation();
-    window.brandColors.push("#d1d1d6");
-    window.renderColorControls();
-    doRender();
-};
-
-// --- 6. CORE LOGIC (PREVIEWS/UI) ---
+// --- 5. UI HELPERS ---
 function renderProfile(data) {
     const b = data.bio;
     document.getElementById('pfpImg').src = b.profilePicture || "";
-    document.getElementById('bioUser').innerText = b.username || "username";
+    document.getElementById('bioUser').innerText = b.username || "";
     document.getElementById('bioDisplay').innerText = b.displayName || "";
     document.getElementById('bioDesc').innerText = b.bioText || "";
     document.getElementById('bioLink').innerText = b.linkDisplay || "";
     document.getElementById('bioLink').href = b.linkUrl || "#";
 
-    const highlights = data.highlights || [];
-    if (highlights.length === 0) {
-        document.getElementById('highRow').innerHTML = `<div class="no-stories-msg">No Highlights to show</div>`;
-    } else {
-        document.getElementById('highRow').innerHTML = highlights.map(h => `
-            <div onclick="openStory('${h.name}')" style="text-align:center; flex-shrink:0; cursor:pointer;">
-                <div class="h-circle"><img src="${h.image}" class="h-img"></div>
-                <div style="font-size:11px; font-weight:700; margin-top:6px;">${h.name}</div>
-            </div>`).join('');
-    }
+    document.getElementById('highRow').innerHTML = (data.highlights || []).map(h => `
+        <div onclick="openStory('${h.name}')" style="text-align:center; flex-shrink:0; cursor:pointer;">
+            <div class="h-circle"><img src="${h.image}" class="h-img"></div>
+            <div style="font-size:11px; font-weight:700; margin-top:8px; color:var(--text-muted);">${h.name}</div>
+        </div>`).join('');
 }
 
-// Standard helper functions
+function setPlat(p) {
+    currentPlat = p;
+    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
+    doRender();
+}
+
+function updateUI() {
+    ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'].forEach(id => localStorage.setItem(id, document.getElementById(id).checked));
+    document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none';
+    document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none';
+    document.getElementById('colorManagerUI').style.display = document.getElementById('mapT').checked ? 'block' : 'none';
+    if (gridData.length) doRender();
+}
+
+// Drag & Drop
 function handleDragStart(e, id) { dragItem = id; e.target.closest('.item').classList.add('dragging'); }
 function handleDrop(e, id) {
     e.preventDefault();
     let order = JSON.parse(localStorage.getItem('gridOrder') || "[]");
     const allUrls = gridData.filter(i => i.type !== "Story").map(i => i.files[0]?.url);
-    if (order.length === 0) order = allUrls;
+    if (!order.length) order = allUrls;
     const fromIdx = order.indexOf(dragItem);
     const toIdx = order.indexOf(id);
     order.splice(toIdx, 0, order.splice(fromIdx, 1)[0]);
     localStorage.setItem('gridOrder', JSON.stringify(order));
     doRender();
 }
+
+// Previews
 function openPreview(idx) {
     const item = gridData[idx];
     const lb = document.getElementById('previewLightbox');
@@ -435,30 +486,20 @@ function openPreview(idx) {
         </div>`;
     lb.style.display = 'flex';
 }
-function moveSlide(idx, dir, e) {
-    e.stopPropagation();
-    const track = document.getElementById(`track-${idx}`);
-    const slides = track.querySelectorAll('.slide');
-    let current = parseInt(track.dataset.idx || 0);
-    current = (current + dir + slides.length) % slides.length;
-    track.dataset.idx = current;
-    track.style.transform = `translateX(-${current * 100}%)`;
-}
-function setPlat(p) {
-    currentPlat = p;
-    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
-    doRender();
-}
-function updateUI() {
-    ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'].forEach(id => localStorage.setItem(id, document.getElementById(id).checked));
-    document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none';
-    document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none';
-    document.getElementById('colorManagerUI').style.display = document.getElementById('mapT').checked ? 'block' : 'none';
-    if (gridData.length) doRender();
-}
+
+// Color Management
+window.brandColors = ["#E6E6FA", "#F0FFF0", "#FFF0F5"];
+window.renderColorControls = () => {
+    document.getElementById('colorList').innerHTML = window.brandColors.map((c, i) => `
+        <div class="color-swatch-wrapper" style="background:${c}">
+            <input type="color" value="${c}" onchange="window.brandColors[${i}]=this.value; doRender();">
+        </div>`).join('');
+};
+window.addColor = (e) => { e.stopPropagation(); window.brandColors.push("#cccccc"); window.renderColorControls(); doRender(); };
+window.generateRandomMap = () => { window.shuffledIndices = Array.from({length: 100}, () => Math.floor(Math.random() * 50)); };
+
 function toggleMenu(id, e) { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); }
 function toggleSettings(e) { e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
-window.generateRandomMap = () => { window.shuffledIndices = Array.from({ length: 100 }, () => Math.floor(Math.random() * 50)); };
 window.onclick = () => {
     document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
     document.getElementById('setMenu').classList.remove('open');
