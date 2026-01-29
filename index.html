@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pro Planner v22 - Left Aligned Stack</title>
     <style>
- @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root { 
     --bg: #ffffff; 
@@ -28,10 +28,8 @@ body {
     -webkit-font-smoothing: antialiased; overflow-x: hidden;
 }
 
-/* --- FIX: Default Hidden to prevent flickering on refresh --- */
-#bioSection, #highRow, #colorManagerUI { 
-    display: none; 
-}
+/* --- Initialization States --- */
+#bioSection, #highRow, #colorManagerUI { display: none; }
 
 /* --- Bio Section --- */
 #bioSection { 
@@ -48,12 +46,14 @@ body {
 /* --- Highlights --- */
 #highRow { 
     max-width: 935px; margin: 0 auto 30px; padding: 0 20px; 
-    gap: 15px; overflow-x: auto; scrollbar-width: none; 
+    display: flex; gap: 15px; overflow-x: auto; scrollbar-width: none; 
 }
 .h-circle { 
     width: 64px; height: 64px; border-radius: 50%; border: 1px solid #dbdbdb; 
     padding: 3px; background: #fff; display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s ease;
 }
+.h-circle:active { transform: scale(0.92); }
 .h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
 /* --- Top Bar & Controls --- */
@@ -68,6 +68,8 @@ body {
     display: none; z-index: 2000; padding: 20px; border: 1px solid #ededf0; 
 }
 .settings-menu.open { display: block; }
+.setting-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-weight: 600; }
+.border-top { border-top: 1px solid #eee; padding-top: 15px; }
 
 /* --- Toggles --- */
 .switch { position: relative; width: 40px; height: 22px; display: inline-block; }
@@ -76,255 +78,80 @@ body {
 input:checked + .slider { background-color: #000; }
 input:checked + .slider:before { transform: translateX(18px); }
 
-/* --- Filters & Checkbox Correction --- */
-/* Start the filter row as hidden to prevent flickering */
-.filter-row { 
-    display: none; 
-    padding: 15px 20px; 
-    gap: 12px; 
-    max-width: 935px; 
-    margin: 0 auto; 
-    border-top: 1px solid #f0f0f2; 
-    align-items: center;
-}
-
-/* This class will be toggled by the JS */
-.filter-row.active { 
-    display: flex; 
-}
+/* --- Filters --- */
+.filter-row { display: none; padding: 15px 20px; gap: 12px; max-width: 935px; margin: 0 auto; border-top: 1px solid #f0f0f2; align-items: center; }
+.filter-row.active { display: flex; }
 .dropdown-container { position: relative; font-size: 14px; font-weight: 600; }
 .dropdown-trigger { padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border); background: #fff; cursor: pointer; display: flex; align-items: center; gap: 8px; min-width: 140px; justify-content: space-between; }
 .dropdown-menu { position: absolute; top: 110%; left: 0; background: white; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); z-index: 3000; min-width: 220px; display: none; padding: 8px; }
 .dropdown-menu.show { display: block; }
-
-.dropdown-item {
-    display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 8px; cursor: pointer;
-}
+.dropdown-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 8px; cursor: pointer; }
 .dropdown-item:hover { background: var(--surface); }
 
-.item-left { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-.item-left input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; }
-
-.check-box { 
-    width: 18px; height: 18px; border: 2px solid #ddd; border-radius: 4px; 
-    background-color: #fff; flex-shrink: 0; position: relative; transition: 0.2s;
-}
-.item-left input:checked ~ .check-box { background-color: #000; border-color: #000; }
-.item-left input:checked ~ .check-box::after { 
-    content: "✓"; position: absolute; color: white; font-size: 12px; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-}
-
 /* --- The Grid --- */
-.grid { 
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; 
-    max-width: 935px; margin: 0 auto 50px; padding: 0 20px;
-    contain: layout;
-}
-.item { 
-    aspect-ratio: 1/1; background: var(--grey-empty); position: relative; 
-    cursor: pointer; overflow: hidden; will-change: transform; transition: transform 0.2s ease;
-}
-.item.dragging { opacity: 0.2; transform: scale(0.95); z-index: 10; transition: none; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 935px; margin: 0 auto 50px; padding: 0 20px; contain: layout; }
+.item { aspect-ratio: 1/1; background: var(--grey-empty); position: relative; cursor: pointer; overflow: hidden; }
+.item.dragging { opacity: 0.2; transform: scale(0.95); }
 .item.empty { background-color: #f0f0f2; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; }
 
-/* --- Media Handling --- */
-.carousel-track { display: flex; width: 100%; height: 100%; pointer-events: none; }
-.slide { min-width: 100%; height: 100%; position: relative; }
-.slide img, .slide video { width: 100%; height: 100%; object-fit: cover; }
-.slide iframe { position: absolute; top: 50%; left: 50%; width: 150%; height: 150%; border: none; transform: translate(-50%, -50%); }
-
-/* --- Hover Overlays --- */
-.overlay {
-    position: absolute; bottom: 0; left: 0; right: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.85));
-    color: white; padding: 15px; opacity: 0;
-    transform: translateY(10px); transition: 0.3s ease;
-    display: flex; flex-direction: column; gap: 4px; pointer-events: none;
+/* --- Carousel Indicator --- */
+.carousel-indicator {
+    position: absolute; top: 10px; right: 10px; 
+    background: rgba(0, 0, 0, 0.4); color: white; 
+    padding: 5px; border-radius: 4px; z-index: 6; pointer-events: none;
 }
-.item:hover .overlay { opacity: 1; transform: translateY(0); }
-.ov-title { font-size: 13px; font-weight: 700; }
-.ov-meta { font-size: 10px; display: flex; justify-content: space-between; align-items: center; }
 
-/* --- Color Manager (Edge-to-Edge) --- */
-.brand-color-section { border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px; }
-.color-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-.color-picker-wrapper { 
-    width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1);
-    position: relative; overflow: hidden; flex-shrink: 0; 
+/* --- Navigation Buttons (Grid Hover Only) --- */
+.nav-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.8); border: none; border-radius: 50%;
+    width: 24px; height: 24px; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; font-size: 14px;
+    z-index: 5; opacity: 0; transition: opacity 0.2s;
 }
-.color-picker { 
-    position: absolute; top: -10px; left: -10px; width: 50px; height: 50px; 
-    border: none; cursor: pointer; background: none; 
-}
-.color-picker::-webkit-color-swatch { border: none; border-radius: 50%; }
+.item:hover .nav-btn { opacity: 1; }
+.prev-btn { left: 8px; }
+.next-btn { right: 8px; }
 
-/* --- Lightbox (Fixed Zoom) --- */
+/* --- Lightbox / Preview --- */
 #previewLightbox { 
     display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
     background: rgba(0,0,0,0.95); z-index: 9999; justify-content: center; align-items: center; 
 }
-#lightboxContent { 
-    width: 90vw; height: 90vh; display: flex; align-items: center; justify-content: center; 
-}
-#lightboxContent img, #lightboxContent video { 
-    max-width: 100%; max-height: 100%; width: auto; height: auto; 
-    object-fit: contain; box-shadow: 0 0 40px rgba(0,0,0,0.5); 
-}
-.close-preview { position: fixed; top: 30px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
-        /* Carousel Container */
-.carousel-track {
-    display: flex;
-    transition: transform 0.3s ease-in-out;
-    height: 100%;
-    width: 100%;
-}
+#lightboxContent { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
 
-/* Navigation Arrows */
-.nav-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.8);
-    border: none;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: bold;
-    z-index: 5;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-.nav-btn:hover { background: #fff; }
-.prev-btn { left: 8px; }
-.next-btn { right: 8px; }
-
-/* Hide arrows if only one image exists */
-.item:not(.has-multiple) .nav-btn,
-#previewLightbox:not(.has-multiple) .nav-btn {
-    display: none;
-}
-
-/* Lightbox specific arrows */
-.lb-nav {
-    width: 45px;
-    height: 45px;
-    font-size: 24px;
-    background: rgba(255,255,255,0.15);
-    color: white;
-}
-.lb-nav:hover { background: rgba(255,255,255,0.3); }
-        /* Carousel Indicator Icon */
-.carousel-indicator {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.4);
-    color: white;
-    padding: 5px;
-    border-radius: 4px;
-    font-size: 12px;
-    z-index: 6;
-    pointer-events: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Hide arrows by default on the grid */
-.item .nav-btn {
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-/* Show arrows only on hover */
-.item:hover .nav-btn {
-    opacity: 1;
-}
-
-/* Keep Lightbox arrows always visible */
-.lb-nav {
-    opacity: 1 !important;
-}
-
-/* Scroll handling for the track */
-.carousel-track {
-    display: flex;
-    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    height: 100%;
-    width: 100%;
-}
-        /* Lightbox Scrollable Track */
+/* Lightbox Track & Scroll-Snap */
 .lb-track {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
-    width: 100%;
-    height: 100%;
-    scrollbar-width: none; /* Hide scrollbar for Firefox */
+    display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+    scroll-behavior: smooth; width: 100%; height: 100%; scrollbar-width: none;
 }
-.lb-track::-webkit-scrollbar { display: none; } /* Hide scrollbar for Chrome/Safari */
+.lb-track::-webkit-scrollbar { display: none; }
 
 .lb-slide {
-    min-width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    scroll-snap-align: start;
+    min-width: 100%; height: 100%; display: flex;
+    align-items: center; justify-content: center; scroll-snap-align: start;
 }
+.lb-slide img, .lb-slide video { max-width: 90%; max-height: 90vh; object-fit: contain; }
 
-.lb-slide img, .lb-slide video {
-    max-width: 90%;
-    max-height: 90vh;
-    border-radius: 8px;
-    object-fit: contain;
-}
-        /* Ensure lightbox navigation buttons are always visible in preview */
+/* Lightbox Navigation (Always Visible) */
 .active-lb-btn {
-    opacity: 1 !important;
-    display: flex !important;
-    background: rgba(255, 255, 255, 0.4) !important;
-    color: white !important;
-    width: 40px !important;
-    height: 40px !important;
-    font-size: 24px !important;
+    opacity: 1 !important; display: flex !important;
+    background: rgba(255, 255, 255, 0.2) !important; color: white !important;
+    width: 50px !important; height: 50px !important; font-size: 30px !important;
 }
+.close-preview { position: fixed; top: 20px; right: 20px; color: white; font-size: 40px; cursor: pointer; z-index: 10001; }
 
-.active-lb-btn:hover {
-    background: rgba(255, 255, 255, 0.6) !important;
-}
-
-/* Lightbox Track Setup */
-.lb-track {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
-    width: 100%;
-    height: 100%;
-    scrollbar-width: none; /* Hide scrollbar Firefox */
-}
-.lb-track::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome/Safari */
-
-.lb-slide {
-    min-width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    scroll-snap-align: start;
-}
+/* --- Color Manager Palette --- */
+.palette-label { font-size: 11px; font-weight: 800; color: #888; margin-bottom: 10px; text-transform: uppercase; }
+.color-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.color-picker-wrapper { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); position: relative; overflow: hidden; }
+.color-picker { position: absolute; top: -10px; left: -10px; width: 50px; height: 50px; cursor: pointer; }
+.add-btn { width: 100%; padding: 8px; background: #f0f0f2; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px; }
         
     </style>
 </head>
 <body>
-  <div id="bioSection">
+    <div id="bioSection">
         <div class="pfp-container">
             <img id="pfpImg" class="pfp-img" src="">
         </div>
@@ -353,24 +180,24 @@ input:checked + .slider:before { transform: translateX(18px); }
         <div style="margin-left:auto; position:relative;">
             <button class="icon-btn" onclick="toggleSettings(event)">•••</button>
             <div class="settings-menu" id="setMenu">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
+                <div class="setting-item">
                     Show Bio <label class="switch"><input type="checkbox" id="bioT" onchange="updateUI()"><span class="slider"></span></label>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
+                <div class="setting-item">
                     Show Highlights <label class="switch"><input type="checkbox" id="highT" onchange="updateUI()"><span class="slider"></span></label>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
+                <div class="setting-item">
                     Content Map <label class="switch"><input type="checkbox" id="mapT" onchange="updateUI()"><span class="slider"></span></label>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600; border-top: 1px solid #eee; padding-top: 15px;">
-                    Custom Layout <label class="switch"><input type="checkbox" id="customOrderT" onchange="toggleOrder()"><span class="slider"></span></label>
+                <div class="setting-item border-top">
+                    Custom Layout <label class="switch"><input type="checkbox" id="customOrderT" onchange="updateUI()"><span class="slider"></span></label>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; font-weight:600;">
+                <div class="setting-item">
                     Canva Previews <label class="switch"><input type="checkbox" id="canvaT" onchange="updateUI()"><span class="slider"></span></label>
                 </div>
                 
-                <div class="brand-color-section" id="colorManagerUI" style="display:none;">
-                    <div style="font-size: 11px; font-weight: 800; color: #888; margin-bottom: 10px; text-transform: uppercase;">Brand Palette</div>
+                <div class="brand-color-section" id="colorManagerUI">
+                    <div class="palette-label">Brand Palette</div>
                     <div id="colorList"></div>
                     <button class="add-btn" onclick="window.addColor(event)">+ Add Color</button>
                 </div>
@@ -410,10 +237,9 @@ input:checked + .slider:before { transform: translateX(18px); }
     </div>
     <script>
 const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
-let gridData = [], currentPlat = 'all', activeStats = [], isDragging = false;
-let currentLightboxItemIdx = 0;
+let gridData = [], highlightsData = [], currentPlat = 'all', activeStats = [], isDragging = false;
 
-// --- 1. INITIALIZATION (Flicker-Free & Persistent) ---
+// --- 1. INITIALIZATION ---
 async function init() {
     const toggleIds = ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'];
     toggleIds.forEach(id => {
@@ -422,18 +248,8 @@ async function init() {
         if (savedState !== null && el) el.checked = savedState === 'true';
     });
 
-    if (localStorage.getItem('filterRowActive') === 'true') {
-        document.getElementById('filterRow').classList.add('active');
-    }
-
     const savedPlat = localStorage.getItem('currentPlat');
-    if (savedPlat) {
-        currentPlat = savedPlat;
-        const platDisplay = document.getElementById('platCurrent');
-        if (platDisplay) {
-            platDisplay.innerText = currentPlat === 'all' ? 'All Platforms' : currentPlat.charAt(0).toUpperCase() + currentPlat.slice(1);
-        }
-    }
+    if (savedPlat) currentPlat = savedPlat;
 
     updateUI(); 
 
@@ -441,43 +257,29 @@ async function init() {
         const res = await fetch(API);
         const data = await res.json();
         gridData = data.grid || [];
+        highlightsData = data.highlights || [];
         
         renderProfile(data);
-
-        const stats = [...new Set(gridData.map(i => i.status))];
-        const savedStats = localStorage.getItem('activeStats');
-        activeStats = savedStats ? JSON.parse(savedStats) : [...stats];
-
-        const statusContainer = document.getElementById('statusOptions');
-        if (statusContainer) {
-            statusContainer.innerHTML = stats.map(s => `
-                <label class="dropdown-item" onclick="event.stopPropagation()">
-                    <div class="item-left">
-                        <input type="checkbox" ${activeStats.includes(s) ? 'checked' : ''} onchange="toggleStat('${s}')">
-                        <div class="check-box"></div>
-                        <span style="font-weight:600; font-size:13px;">${s}</span>
-                    </div>
-                    <span class="count-pill">${gridData.filter(i => i.status === s).length}</span>
-                </label>`).join('');
-        }
-
+        setupStatusFilters();
         window.generateRandomMap();
         window.renderColorControls();
         doRender(); 
-    } catch (e) { console.error("Initialization Failed:", e); }
+    } catch (e) { console.error("Init Failed:", e); }
 }
 
-// --- 2. CORE RENDERING (Grid + Carousel Indicators) ---
+// --- 2. GRID RENDERING (Excluding Stories) ---
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
     const isCustom = document.getElementById('customOrderT').checked;
     const canvaOn = document.getElementById('canvaT').checked;
 
+    // FILTER: Hide "Story" types from the main grid
     let filtered = [...gridData].filter(i => {
+        const isNotStory = i.type !== "Story"; 
         const platMatch = (currentPlat === 'all' || i.platforms.includes(currentPlat));
         const statMatch = activeStats.includes(i.status);
-        return platMatch && statMatch;
+        return isNotStory && platMatch && statMatch;
     });
 
     if (isCustom) {
@@ -490,37 +292,29 @@ function doRender() {
     }
 
     let displayList = [...filtered];
-    while (displayList.length < 9 || displayList.length % 3 !== 0) {
-        displayList.push({ isPlaceholder: true });
-    }
+    while (displayList.length < 9 || displayList.length % 3 !== 0) displayList.push({ isPlaceholder: true });
 
     grid.innerHTML = displayList.map((item, i) => {
         if (item.isPlaceholder) return `<div class="item empty"><span class="empty-text">No Content</span></div>`;
-
         const dataIdx = gridData.indexOf(item);
         const files = item.files || [];
         const hasMultiple = files.length > 1;
 
         if (isMap) {
             const color = window.brandColors[window.shuffledIndices[i % window.shuffledIndices.length] % window.brandColors.length];
-            return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:700;">${item.name || "Content"}</div>`;
+            return `<div class="item" style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; text-align:center; padding:10px;">${item.name}</div>`;
         }
 
         const slidesHtml = files.map(file => {
-            if (canvaOn && file.url.includes('canva.com')) {
-                return `<div class="slide"><iframe src="${getCanvaEmbedUrl(file.url)}"></iframe></div>`;
-            }
-            return `<div class="slide">${file.isVideo ? `<video src="${file.url}" muted loop playsinline autoplay></video>` : `<img src="${file.url}">`}</div>`;
+            const content = (canvaOn && file.url.includes('canva.com')) ? `<iframe src="${getCanvaEmbedUrl(file.url)}"></iframe>` : (file.isVideo ? `<video src="${file.url}" muted loop playsinline autoplay></video>` : `<img src="${file.url}">`);
+            return `<div class="slide">${content}</div>`;
         }).join('');
 
         return `
             <div class="item ${hasMultiple ? 'has-multiple' : ''}" draggable="${isCustom}" data-id="${files[0]?.url}" onclick="if(!isDragging) openPreview(${dataIdx})">
                 ${hasMultiple ? `<div class="carousel-indicator"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M19,2H9C7.9,2,7,2.9,7,4v11c0,1.1,0.9,2,2,2h10c1.1,0,2-0.9,2-2V4C21,2.9,20.1,2,19,2z M19,15H9V4h10V15z M5,7H3v11 c0,1.1,0.9,2,2,2h11v-2H5V7z"/></svg></div>` : ''}
                 <div class="carousel-track" id="track-${dataIdx}">${slidesHtml}</div>
-                ${hasMultiple ? `
-                    <button class="nav-btn prev-btn" onclick="moveSlide(${dataIdx}, -1, event)">‹</button>
-                    <button class="nav-btn next-btn" onclick="moveSlide(${dataIdx}, 1, event)">›</button>
-                ` : ''}
+                ${hasMultiple ? `<button class="nav-btn prev-btn" onclick="moveSlide(${dataIdx}, -1, event)">‹</button><button class="nav-btn next-btn" onclick="moveSlide(${dataIdx}, 1, event)">›</button>` : ''}
                 <div class="overlay"><div class="ov-title">${item.name || "Content"}</div></div>
             </div>`;
     }).join('');
@@ -528,41 +322,49 @@ function doRender() {
     if (isCustom) initDragging();
 }
 
-function moveSlide(dataIdx, dir, event) {
-    if (event) event.stopPropagation();
-    const track = document.getElementById(`track-${dataIdx}`);
-    const slides = track.querySelectorAll('.slide');
-    if (!track.dataset.idx) track.dataset.idx = 0;
-    let idx = (parseInt(track.dataset.idx) + dir + slides.length) % slides.length;
-    track.dataset.idx = idx;
-    track.style.transform = `translateX(-${idx * 100}%)`;
+// --- 3. STORY VIEWER (Links Highlight to DB Stories) ---
+function openStory(highlightName) {
+    // Finds grid items marked as "Story" where "Highlight Group" matches the clicked circle's name
+    const relatedStories = gridData.filter(item => item.type === "Story" && item.highlightGroup === highlightName);
+    if (relatedStories.length === 0) return;
+
+    const lightbox = document.getElementById('previewLightbox');
+    const content = document.getElementById('lightboxContent');
+    const allFiles = relatedStories.flatMap(s => s.files);
+
+    const storiesHtml = allFiles.map(file => {
+        const media = file.isVideo ? `<video src="${file.url}" controls autoplay loop></video>` : `<img src="${file.url}">`;
+        return `<div class="lb-slide">${media}</div>`;
+    }).join('');
+
+    content.innerHTML = `<div class="lb-track" id="lbTrack">${storiesHtml}</div>`;
+    
+    document.querySelectorAll('.lb-nav').forEach(a => a.remove());
+    if (allFiles.length > 1) {
+        lightbox.insertAdjacentHTML('beforeend', `
+            <button class="nav-btn lb-nav prev-btn active-lb-btn" onclick="scrollLB(-1)">‹</button>
+            <button class="nav-btn lb-nav next-btn active-lb-btn" onclick="scrollLB(1)">›</button>
+        `);
+    }
+    lightbox.style.display = 'flex';
 }
 
-// --- 3. PREVIEW LIGHTBOX (True Horizontal Scroll-Snap) ---
+// --- 4. PREVIEW & NAVIGATION ---
 function openPreview(idx) {
     const item = gridData[idx];
-    if (!item || isDragging) return;
-    
-    currentLightboxItemIdx = idx;
     const lightbox = document.getElementById('previewLightbox');
     const content = document.getElementById('lightboxContent');
     const canvaOn = document.getElementById('canvaT').checked;
 
     const slidesHtml = item.files.map(file => {
-        const media = (canvaOn && file.url.includes('canva.com')) 
-            ? `<iframe src="${getCanvaEmbedUrl(file.url)}" allowfullscreen></iframe>`
-            : (file.isVideo ? `<video src="${file.url}" controls autoplay loop></video>` : `<img src="${file.url}">`);
+        const media = (canvaOn && file.url.includes('canva.com')) ? `<iframe src="${getCanvaEmbedUrl(file.url)}" allowfullscreen></iframe>` : (file.isVideo ? `<video src="${file.url}" controls autoplay loop></video>` : `<img src="${file.url}">`);
         return `<div class="lb-slide">${media}</div>`;
     }).join('');
 
     content.innerHTML = `<div class="lb-track" id="lbTrack">${slidesHtml}</div>`;
-    
     document.querySelectorAll('.lb-nav').forEach(a => a.remove());
     if (item.files.length > 1) {
-        lightbox.insertAdjacentHTML('beforeend', `
-            <button class="nav-btn lb-nav prev-btn" onclick="scrollLB(-1)">‹</button>
-            <button class="nav-btn lb-nav next-btn" onclick="scrollLB(1)">›</button>
-        `);
+        lightbox.insertAdjacentHTML('beforeend', `<button class="nav-btn lb-nav prev-btn active-lb-btn" onclick="scrollLB(-1)">‹</button><button class="nav-btn lb-nav next-btn active-lb-btn" onclick="scrollLB(1)">›</button>`);
     }
     lightbox.style.display = 'flex';
 }
@@ -572,56 +374,16 @@ function scrollLB(dir) {
     if (track) track.scrollBy({ left: track.clientWidth * dir, behavior: 'smooth' });
 }
 
-window.addEventListener('keydown', (e) => {
-    if (document.getElementById('previewLightbox').style.display === 'flex') {
-        if (e.key === 'ArrowRight') scrollLB(1);
-        if (e.key === 'ArrowLeft') scrollLB(-1);
-        if (e.key === 'Escape') document.getElementById('previewLightbox').style.display = 'none';
-    }
-});
-
-// --- 4. FILTERS & UI LOGIC ---
-function updateUI() {
-    const states = {
-        bioT: document.getElementById('bioT').checked,
-        highT: document.getElementById('highT').checked,
-        mapT: document.getElementById('mapT').checked,
-        canvaT: document.getElementById('canvaT').checked,
-        customOrderT: document.getElementById('customOrderT').checked
-    };
-    Object.keys(states).forEach(k => localStorage.setItem(k, states[k]));
-    document.getElementById('bioSection').style.display = states.bioT ? 'flex' : 'none'; 
-    document.getElementById('highRow').style.display = states.highT ? 'flex' : 'none'; 
-    document.getElementById('colorManagerUI').style.display = states.mapT ? 'block' : 'none';
-    if(gridData.length > 0) doRender(); 
+function moveSlide(dataIdx, dir, event) {
+    if (event) event.stopPropagation();
+    const track = document.getElementById(`track-${dataIdx}`);
+    const slides = track.querySelectorAll('.slide');
+    let idx = (parseInt(track.dataset.idx || 0) + dir + slides.length) % slides.length;
+    track.dataset.idx = idx;
+    track.style.transform = `translateX(-${idx * 100}%)`;
 }
 
-function toggleFilterRow(e) {
-    if (e) e.stopPropagation();
-    const isActive = document.getElementById('filterRow').classList.toggle('active');
-    localStorage.setItem('filterRowActive', isActive);
-}
-
-function setPlat(p) { 
-    currentPlat = p; 
-    localStorage.setItem('currentPlat', p); 
-    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
-    document.getElementById('platMenu').classList.remove('show');
-    doRender(); 
-}
-
-function toggleStat(s) { 
-    activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s]; 
-    localStorage.setItem('activeStats', JSON.stringify(activeStats));
-    doRender(); 
-}
-
-function toggleMenu(id, e) { 
-    if (e) e.stopPropagation(); 
-    document.querySelectorAll('.dropdown-menu').forEach(m => m.id !== id && m.classList.remove('show'));
-    document.getElementById(id).classList.toggle('show');
-}
-
+// --- 5. UI & PROFILE ---
 function renderProfile(data) {
     const b = data.bio;
     document.getElementById('pfpImg').src = b.profilePicture || "";
@@ -632,49 +394,66 @@ function renderProfile(data) {
     document.getElementById('bioLink').href = b.linkUrl || "#";
 
     document.getElementById('highRow').innerHTML = (data.highlights || []).map(h => `
-        <div style="text-align:center; min-width:75px;">
+        <div style="text-align:center; min-width:75px; cursor:pointer;" onclick="openStory('${h.name}')">
             <div class="h-circle"><img src="${h.image}" class="h-img"></div>
             <span style="font-size:11px; font-weight:700; margin-top:6px; display:block;">${h.name}</span>
         </div>`).join('');
-    
-    document.getElementById('cnt-all').innerText = gridData.length;
-    document.getElementById('cnt-ig').innerText = gridData.filter(i => i.platforms.includes('instagram')).length;
-    document.getElementById('cnt-tt').innerText = gridData.filter(i => i.platforms.includes('tiktok')).length;
 }
 
-function initDragging() {
-    const grid = document.getElementById('grid');
-    const items = grid.querySelectorAll('.item:not(.empty)');
-    items.forEach(item => {
-        item.addEventListener('dragstart', () => { isDragging = true; item.classList.add('dragging'); });
-        item.addEventListener('dragend', () => {
-            item.classList.remove('dragging');
-            saveCurrentOrder();
-            setTimeout(() => { isDragging = false; }, 50);
-        });
-        item.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            const draggingItem = document.querySelector('.dragging');
-            if (!draggingItem || draggingItem === item) return;
-            const rect = item.getBoundingClientRect();
-            const isAfter = (e.clientX - rect.left) > rect.width / 2 || (e.clientY - rect.top) > rect.height / 2;
-            grid.insertBefore(draggingItem, isAfter ? item.nextSibling : item);
-        });
+function updateUI() {
+    const ids = ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'];
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) localStorage.setItem(id, el.checked);
     });
+    document.getElementById('bioSection').style.display = document.getElementById('bioT').checked ? 'flex' : 'none';
+    document.getElementById('highRow').style.display = document.getElementById('highT').checked ? 'flex' : 'none';
+    document.getElementById('colorManagerUI').style.display = document.getElementById('mapT').checked ? 'block' : 'none';
+    if(gridData.length) doRender();
 }
 
-function saveCurrentOrder() {
-    const items = [...document.querySelectorAll('.item:not(.empty)')];
-    const orderIds = items.map(item => item.getAttribute('data-id'));
-    localStorage.setItem('customGridOrder', JSON.stringify(orderIds));
+// --- DRAG, FILTERS & UTILS ---
+function setupStatusFilters() {
+    const stats = [...new Set(gridData.map(i => i.status))];
+    const saved = localStorage.getItem('activeStats');
+    activeStats = saved ? JSON.parse(saved) : [...stats];
+    document.getElementById('statusOptions').innerHTML = stats.map(s => `
+        <label class="dropdown-item" onclick="event.stopPropagation()">
+            <div class="item-left">
+                <input type="checkbox" ${activeStats.includes(s) ? 'checked' : ''} onchange="toggleStat('${s}')">
+                <div class="check-box"></div>
+                <span style="font-weight:600; font-size:13px;">${s}</span>
+            </div>
+        </label>`).join('');
 }
 
-function getCanvaEmbedUrl(url) {
-    const match = url.match(/design\/([A-Za-z0-9_-]+)/);
-    return match ? `https://www.canva.com/design/${match[1]}/view?embed` : url;
+function toggleStat(s) {
+    activeStats = activeStats.includes(s) ? activeStats.filter(x => x !== s) : [...activeStats, s];
+    localStorage.setItem('activeStats', JSON.stringify(activeStats));
+    doRender();
 }
 
-function toggleSettings(e) { if (e) e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); }
+function setPlat(p) {
+    currentPlat = p;
+    localStorage.setItem('currentPlat', p);
+    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
+    doRender();
+}
+
+function toggleMenu(id, e) {
+    if (e) e.stopPropagation();
+    document.getElementById(id).classList.toggle('show');
+}
+
+function toggleSettings(e) {
+    if (e) e.stopPropagation();
+    document.getElementById('setMenu').classList.toggle('open');
+}
+
+function getCanvaEmbedUrl(u) {
+    const m = u.match(/design\/([A-Za-z0-9_-]+)/);
+    return m ? `https://www.canva.com/design/${m[1]}/view?embed` : u;
+}
 
 window.brandColors = ["#FFD1DC", "#AEEEEE"];
 window.generateRandomMap = () => { window.shuffledIndices = Array.from({ length: 300 }, () => Math.floor(Math.random() * window.brandColors.length)); };
@@ -685,16 +464,13 @@ window.renderColorControls = () => {
     container.innerHTML = window.brandColors.map((color, idx) => `
         <div class="color-row">
             <div class="color-picker-wrapper"><input type="color" class="color-picker" value="${color}" onchange="window.updateColor(${idx}, this.value)"></div>
-            <span style="font-size:12px; font-weight:700; flex:1;">Color ${idx + 1}</span>
-            <button class="remove-btn" onclick="window.brandColors.splice(${idx},1); window.renderColorControls(); doRender();">×</button>
+            <button class="remove-btn" onclick="window.brandColors.splice(${idx},1); window.renderColorControls(); doRender();" style="background:none; border:none; cursor:pointer;">×</button>
         </div>`).join('');
 };
 
-window.onclick = (e) => {
-    if (!e.target.closest('.dropdown-container') && !e.target.closest('.settings-menu') && !e.target.closest('.icon-btn')) {
-        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
-        document.getElementById('setMenu').classList.remove('open');
-    }
+window.onclick = () => {
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+    document.getElementById('setMenu').classList.remove('open');
 };
 
 init();
