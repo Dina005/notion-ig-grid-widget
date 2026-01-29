@@ -170,6 +170,31 @@
     cursor: grab;
     touch-action: none; /* Better for mobile/tablet dragging */
 }
+        /* --- Drag and Drop Refinements --- */
+
+.item {
+    user-select: none;
+    -webkit-user-drag: element;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* This prevents the images/videos/iframes from "stealing" the mouse focus */
+.item > * {
+    pointer-events: none; 
+}
+
+/* This re-enables the click for the main container so you can still open previews */
+#grid .item {
+    pointer-events: auto;
+}
+
+/* Visual feedback for the item being moved */
+.item.dragging {
+    opacity: 0.4;
+    transform: scale(0.9);
+    filter: grayscale(1);
+    z-index: 100;
+}
     </style>
 </head>
 <body>
@@ -258,21 +283,6 @@
     
     <div id="lightboxContent" style="width:90%; height:90%; display:flex; align-items:center; justify-content:center;"></div>
 </div>
-    .item {
-    /* Prevents the browser from thinking you're selecting text while dragging */
-    user-select: none;
-    -webkit-user-drag: element;
-}
-
-.item * {
-    /* Prevents child elements (like images/iframes) from interfering with the drag */
-    pointer-events: none; 
-}
-
-/* Re-enable pointer events for the grid itself and the preview state */
-.grid .item {
-    pointer-events: auto;
-}
 </div>
     <script>
        const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
