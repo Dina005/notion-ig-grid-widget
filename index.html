@@ -89,14 +89,16 @@ body {
   color: var(--text);
   border: 2px solid var(--border);
   border-radius: var(--radius);
-  padding: 10px 20px;
+  padding: 10px 16px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 16px;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
 }
 
 .filter-btn:hover {
@@ -106,16 +108,12 @@ body {
   box-shadow: var(--shadow);
 }
 
-.filter-icon {
-  font-size: 16px;
-}
-
-/* --- FILTER DROPDOWN --- */
-.filter-dropdown {
+/* --- FILTER SETTINGS MENU --- */
+.filter-settings-menu {
   position: absolute;
   top: 90px;
   left: 20px;
-  width: 240px;
+  width: 200px;
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -123,6 +121,52 @@ body {
   padding: 8px;
   display: none;
   z-index: 2000;
+}
+
+.filter-settings-menu.open { 
+  display: block;
+  animation: slideDown 0.3s ease;
+}
+
+.filter-menu-btn {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 12px 16px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text);
+}
+
+.filter-menu-btn:hover {
+  background: #f8f8f8;
+}
+
+.filter-menu-btn .arrow {
+  color: var(--text-muted);
+  font-size: 16px;
+}
+
+/* --- FILTER DROPDOWN --- */
+.filter-dropdown {
+  position: absolute;
+  top: 90px;
+  left: 240px;
+  width: 240px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 8px;
+  display: none;
+  z-index: 2001;
   max-height: 400px;
   overflow-y: auto;
 }
@@ -130,10 +174,6 @@ body {
 .filter-dropdown.open { 
   display: block;
   animation: slideDown 0.3s ease;
-}
-
-#statusDropdown {
-  left: 180px;
 }
 
 @keyframes slideDown {
@@ -579,14 +619,11 @@ input:checked + .slider:before {
 
 /* --- BIO & HIGHLIGHTS --- */
 #bioSection { 
-  margin-bottom: 40px;
+  margin-bottom: 20px;
   max-width: 935px;
   margin-left: auto;
   margin-right: auto;
-  background: var(--white);
-  padding: 30px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  padding: 30px 20px 0 20px;
   display: flex;
   gap: 30px;
   align-items: flex-start;
@@ -595,6 +632,9 @@ input:checked + .slider:before {
 
 .bio-left {
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .bio-right {
@@ -607,6 +647,7 @@ input:checked + .slider:before {
   border-radius: 50%;
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
+  margin-bottom: 16px;
 }
 
 #bioUser {
@@ -641,15 +682,17 @@ input:checked + .slider:before {
   font-size: 14px;
   font-weight: 600;
   color: var(--text);
-  margin: 0 0 4px 0;
+  margin: 0;
+  text-align: center;
 }
 
 #bioDesc {
   font-size: 14px;
   line-height: 1.5;
-  margin: 0 0 8px 0;
+  margin: 4px 0 8px 0;
   color: var(--text);
   white-space: pre-wrap;
+  text-align: center;
 }
 
 #bioLink {
@@ -759,6 +802,7 @@ input:checked + .slider:before {
   }
   
   .filter-dropdown,
+  .filter-settings-menu,
   .settings-menu {
     width: calc(100% - 40px);
     left: 20px !important;
@@ -804,19 +848,25 @@ input:checked + .slider:before {
                 ↻ Refresh
             </button>
             
-            <button class="filter-btn" id="platformFilterBtn" onclick="window.togglePlatformFilter(event)">
-                <span class="filter-icon">📱</span>
-                <span id="platformLabel">Platform</span>
-            </button>
-            
-            <button class="filter-btn" id="statusFilterBtn" onclick="window.toggleStatusFilter(event)">
-                <span class="filter-icon">✓</span>
-                <span>Status</span>
+            <button class="filter-btn" id="filterSettingsBtn" onclick="window.toggleFilterSettings(event)">
+                <span>⚙</span>
             </button>
         </div>
 
         <button class="icon-btn settings" onclick="window.toggleSettings(event)">
             ⋯
+        </button>
+    </div>
+
+    <!-- FILTER SETTINGS MENU -->
+    <div class="filter-settings-menu" id="filterSettingsMenu" onclick="event.stopPropagation()">
+        <button class="filter-menu-btn" onclick="window.togglePlatformFilter(event)">
+            <span id="platformLabel">Platform</span>
+            <span class="arrow">›</span>
+        </button>
+        <button class="filter-menu-btn" onclick="window.toggleStatusFilter(event)">
+            <span>Status</span>
+            <span class="arrow">›</span>
         </button>
     </div>
 
@@ -886,6 +936,9 @@ input:checked + .slider:before {
     <div id="bioSection" style="display: none;">
         <div class="bio-left">
             <img id="pfpImg" src="" alt="Profile Picture">
+            <div id="bioDisplay"></div>
+            <p id="bioDesc"></p>
+            <a id="bioLink" href="#" target="_blank"></a>
         </div>
         <div class="bio-right">
             <h2 id="bioUser"></h2>
@@ -894,18 +947,7 @@ input:checked + .slider:before {
                     <span class="bio-stat-number" id="postCount">0</span>
                     <span class="bio-stat-label">posts</span>
                 </div>
-                <div class="bio-stat">
-                    <span class="bio-stat-number" id="followerCount">0</span>
-                    <span class="bio-stat-label">followers</span>
-                </div>
-                <div class="bio-stat">
-                    <span class="bio-stat-number" id="followingCount">0</span>
-                    <span class="bio-stat-label">following</span>
-                </div>
             </div>
-            <div id="bioDisplay"></div>
-            <p id="bioDesc"></p>
-            <a id="bioLink" href="#" target="_blank"></a>
         </div>
     </div>
 
@@ -1219,8 +1261,8 @@ window.openPreview = (index) => {
         </div>
     ` : '';
     
-    // Get caption from item (assuming it might be in a caption field or use the name)
-    const caption = item.caption || item.name || '';
+    // Use the caption field from Notion data
+    const caption = item.caption || '';
     
     content.innerHTML = `
         <div style="position:relative; width:100%; height:100%; display:flex; flex-direction:column;">
@@ -1228,9 +1270,9 @@ window.openPreview = (index) => {
                 ${slides}
                 ${nav}
             </div>
-            <div class="lb-caption" style="padding:20px; background:white; border-top:1px solid #eee; max-height:150px; overflow-y:auto;">
+            ${caption ? `<div class="lb-caption" style="padding:20px; background:white; border-top:1px solid #eee; max-height:150px; overflow-y:auto;">
                 <div style="font-size:14px; line-height:1.5; color:#262626;">${caption}</div>
-            </div>
+            </div>` : ''}
         </div>
     `;
     
@@ -1299,10 +1341,6 @@ function renderProfile(data) {
     // Count posts (non-story items)
     const postCount = gridData.filter(i => i.type !== "Story").length;
     document.getElementById('postCount').innerText = postCount;
-    
-    // You can add real follower/following counts from your data if available
-    document.getElementById('followerCount').innerText = b.followers || '0';
-    document.getElementById('followingCount').innerText = b.following || '0';
 
     if (data.highlights) {
         document.getElementById('highRow').innerHTML = data.highlights.map(h => `
@@ -1328,6 +1366,16 @@ function openStory(groupName) {
 window.toggleSettings = (e) => { 
     e.stopPropagation(); 
     const menu = document.getElementById('setMenu');
+    document.getElementById('filterSettingsMenu').classList.remove('open');
+    document.getElementById('platformDropdown').classList.remove('open');
+    document.getElementById('statusDropdown').classList.remove('open');
+    menu.classList.toggle('open'); 
+};
+
+window.toggleFilterSettings = (e) => { 
+    e.stopPropagation(); 
+    const menu = document.getElementById('filterSettingsMenu');
+    document.getElementById('setMenu').classList.remove('open');
     document.getElementById('platformDropdown').classList.remove('open');
     document.getElementById('statusDropdown').classList.remove('open');
     menu.classList.toggle('open'); 
@@ -1336,7 +1384,6 @@ window.toggleSettings = (e) => {
 window.togglePlatformFilter = (e) => { 
     e.stopPropagation(); 
     const dropdown = document.getElementById('platformDropdown');
-    document.getElementById('setMenu').classList.remove('open');
     document.getElementById('statusDropdown').classList.remove('open');
     dropdown.classList.toggle('open'); 
 };
@@ -1344,7 +1391,6 @@ window.togglePlatformFilter = (e) => {
 window.toggleStatusFilter = (e) => { 
     e.stopPropagation(); 
     const dropdown = document.getElementById('statusDropdown');
-    document.getElementById('setMenu').classList.remove('open');
     document.getElementById('platformDropdown').classList.remove('open');
     dropdown.classList.toggle('open'); 
 };
@@ -1355,6 +1401,7 @@ window.closeLightbox = () => {
 
 window.onclick = () => { 
     document.getElementById('setMenu').classList.remove('open'); 
+    document.getElementById('filterSettingsMenu').classList.remove('open');
     document.getElementById('platformDropdown').classList.remove('open');
     document.getElementById('statusDropdown').classList.remove('open');
 };
