@@ -490,18 +490,31 @@ input:checked + .slider:before {
   font-weight: 700; 
   line-height: 1.3;
   text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  margin-bottom: 6px;
+}
+
+.ov-date {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.8;
 }
 
 /* --- CAROUSEL --- */
 .carousel-track { 
   display: flex; 
   width: 100%; 
-  height: 100%; 
+  height: 100%;
+  position: relative;
 }
 
 .slide { 
   min-width: 100%; 
   height: 100%; 
+  display: none;
+}
+
+.slide.active {
+  display: block;
 }
 
 .slide img, .slide video { 
@@ -516,6 +529,67 @@ input:checked + .slider:before {
   border: none; 
 }
 
+.carousel-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.9);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.3s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.item:hover .carousel-nav {
+  opacity: 1;
+}
+
+.carousel-nav:hover {
+  background: white;
+}
+
+.carousel-nav.prev {
+  left: 10px;
+}
+
+.carousel-nav.next {
+  right: 10px;
+}
+
+.carousel-dots {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 10;
+}
+
+.carousel-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.carousel-dot.active {
+  background: white;
+  width: 8px;
+  height: 8px;
+}
+
 /* --- BIO & HIGHLIGHTS --- */
 #bioSection { 
   margin-bottom: 40px;
@@ -526,6 +600,10 @@ input:checked + .slider:before {
   padding: 30px;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 #pfpImg {
@@ -535,6 +613,37 @@ input:checked + .slider:before {
   margin-bottom: 16px;
   border: 3px solid var(--border);
   box-shadow: var(--shadow);
+}
+
+#bioUser {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+#bioDisplay {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0 0 12px 0;
+}
+
+#bioDesc {
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+  max-width: 600px;
+}
+
+#bioLink {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+#bioLink:hover {
+  text-decoration: underline;
 }
 
 #highRow {
@@ -802,10 +911,11 @@ async function init() {
 
 // --- 2. FILTER RENDERING ---
 function renderFilters() {
-    // Platform Filter
-    const platforms = ['all', ...new Set(gridData.flatMap(i => i.platforms))];
+    // Platform Filter - get unique platforms from data
+    const uniquePlatforms = [...new Set(gridData.flatMap(i => i.platforms))].filter(p => p);
+    const platforms = ['all', ...uniquePlatforms];
     const platformHTML = platforms.map(p => {
-        const displayName = p === 'all' ? 'All Platforms' : p.toUpperCase();
+        const displayName = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
         const isActive = currentPlat === p ? 'active' : '';
         return `<div class="filter-option ${isActive}" onclick="setPlatform('${p}')">${displayName}</div>`;
     }).join('');
@@ -927,21 +1037,43 @@ function doRender() {
             return `<div class="item" ${dragAttrs} style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; text-align:center; padding:15px; font-size:11px; text-transform:uppercase; line-height: 1.3;">${item.name}</div>`;
         }
 
-        const slidesHtml = (item.files || []).map(f => {
+        const files = item.files || [];
+        const hasMultiple = files.length > 1;
+        
+        const slidesHtml = files.map((f, slideIdx) => {
+            let content = '';
             if (canvaOn && f.url?.includes('canva.com')) {
                 const embedUrl = f.url.split('?')[0].replace('/design/', '/view?embed=');
-                return `<div class="slide"><iframe src="${embedUrl}" allowfullscreen></iframe></div>`;
+                content = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
+            } else if (f.isVideo) {
+                content = `<video src="${f.url}" loop playsinline></video>`;
+            } else {
+                content = `<img src="${f.url}">`;
             }
-            return `<div class="slide">${f.isVideo ? `<video src="${f.url}" muted loop playsinline autoplay></video>` : `<img src="${f.url}">`}</div>`;
+            return `<div class="slide ${slideIdx === 0 ? 'active' : ''}">${content}</div>`;
         }).join('');
 
+        const navButtons = hasMultiple ? `
+            <button class="carousel-nav prev" onclick="changeSlide(event, ${dataIdx}, -1)">‹</button>
+            <button class="carousel-nav next" onclick="changeSlide(event, ${dataIdx}, 1)">›</button>
+            <div class="carousel-dots">
+                ${files.map((_, i) => `<div class="carousel-dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(event, ${dataIdx}, ${i})"></div>`).join('')}
+            </div>
+        ` : '';
+
+        const formattedDate = item.date ? new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+
         return `
-            <div class="item" ${dragAttrs} onclick="openPreview(${dataIdx})">
-                <div class="item-overlay">
+            <div class="item" ${dragAttrs} data-index="${dataIdx}">
+                <div class="item-overlay" onclick="openPreview(${dataIdx})">
                     <div class="ov-pillar">${item.pillar}</div>
                     <div class="ov-title">${item.name}</div>
+                    ${formattedDate ? `<div class="ov-date">${formattedDate}</div>` : ''}
                 </div>
-                <div class="carousel-track">${slidesHtml || '<div class="slide" style="background:#eee;"></div>'}</div>
+                <div class="carousel-track">
+                    ${slidesHtml || '<div class="slide active" style="background:#eee;"></div>'}
+                    ${navButtons}
+                </div>
             </div>`;
     }).join('');
 }
@@ -964,6 +1096,121 @@ window.handleDrop = (e, targetIdx) => {
 window.resetGridOrder = () => {
     localStorage.removeItem('customGridOrder');
     location.reload();
+};
+
+// --- CAROUSEL NAVIGATION ---
+window.changeSlide = (e, itemIndex, direction) => {
+    e.stopPropagation();
+    const item = document.querySelector(`.item[data-index="${itemIndex}"]`);
+    if (!item) return;
+    
+    const slides = item.querySelectorAll('.slide');
+    const dots = item.querySelectorAll('.carousel-dot');
+    let currentIndex = Array.from(slides).findIndex(s => s.classList.contains('active'));
+    
+    slides[currentIndex].classList.remove('active');
+    dots[currentIndex]?.classList.remove('active');
+    
+    currentIndex = (currentIndex + direction + slides.length) % slides.length;
+    
+    slides[currentIndex].classList.add('active');
+    dots[currentIndex]?.classList.add('active');
+};
+
+window.goToSlide = (e, itemIndex, slideIndex) => {
+    e.stopPropagation();
+    const item = document.querySelector(`.item[data-index="${itemIndex}"]`);
+    if (!item) return;
+    
+    const slides = item.querySelectorAll('.slide');
+    const dots = item.querySelectorAll('.carousel-dot');
+    
+    slides.forEach(s => s.classList.remove('active'));
+    dots.forEach(d => d.classList.remove('active'));
+    
+    slides[slideIndex].classList.add('active');
+    dots[slideIndex]?.classList.add('active');
+};
+
+// --- PREVIEW LIGHTBOX ---
+window.openPreview = (index) => {
+    const item = gridData[index];
+    if (!item || !item.files || item.files.length === 0) return;
+    
+    const content = document.getElementById('lightboxContent');
+    const slides = item.files.map((f, idx) => {
+        let mediaHtml = '';
+        if (f.isVideo) {
+            mediaHtml = `<video src="${f.url}" controls style="width:100%; max-height:80vh; object-fit:contain;"></video>`;
+        } else {
+            mediaHtml = `<img src="${f.url}" style="width:100%; max-height:80vh; object-fit:contain;">`;
+        }
+        return `<div class="lb-slide ${idx === 0 ? 'active' : ''}" style="display: ${idx === 0 ? 'block' : 'none'};">${mediaHtml}</div>`;
+    }).join('');
+    
+    const hasMultiple = item.files.length > 1;
+    const nav = hasMultiple ? `
+        <button onclick="changeLightboxSlide(-1)" style="position:absolute; left:20px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.9); border:none; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:20px; z-index:10;">‹</button>
+        <button onclick="changeLightboxSlide(1)" style="position:absolute; right:20px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.9); border:none; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:20px; z-index:10;">›</button>
+        <div style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); display:flex; gap:8px; z-index:10;">
+            ${item.files.map((_, i) => `<div class="lb-dot ${i === 0 ? 'active' : ''}" onclick="goToLightboxSlide(${i})" style="width:8px; height:8px; border-radius:50%; background:${i === 0 ? 'white' : 'rgba(255,255,255,0.5)'}; cursor:pointer;"></div>`).join('')}
+        </div>
+    ` : '';
+    
+    content.innerHTML = `
+        <div style="position:relative; width:100%; height:100%;">
+            <div class="lb-info" style="padding:20px; background:white; border-bottom:1px solid #eee;">
+                <div style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#999; margin-bottom:8px;">${item.pillar}</div>
+                <div style="font-size:16px; font-weight:700; margin-bottom:8px;">${item.name}</div>
+                ${item.date ? `<div style="font-size:13px; color:#666;">${new Date(item.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>` : ''}
+            </div>
+            <div style="position:relative; background:#000;">
+                ${slides}
+                ${nav}
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('previewLightbox').style.display = 'flex';
+};
+
+window.changeLightboxSlide = (direction) => {
+    const content = document.getElementById('lightboxContent');
+    const slides = content.querySelectorAll('.lb-slide');
+    const dots = content.querySelectorAll('.lb-dot');
+    let currentIndex = Array.from(slides).findIndex(s => s.classList.contains('active'));
+    
+    slides[currentIndex].classList.remove('active');
+    slides[currentIndex].style.display = 'none';
+    dots[currentIndex]?.classList.remove('active');
+    dots[currentIndex]?.setAttribute('style', 'width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.5); cursor:pointer;');
+    
+    currentIndex = (currentIndex + direction + slides.length) % slides.length;
+    
+    slides[currentIndex].classList.add('active');
+    slides[currentIndex].style.display = 'block';
+    dots[currentIndex]?.classList.add('active');
+    dots[currentIndex]?.setAttribute('style', 'width:8px; height:8px; border-radius:50%; background:white; cursor:pointer;');
+};
+
+window.goToLightboxSlide = (index) => {
+    const content = document.getElementById('lightboxContent');
+    const slides = content.querySelectorAll('.lb-slide');
+    const dots = content.querySelectorAll('.lb-dot');
+    
+    slides.forEach(s => {
+        s.classList.remove('active');
+        s.style.display = 'none';
+    });
+    dots.forEach(d => {
+        d.classList.remove('active');
+        d.setAttribute('style', 'width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.5); cursor:pointer;');
+    });
+    
+    slides[index].classList.add('active');
+    slides[index].style.display = 'block';
+    dots[index]?.classList.add('active');
+    dots[index]?.setAttribute('style', 'width:8px; height:8px; border-radius:50%; background:white; cursor:pointer;');
 };
 
 // --- 6. UI UTILS ---
