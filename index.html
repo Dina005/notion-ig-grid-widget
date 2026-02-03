@@ -3,43 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v22 - Left Aligned Stack</title>
-    <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Planner v22 - Left Aligned Stack</title>
+    <title>Pro Planner - Enhanced</title>
     <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 /* --- ROOT & THEME --- */
 :root {
-  --bg: #ffffff;
+  --bg: #fafafa;
   --text: #262626;
   --text-muted: #8e8e8e;
   --border: #dbdbdb;
   --accent: #0095f6;
   --white: #ffffff;
-  --radius: 8px;
+  --radius: 12px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
 }
+
+* { box-sizing: border-box; }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background-color: var(--bg);
+  background: linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%);
   color: var(--text);
   margin: 0;
   padding: 20px;
   line-height: 1.5;
 }
 
-/* --- NAVIGATION & DROPDOWNS --- */
+/* --- NAVIGATION & HEADER --- */
 .top-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   max-width: 935px;
-  margin: 0 auto 20px auto;
+  margin: 0 auto 30px auto;
+  padding: 20px;
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.left-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
 
 .icon-btn {
@@ -47,73 +55,221 @@ body {
   color: white;
   border: none;
   border-radius: var(--radius);
-  padding: 8px 16px;
+  padding: 10px 20px;
   cursor: pointer;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 14px;
-  transition: opacity 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
 .icon-btn:hover {
-  opacity: 0.8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
-.dropdown { position: relative; display: inline-block; }
-
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  display: none;
-  z-index: 1000;
-  min-width: 160px;
-  margin-top: 5px;
+.icon-btn:active {
+  transform: translateY(0);
 }
 
-.dropdown-menu.show { display: block; }
-
-.dropdown-item {
-  padding: 10px 15px;
-  cursor: pointer;
-  font-size: 14px;
+.icon-btn.settings {
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  font-size: 18px;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
-.dropdown-item:hover { background: #fafafa; }
+/* --- FILTER BUTTON --- */
+.filter-btn {
+  background: var(--white);
+  color: var(--text);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 20px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.filter-icon {
+  font-size: 16px;
+}
+
+/* --- FILTER PANEL --- */
+.filter-panel {
+  position: absolute;
+  top: 90px;
+  left: 20px;
+  width: 320px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 0;
+  display: none;
+  z-index: 2000;
+  overflow: hidden;
+}
+
+.filter-panel.open { 
+  display: block;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.filter-section {
+  padding: 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.filter-section:last-child {
+  border-bottom: none;
+}
+
+.filter-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.filter-option {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.filter-option:hover {
+  background: #f8f8f8;
+}
+
+.filter-option.active {
+  background: #e7f3ff;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Status checkbox options */
+.status-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.status-option:hover {
+  background: #f8f8f8;
+}
+
+.status-checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.status-checkbox.checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.status-checkbox.checked::after {
+  content: '✓';
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  font-weight: bold;
+}
 
 /* --- SETTINGS MENU --- */
 .settings-menu {
   position: absolute;
-  top: 70px;
+  top: 90px;
   right: 20px;
-  width: 300px;
+  width: 340px;
   background: var(--white);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  padding: 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 24px;
   display: none; 
   z-index: 2000;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
-.settings-menu.open { display: block; }
+.settings-menu.open { 
+  display: block;
+  animation: slideDown 0.3s ease;
+}
 
 .setting-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
+  padding: 14px 0;
   border-bottom: 1px solid #f0f0f0;
   font-size: 14px;
   font-weight: 600;
 }
 
+.setting-item:last-child {
+  border-bottom: none;
+}
+
 /* --- BRAND PALETTE STYLING --- */
+.palette-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 2px solid #f0f0f0;
+}
+
+.section-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 16px;
+}
+
 #colorList {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -122,77 +278,161 @@ body {
 }
 
 .color-swatch-wrapper {
-  width: 42px;
-  height: 42px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  border: 2px solid #eee;
   position: relative;
-  overflow: visible; /* Show the delete X */
+  overflow: visible;
   cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.color-swatch-wrapper:hover {
+  transform: translateY(-4px) scale(1.1);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
 }
 
 .color-swatch-wrapper input[type="color"] {
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   border: none;
   padding: 0;
   cursor: pointer;
-  background: none;
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.color-preview {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  pointer-events: none;
 }
 
 .delete-color {
   position: absolute;
-  top: -5px;
-  right: -5px;
-  background: #ff4d4d;
+  top: -6px;
+  right: -6px;
+  background: #ff4757;
   color: white;
   border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  font-size: 12px;
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+  font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 5;
   border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  opacity: 0;
+  transition: all 0.2s;
+}
+
+.color-swatch-wrapper:hover .delete-color {
+  opacity: 1;
+}
+
+.delete-color:hover {
+  background: #ff3838;
+  transform: scale(1.1);
+}
+
+.add-color-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+  color: var(--text);
+  border: 2px dashed var(--border);
+  margin-top: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.add-color-btn:hover {
+  background: linear-gradient(135deg, #e8e8e8 0%, #d8d8d8 100%);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.reset-btn {
+  width: 100%;
+  margin-top: 12px;
+  background: #fff5f5;
+  color: #ff4757;
+  border: 2px solid #ffebee;
+  font-weight: 600;
+}
+
+.reset-btn:hover {
+  background: #ffebee;
+  border-color: #ff4757;
 }
 
 /* --- TOGGLE SWITCHES --- */
-.switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-.switch input { opacity: 0; width: 0; height: 0; }
+.switch { 
+  position: relative; 
+  display: inline-block; 
+  width: 48px; 
+  height: 26px; 
+}
+
+.switch input { 
+  opacity: 0; 
+  width: 0; 
+  height: 0; 
+}
+
 .slider {
   position: absolute;
   cursor: pointer;
   inset: 0;
-  background-color: #ccc;
-  transition: .4s;
-  border-radius: 24px;
+  background-color: #e0e0e0;
+  transition: .3s;
+  border-radius: 26px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
 }
-input:checked + .slider { background-color: #4cd964; }
+
+input:checked + .slider { 
+  background: linear-gradient(135deg, #4cd964 0%, #3ebd54 100%);
+  box-shadow: 0 2px 8px rgba(76,217,100,0.3);
+}
+
 .slider:before {
   position: absolute;
   content: "";
-  height: 18px;
-  width: 18px;
+  height: 20px;
+  width: 20px;
   left: 3px;
   bottom: 3px;
   background-color: white;
-  transition: .4s;
+  transition: .3s;
   border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
-input:checked + .slider:before { transform: translateX(20px); }
+
+input:checked + .slider:before { 
+  transform: translateX(22px); 
+}
 
 /* --- MAIN GRID --- */
 #grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 3px;
+  gap: 4px;
   max-width: 935px;
   margin: 0 auto;
+  background: var(--white);
+  padding: 4px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
 }
 
 .item {
@@ -202,94 +442,246 @@ input:checked + .slider:before { transform: translateX(20px); }
   background: #f0f0f0;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: all 0.3s ease;
+  border-radius: 6px;
+}
+
+.item:hover {
+  transform: scale(1.02);
+  z-index: 10;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
 }
 
 .item[draggable="true"]:active {
   cursor: grabbing;
   transform: scale(0.95);
-  z-index: 10;
+  opacity: 0.8;
 }
 
 .item-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%);
   color: white;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-end;
+  align-items: flex-start;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: opacity 0.3s;
   z-index: 5;
-  padding: 10px;
-  text-align: center;
+  padding: 16px;
+  text-align: left;
 }
 
 .item:hover .item-overlay { opacity: 1; }
 
-.ov-pillar { font-size: 10px; font-weight: 900; letter-spacing: 1px; margin-bottom: 5px; }
-.ov-title { font-size: 12px; font-weight: 600; line-height: 1.2; }
+.ov-pillar { 
+  font-size: 10px; 
+  font-weight: 900; 
+  letter-spacing: 1.5px; 
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.ov-title { 
+  font-size: 13px; 
+  font-weight: 700; 
+  line-height: 1.3;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
 
 /* --- CAROUSEL --- */
-.carousel-track { display: flex; width: 100%; height: 100%; }
-.slide { min-width: 100%; height: 100%; }
-.slide img, .slide video { width: 100%; height: 100%; object-fit: cover; }
-.slide iframe { width: 100%; height: 100%; border: none; }
+.carousel-track { 
+  display: flex; 
+  width: 100%; 
+  height: 100%; 
+}
+
+.slide { 
+  min-width: 100%; 
+  height: 100%; 
+}
+
+.slide img, .slide video { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
+}
+
+.slide iframe { 
+  width: 100%; 
+  height: 100%; 
+  border: none; 
+}
 
 /* --- BIO & HIGHLIGHTS --- */
-#bioSection { margin-bottom: 40px; }
+#bioSection { 
+  margin-bottom: 40px;
+  max-width: 935px;
+  margin-left: auto;
+  margin-right: auto;
+  background: var(--white);
+  padding: 30px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+#pfpImg {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin-bottom: 16px;
+  border: 3px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
 #highRow {
   display: flex;
-  gap: 15px;
+  gap: 20px;
   overflow-x: auto;
-  padding: 10px 0;
+  padding: 20px 0;
   scrollbar-width: none;
+  max-width: 935px;
+  margin: 0 auto 30px auto;
 }
-.h-item { flex-shrink: 0; width: 75px; text-align: center; cursor: pointer; }
+
+#highRow::-webkit-scrollbar {
+  display: none;
+}
+
+.h-item { 
+  flex-shrink: 0; 
+  width: 80px; 
+  text-align: center; 
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.h-item:hover {
+  transform: translateY(-4px);
+}
+
 .h-circle {
-  width: 64px;
-  height: 64px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
-  border: 1px solid var(--border);
   padding: 3px;
   margin: 0 auto;
+  background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+  box-shadow: var(--shadow);
 }
-.h-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-.h-name { font-size: 12px; font-weight: 600; margin-top: 8px; overflow: hidden; text-overflow: ellipsis; }
+
+.h-img { 
+  width: 100%; 
+  height: 100%; 
+  border-radius: 50%; 
+  object-fit: cover;
+  border: 3px solid white;
+}
+
+.h-name { 
+  font-size: 12px; 
+  font-weight: 600; 
+  margin-top: 10px; 
+  overflow: hidden; 
+  text-overflow: ellipsis;
+  color: var(--text);
+}
 
 /* --- LIGHTBOX --- */
 #previewLightbox {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.9);
+  background: rgba(0,0,0,0.95);
   display: none;
   justify-content: center;
   align-items: center;
   z-index: 3000;
+  backdrop-filter: blur(10px);
 }
-.lb-content { width: 90%; max-width: 450px; }
-        
+
+.lb-content { 
+  width: 90%; 
+  max-width: 500px;
+  background: var(--white);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+  #grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .filter-panel,
+  .settings-menu {
+    width: calc(100% - 40px);
+    left: 20px;
+    right: 20px;
+  }
+}
+
+/* --- SCROLLBAR STYLING --- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0a0a0;
+}
     </style>
 </head>
 <body>
-<div class="top-bar">
-        <div style="display: flex; gap: 10px;">
-            <button class="icon-btn" onclick="location.reload()">Refresh</button>
+    <div class="top-bar">
+        <div class="left-controls">
+            <button class="icon-btn" onclick="location.reload()">
+                ↻ Refresh
+            </button>
             
-            <div class="dropdown">
-                <button class="icon-btn" onclick="window.toggleMenu('platMenu', event)">
-                    <span id="platCurrent">All Platforms</span>
-                </button>
-                <div id="platMenu" class="dropdown-menu">
-                    </div>
-            </div>
+            <button class="filter-btn" onclick="window.toggleFilters(event)">
+                <span class="filter-icon">⚙</span>
+                <span>Filters</span>
+            </button>
         </div>
 
-        <button class="icon-btn" onclick="window.toggleSettings(event)" style="border-radius: 50%; width: 40px; height: 40px; padding: 0;">•••</button>
+        <button class="icon-btn settings" onclick="window.toggleSettings(event)">
+            ⋯
+        </button>
     </div>
 
+    <!-- FILTER PANEL -->
+    <div class="filter-panel" id="filterPanel" onclick="event.stopPropagation()">
+        <div class="filter-section">
+            <div class="filter-title">Platform</div>
+            <div id="platformFilters">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+        
+        <div class="filter-section">
+            <div class="filter-title">Status</div>
+            <div id="statusFilters">
+                <!-- Dynamically populated with checkboxes -->
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS MENU -->
     <div class="settings-menu" id="setMenu" onclick="event.stopPropagation()">
         <div class="setting-item">
             <span>Show Bio</span>
@@ -327,18 +719,22 @@ input:checked + .slider:before { transform: translateX(20px); }
             </label>
         </div>
 
-        <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px;">
-            <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Brand Palette</div>
+        <div class="palette-section">
+            <div class="section-title">Brand Palette</div>
             
             <div id="colorList"></div>
             
-            <button class="icon-btn" style="width: 100%; background: #f0f0f0; color: black; margin-top: 5px;" onclick="window.addColor(event)">+ Add Color</button>
+            <button class="icon-btn add-color-btn" onclick="window.addColor(event)">
+                + Add Color
+            </button>
             
-            <button id="resetOrderBtn" class="icon-btn" style="width: 100%; margin-top: 10px; background: #ffebeb; color: #ff4d4d; display: none;" onclick="window.resetGridOrder()">Reset Custom Order</button>
+            <button id="resetOrderBtn" class="icon-btn reset-btn" style="display: none;" onclick="window.resetGridOrder()">
+                Reset Custom Order
+            </button>
         </div>
     </div>
 
-    <div id="bioSection" style="display: none; flex-direction: column; align-items: center; text-align: center; margin-bottom: 30px; padding: 0 20px;">
+    <div id="bioSection" style="display: none;">
         <img id="pfpImg" src="" alt="Profile Picture">
         <h2 id="bioUser"></h2>
         <div id="bioDisplay"></div>
@@ -346,18 +742,17 @@ input:checked + .slider:before { transform: translateX(20px); }
         <a id="bioLink" href="#" target="_blank"></a>
     </div>
 
-    <div id="highRow" style="display: none; margin: 0 auto 30px auto; max-width: 935px; padding: 0 10px;">
-        </div>
+    <div id="highRow" style="display: none;">
+    </div>
 
     <div id="grid">
-        </div>
+    </div>
 
     <div id="previewLightbox" onclick="window.closeLightbox()">
         <div class="lb-content" id="lightboxContent" onclick="event.stopPropagation()">
-            </div>
+        </div>
     </div>
-</body>
-</html>
+
     <script>
 const API = "https://notion-ig-grid-widget.dinazramadan2005.workers.dev/";
 let gridData = [], currentPlat = 'all', activeStats = [], draggedIdx = null;
@@ -380,8 +775,10 @@ async function init() {
         const data = await res.json();
         gridData = data.grid || [];
         
-        // Initial status filter setup
-        activeStats = [...new Set(gridData.map(i => i.status))];
+        // Initial status filter setup - all statuses active by default
+        const allStatuses = [...new Set(gridData.map(i => i.status))];
+        const savedStats = localStorage.getItem('activeStatuses');
+        activeStats = savedStats ? JSON.parse(savedStats) : allStatuses;
         
         // Apply Custom Drag Order
         const savedOrder = localStorage.getItem('customGridOrder');
@@ -395,7 +792,7 @@ async function init() {
         }
 
         renderProfile(data);
-        renderPlatformFilter();
+        renderFilters();
         renderColorControls(); 
         updateUI(); 
     } catch (e) { 
@@ -403,7 +800,72 @@ async function init() {
     }
 }
 
-// --- 2. COLOR PALETTE LOGIC ---
+// --- 2. FILTER RENDERING ---
+function renderFilters() {
+    // Platform Filter
+    const platforms = ['all', ...new Set(gridData.flatMap(i => i.platforms))];
+    const platformHTML = platforms.map(p => {
+        const displayName = p === 'all' ? 'All Platforms' : p.toUpperCase();
+        const isActive = currentPlat === p ? 'active' : '';
+        return `<div class="filter-option ${isActive}" onclick="setPlatform('${p}')">${displayName}</div>`;
+    }).join('');
+    document.getElementById('platformFilters').innerHTML = platformHTML;
+
+    // Status Filter (with checkboxes)
+    const statuses = [...new Set(gridData.map(i => i.status))];
+    const allChecked = activeStats.length === statuses.length ? 'checked' : '';
+    
+    let statusHTML = `
+        <div class="status-option" onclick="toggleAllStatuses()">
+            <div class="status-checkbox ${allChecked}" id="statusAll"></div>
+            <span style="font-weight: 600;">All Status</span>
+        </div>
+    `;
+    
+    statusHTML += statuses.map(s => {
+        const isChecked = activeStats.includes(s) ? 'checked' : '';
+        return `
+            <div class="status-option" onclick="toggleStatus('${s}')">
+                <div class="status-checkbox ${isChecked}" data-status="${s}"></div>
+                <span>${s}</span>
+            </div>
+        `;
+    }).join('');
+    
+    document.getElementById('statusFilters').innerHTML = statusHTML;
+}
+
+window.setPlatform = (plat) => {
+    currentPlat = plat;
+    renderFilters();
+    doRender();
+};
+
+window.toggleStatus = (status) => {
+    const idx = activeStats.indexOf(status);
+    if (idx > -1) {
+        activeStats.splice(idx, 1);
+    } else {
+        activeStats.push(status);
+    }
+    localStorage.setItem('activeStatuses', JSON.stringify(activeStats));
+    renderFilters();
+    doRender();
+};
+
+window.toggleAllStatuses = () => {
+    const allStatuses = [...new Set(gridData.map(i => i.status))];
+    if (activeStats.length === allStatuses.length) {
+        activeStats = [];
+    } else {
+        activeStats = [...allStatuses];
+    }
+    localStorage.setItem('activeStatuses', JSON.stringify(activeStats));
+    renderFilters();
+    doRender();
+};
+
+// --- 3. COLOR PALETTE LOGIC ---
 window.renderColorControls = () => {
     const list = document.getElementById('colorList');
     if (!list) return;
@@ -411,6 +873,7 @@ window.renderColorControls = () => {
     list.innerHTML = window.brandColors.map((color, idx) => `
         <div class="color-swatch-wrapper">
             <input type="color" value="${color}" onchange="window.updateColor(${idx}, this.value)">
+            <div class="color-preview" style="background: ${color};"></div>
             <div class="delete-color" onclick="window.removeColor(${idx}, event)">×</div>
         </div>
     `).join('');
@@ -419,6 +882,7 @@ window.renderColorControls = () => {
 window.updateColor = (idx, val) => {
     window.brandColors[idx] = val;
     localStorage.setItem('brandPalette', JSON.stringify(window.brandColors));
+    window.renderColorControls();
     doRender();
 };
 
@@ -440,7 +904,7 @@ window.removeColor = (idx, e) => {
     }
 };
 
-// --- 3. GRID RENDERING ---
+// --- 4. GRID RENDERING ---
 function doRender() {
     const grid = document.getElementById('grid');
     const isMap = document.getElementById('mapT').checked;
@@ -460,7 +924,7 @@ function doRender() {
 
         if (isMap) {
             const color = window.brandColors[idx % window.brandColors.length];
-            return `<div class="item" ${dragAttrs} style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; text-align:center; padding:15px; font-size:11px; text-transform:uppercase;">${item.name}</div>`;
+            return `<div class="item" ${dragAttrs} style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; text-align:center; padding:15px; font-size:11px; text-transform:uppercase; line-height: 1.3;">${item.name}</div>`;
         }
 
         const slidesHtml = (item.files || []).map(f => {
@@ -480,12 +944,14 @@ function doRender() {
                 <div class="carousel-track">${slidesHtml || '<div class="slide" style="background:#eee;"></div>'}</div>
             </div>`;
     }).join('');
-    
-    renderStatusOptions();
 }
 
-// --- 4. DRAG & DROP ---
-window.handleDragStart = (e, index) => { draggedIdx = index; e.dataTransfer.effectAllowed = 'move'; };
+// --- 5. DRAG & DROP ---
+window.handleDragStart = (e, index) => { 
+    draggedIdx = index; 
+    e.dataTransfer.effectAllowed = 'move'; 
+};
+
 window.handleDrop = (e, targetIdx) => {
     e.preventDefault();
     if (draggedIdx === null || draggedIdx === targetIdx) return;
@@ -500,7 +966,7 @@ window.resetGridOrder = () => {
     location.reload();
 };
 
-// --- 5. UI UTILS ---
+// --- 6. UI UTILS ---
 function updateUI() {
     ['bioT', 'highT', 'mapT', 'canvaT', 'customOrderT'].forEach(id => {
         localStorage.setItem(id, document.getElementById(id).checked);
@@ -541,28 +1007,30 @@ function openStory(groupName) {
     document.getElementById('previewLightbox').style.display = 'flex';
 }
 
-function renderPlatformFilter() {
-    const plats = [...new Set(gridData.flatMap(i => i.platforms))];
-    document.getElementById('platMenu').innerHTML = `<div class="dropdown-item" onclick="setPlat('all')">All Platforms</div>` + 
-        plats.map(p => `<div class="dropdown-item" onclick="setPlat('${p}')">${p.toUpperCase()}</div>`).join('');
-}
-
-window.setPlat = (p) => {
-    currentPlat = p;
-    document.getElementById('platCurrent').innerText = p === 'all' ? 'All Platforms' : p.toUpperCase();
-    doRender();
+window.toggleSettings = (e) => { 
+    e.stopPropagation(); 
+    const menu = document.getElementById('setMenu');
+    const filterPanel = document.getElementById('filterPanel');
+    filterPanel.classList.remove('open');
+    menu.classList.toggle('open'); 
 };
 
-function renderStatusOptions() {
-    const stats = [...new Set(gridData.map(i => i.status))];
-    document.getElementById('statusOptions')?.remove(); // Avoid duplicates
-    // This part assumes a status menu exists; adding a simple version
-}
+window.toggleFilters = (e) => { 
+    e.stopPropagation(); 
+    const panel = document.getElementById('filterPanel');
+    const settingsMenu = document.getElementById('setMenu');
+    settingsMenu.classList.remove('open');
+    panel.classList.toggle('open'); 
+};
 
-window.toggleSettings = (e) => { e.stopPropagation(); document.getElementById('setMenu').classList.toggle('open'); };
-window.toggleMenu = (id, e) => { e.stopPropagation(); document.getElementById(id).classList.toggle('show'); };
-window.closeLightbox = () => { document.getElementById('previewLightbox').style.display = 'none'; };
-window.onclick = () => { document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show')); document.getElementById('setMenu').classList.remove('open'); };
+window.closeLightbox = () => { 
+    document.getElementById('previewLightbox').style.display = 'none'; 
+};
+
+window.onclick = () => { 
+    document.getElementById('setMenu').classList.remove('open'); 
+    document.getElementById('filterPanel').classList.remove('open');
+};
 
 init();
     </script>
