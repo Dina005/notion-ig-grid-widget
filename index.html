@@ -1033,6 +1033,15 @@ async function init() {
         const data = await res.json();
         gridData = data.grid || [];
         
+        // Debug: Log platform data
+        console.log('=== FRONTEND PLATFORM DATA ===');
+        console.log('Total items received:', gridData.length);
+        gridData.slice(0, 5).forEach((item, i) => {
+            console.log(`Item ${i}: "${item.name}" - platforms:`, item.platforms);
+        });
+        const uniquePlats = [...new Set(gridData.flatMap(i => i.platforms || []))];
+        console.log('Unique platforms:', uniquePlats);
+        
         // Initial status filter setup - all statuses active by default
         const allStatuses = [...new Set(gridData.map(i => i.status))];
         const savedStats = localStorage.getItem('activeStatuses');
@@ -1186,15 +1195,25 @@ function doRender() {
 
     let filtered = gridData.filter(i => {
         const isPost = i.type !== "Story";
-        const platMatch = (currentPlat === 'all' || (i.platforms && i.platforms.includes(currentPlat)));
+        
+        // Platform matching logic
+        let platMatch = false;
+        if (currentPlat === 'all') {
+            platMatch = true;
+        } else if (i.platforms && Array.isArray(i.platforms)) {
+            platMatch = i.platforms.includes(currentPlat);
+        }
+        
         const statMatch = activeStats.includes(i.status);
         
         if (!isPost) return false;
-        if (!platMatch) {
-            console.log(`Filtered out ${i.name} - platforms: ${i.platforms}, looking for: ${currentPlat}`);
+        
+        // Debug output for filtered items
+        if (!platMatch && currentPlat !== 'all') {
+            console.log(`❌ Filtered out ${i.name} - has platforms: [${i.platforms?.join(', ')}], looking for: ${currentPlat}`);
         }
         if (!statMatch) {
-            console.log(`Filtered out ${i.name} - status: ${i.status}, active: ${activeStats}`);
+            console.log(`❌ Filtered out ${i.name} - status: ${i.status}, active: [${activeStats.join(', ')}]`);
         }
         
         return isPost && platMatch && statMatch;
@@ -1214,10 +1233,7 @@ function doRender() {
     grid.innerHTML = itemsToRender.map((item, idx) => {
         // Render empty placeholder
         if (item.isEmpty) {
-            return `
-                <div class="item empty-item">
-                    <div class="empty-content-text">Empty Content</div>
-                </div>`;
+            return `<div class="item empty-item"><div class="empty-content-text">Empty Content</div></div>`;
         }
 
         const dataIdx = gridData.indexOf(item);
