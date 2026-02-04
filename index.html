@@ -475,6 +475,16 @@ input:checked + .slider:before {
   border-radius: 6px;
 }
 
+.item.empty-item {
+  cursor: default;
+  pointer-events: none;
+}
+
+.item.empty-item:hover {
+  transform: none;
+  box-shadow: none;
+}
+
 .item:hover {
   transform: scale(1.02);
   z-index: 10;
@@ -768,6 +778,17 @@ input:checked + .slider:before {
   border: 3px solid white;
 }
 
+.h-img.h-no-icon {
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: #999;
+  text-align: center;
+}
+
 .h-name { 
   font-size: 12px; 
   font-weight: 600; 
@@ -1025,7 +1046,7 @@ function renderFilters() {
     
     const platforms = ['all', ...uniquePlatforms];
     const platformHTML = platforms.map(p => {
-        const displayName = p === 'all' ? 'All Platforms' : p.charAt(0).toUpperCase() + p.slice(1);
+        const displayName = p === 'all' ? 'All Platforms' : p;
         const isActive = currentPlat === p ? 'active' : '';
         return `<div class="filter-option ${isActive}" onclick="setPlatform('${p}')">${displayName}</div>`;
     }).join('');
@@ -1058,7 +1079,7 @@ function renderFilters() {
 window.setPlatform = (plat) => {
     console.log('Setting platform to:', plat);
     currentPlat = plat;
-    const label = plat === 'all' ? 'Platform' : plat.charAt(0).toUpperCase() + plat.slice(1);
+    const label = plat === 'all' ? 'Platform' : plat;
     document.getElementById('platformLabel').textContent = label;
     document.getElementById('platformDropdown').classList.remove('open');
     document.getElementById('filterSettingsMenu').classList.remove('open');
@@ -1158,7 +1179,26 @@ function doRender() {
 
     console.log(`Showing ${filtered.length} of ${gridData.length} items`);
 
-    grid.innerHTML = filtered.map((item, idx) => {
+    // Ensure minimum 9 grid items
+    const minItems = 9;
+    const itemsToRender = [...filtered];
+    
+    // Add empty placeholders if less than 9 items
+    while (itemsToRender.length < minItems) {
+        itemsToRender.push({ isEmpty: true });
+    }
+
+    grid.innerHTML = itemsToRender.map((item, idx) => {
+        // Render empty placeholder
+        if (item.isEmpty) {
+            return `
+                <div class="item empty-item">
+                    <div style="display:flex; align-items:center; justify-content:center; height:100%; background:#f0f0f0; color:#999; font-size:14px; font-weight:600;">
+                        No content
+                    </div>
+                </div>`;
+        }
+
         const dataIdx = gridData.indexOf(item);
         const dragAttrs = isCustom ? `draggable="true" ondragstart="handleDragStart(event, ${dataIdx})" ondragover="event.preventDefault()" ondrop="handleDrop(event, ${dataIdx})"` : '';
 
@@ -1375,11 +1415,18 @@ function renderProfile(data) {
     document.getElementById('postCount').innerText = postCount;
 
     if (data.highlights) {
-        document.getElementById('highRow').innerHTML = data.highlights.map(h => `
-            <div class="h-item" onclick="openStory('${h.name}')">
-                <div class="h-circle"><img src="${h.image}" class="h-img"></div>
-                <div class="h-name">${h.name}</div>
-            </div>`).join('');
+        document.getElementById('highRow').innerHTML = data.highlights.map(h => {
+            const hasImage = h.image && h.image.trim() !== '';
+            const imageContent = hasImage 
+                ? `<img src="${h.image}" class="h-img">` 
+                : `<div class="h-img h-no-icon">No icon</div>`;
+            
+            return `
+                <div class="h-item" onclick="openStory('${h.name}')">
+                    <div class="h-circle">${imageContent}</div>
+                    <div class="h-name">${h.name}</div>
+                </div>`;
+        }).join('');
     }
 }
 
