@@ -1193,6 +1193,7 @@ function doRender() {
     console.log('Current platform filter:', currentPlat);
     console.log('Active statuses:', activeStats);
 
+    // 1. Filter posts based on current Platform and Status
     let filtered = gridData.filter(i => {
         const isPost = i.type !== "Story";
         
@@ -1221,29 +1222,36 @@ function doRender() {
 
     console.log(`Showing ${filtered.length} of ${gridData.length} items`);
 
-    // Ensure minimum 9 grid items - fill to complete rows of 3
-    const minItems = 9;
+    // 2. APPLY RULE OF 9 & ROW COMPLETION
     const itemsToRender = [...filtered];
     
-    // Add empty placeholders to reach minimum of 9 items
-    while (itemsToRender.length < minItems) {
+    // Ensure at least 9 items exist
+    while (itemsToRender.length < 9) {
+        itemsToRender.push({ isEmpty: true });
+    }
+    
+    // Ensure the last row is full (multiples of 3)
+    while (itemsToRender.length % 3 !== 0) {
         itemsToRender.push({ isEmpty: true });
     }
 
+    // 3. Render HTML
     grid.innerHTML = itemsToRender.map((item, idx) => {
-        // Render empty placeholder
+        // Requirement 1: Empty placeholder
         if (item.isEmpty) {
-            return `<div class="item empty-item"><div class="empty-content-text">Empty Content</div></div>`;
+            return `<div class="item empty-item"><div class="empty-content-text">empty content</div></div>`;
         }
 
         const dataIdx = gridData.indexOf(item);
         const dragAttrs = isCustom ? `draggable="true" ondragstart="handleDragStart(event, ${dataIdx})" ondragover="event.preventDefault()" ondrop="handleDrop(event, ${dataIdx})"` : '';
 
+        // Content Map View
         if (isMap) {
             const color = window.brandColors[idx % window.brandColors.length];
             return `<div class="item" ${dragAttrs} style="background:${color}; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; text-align:center; padding:15px; font-size:11px; text-transform:uppercase; line-height: 1.3;">${item.name}</div>`;
         }
 
+        // Standard Post View (Carousel Logic)
         const files = item.files || [];
         const hasMultiple = files.length > 1;
         
