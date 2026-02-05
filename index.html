@@ -830,6 +830,7 @@ input:checked + .slider:before {
 }
 
 /* --- RESPONSIVE BREAKPOINTS --- */
+/* Maintaining 3-column grid structure across all sizes */
 
 /* Large tablets and small desktops (768px - 935px) */
 @media (max-width: 935px) and (min-width: 769px) {
@@ -840,6 +841,11 @@ input:checked + .slider:before {
   .top-bar {
     padding: 15px;
     margin-bottom: 20px;
+  }
+  
+  #grid {
+    gap: 3px;
+    padding: 3px;
   }
   
   #bioSection {
@@ -889,11 +895,11 @@ input:checked + .slider:before {
     height: 40px;
   }
   
-  /* Grid becomes 2 columns */
+  /* Grid stays 3 columns with tighter spacing */
   #grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 3px;
-    padding: 3px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    padding: 2px;
   }
   
   /* Adjust dropdowns and menus to be full-width */
@@ -957,34 +963,49 @@ input:checked + .slider:before {
   
   /* Overlay text adjustments */
   .item-overlay {
-    padding: 12px;
+    padding: 10px;
   }
   
   .ov-pillar {
-    font-size: 9px;
+    font-size: 8px;
+    letter-spacing: 1px;
   }
   
   .ov-title {
-    font-size: 11px;
+    font-size: 10px;
   }
   
   .ov-date {
-    font-size: 10px;
+    font-size: 9px;
   }
   
   /* Carousel controls */
   .carousel-nav {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     font-size: 14px;
   }
   
   .carousel-nav.prev {
-    left: 6px;
+    left: 5px;
   }
   
   .carousel-nav.next {
-    right: 6px;
+    right: 5px;
+  }
+  
+  .carousel-dots {
+    bottom: 6px;
+  }
+  
+  .carousel-dot {
+    width: 5px;
+    height: 5px;
+  }
+  
+  .carousel-dot.active {
+    width: 6px;
+    height: 6px;
   }
   
   /* Color palette in settings */
@@ -1002,12 +1023,12 @@ input:checked + .slider:before {
 /* Mobile phones (320px - 480px) */
 @media (max-width: 480px) {
   body {
-    padding: 8px;
+    padding: 5px;
   }
   
   .top-bar {
     padding: 10px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
   
   .icon-btn {
@@ -1027,61 +1048,61 @@ input:checked + .slider:before {
     font-size: 14px;
   }
   
-  /* Grid remains 2 columns but with tighter spacing */
+  /* Grid stays 3 columns with minimal spacing */
   #grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2px;
-    padding: 2px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    padding: 1px;
     border-radius: 8px;
   }
   
   .item {
-    border-radius: 4px;
+    border-radius: 3px;
   }
   
   .empty-content-text {
-    font-size: 11px;
+    font-size: 9px;
   }
   
   /* Bio adjustments */
   #bioSection {
-    padding: 12px 8px 0 8px;
-    gap: 15px;
+    padding: 12px 5px 0 5px;
+    gap: 12px;
   }
   
   #pfpImg {
-    width: 85px;
-    height: 85px;
+    width: 80px;
+    height: 80px;
   }
   
   #bioUser {
-    font-size: 18px;
+    font-size: 16px;
   }
   
   .bio-stats {
-    gap: 20px;
-    font-size: 13px;
+    gap: 18px;
+    font-size: 12px;
   }
   
   #bioDisplay,
   #bioDesc,
   #bioLink {
-    font-size: 13px;
+    font-size: 12px;
   }
   
   /* Highlights */
   .h-item {
-    width: 65px;
+    width: 60px;
   }
   
   .h-circle {
-    width: 55px;
-    height: 55px;
+    width: 50px;
+    height: 50px;
   }
   
   .h-name {
-    font-size: 11px;
-    margin-top: 6px;
+    font-size: 10px;
+    margin-top: 5px;
   }
   
   /* Settings menu */
@@ -1093,15 +1114,15 @@ input:checked + .slider:before {
   }
   
   .setting-item {
-    padding: 12px 0;
-    font-size: 13px;
+    padding: 10px 0;
+    font-size: 12px;
   }
   
   .section-title {
-    font-size: 10px;
+    font-size: 9px;
   }
   
-  /* Color palette - 3 columns on very small screens */
+  /* Color palette */
   #colorList {
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
@@ -1118,54 +1139,72 @@ input:checked + .slider:before {
     max-width: none;
   }
   
-  /* Overlay text */
+  /* Overlay text - smaller for narrow grid items */
   .item-overlay {
-    padding: 10px;
+    padding: 6px;
   }
   
   .ov-pillar {
-    font-size: 8px;
-    letter-spacing: 1px;
+    font-size: 7px;
+    letter-spacing: 0.5px;
+    margin-bottom: 3px;
   }
   
   .ov-title {
-    font-size: 10px;
+    font-size: 9px;
+    line-height: 1.2;
+    margin-bottom: 3px;
   }
   
   .ov-date {
-    font-size: 9px;
+    font-size: 8px;
   }
   
-  /* Carousel controls */
+  /* Carousel controls - smaller for narrow items */
   .carousel-nav {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     font-size: 12px;
   }
   
   .carousel-nav.prev {
-    left: 4px;
+    left: 3px;
   }
   
   .carousel-nav.next {
-    right: 4px;
+    right: 3px;
+  }
+  
+  .carousel-dots {
+    bottom: 4px;
+    gap: 4px;
   }
   
   .carousel-dot {
-    width: 5px;
-    height: 5px;
+    width: 4px;
+    height: 4px;
   }
   
   .carousel-dot.active {
-    width: 7px;
-    height: 7px;
+    width: 5px;
+    height: 5px;
   }
 }
 
-/* Extra small devices (max 320px) */
-@media (max-width: 320px) {
+/* Extra small devices (max 360px) */
+@media (max-width: 360px) {
+  body {
+    padding: 3px;
+  }
+  
   .top-bar {
     padding: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .icon-btn {
+    padding: 5px 10px;
+    font-size: 11px;
   }
   
   #grid {
@@ -1174,27 +1213,59 @@ input:checked + .slider:before {
   }
   
   #bioSection {
-    padding: 10px 5px 0 5px;
+    padding: 10px 3px 0 3px;
   }
   
   #pfpImg {
-    width: 75px;
-    height: 75px;
+    width: 70px;
+    height: 70px;
   }
   
   .bio-stats {
     gap: 15px;
-    font-size: 12px;
+    font-size: 11px;
   }
   
-  #colorList {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+  #bioUser {
+    font-size: 15px;
   }
   
-  .color-swatch-wrapper {
-    width: 35px;
-    height: 35px;
+  .h-item {
+    width: 55px;
+  }
+  
+  .h-circle {
+    width: 45px;
+    height: 45px;
+  }
+  
+  /* Even smaller overlay text for tiny grid items */
+  .item-overlay {
+    padding: 5px;
+  }
+  
+  .ov-pillar {
+    font-size: 6px;
+    letter-spacing: 0.3px;
+  }
+  
+  .ov-title {
+    font-size: 8px;
+  }
+  
+  .ov-date {
+    font-size: 7px;
+  }
+  
+  .carousel-nav {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+  
+  .carousel-dots {
+    bottom: 3px;
+    gap: 3px;
   }
 }
 
@@ -1594,11 +1665,8 @@ function doRender() {
         itemsToRender.push({ isEmpty: true });
     }
     
-    // Ensure the last row is full (multiples of 3 on desktop, 2 on mobile)
-    const isMobile = window.innerWidth <= 768;
-    const columnsPerRow = isMobile ? 2 : 3;
-    
-    while (itemsToRender.length % columnsPerRow !== 0) {
+    // Ensure the last row is full (always 3 columns)
+    while (itemsToRender.length % 3 !== 0) {
         itemsToRender.push({ isEmpty: true });
     }
 
