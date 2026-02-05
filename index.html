@@ -48,6 +48,7 @@ body {
   display: flex;
   gap: 12px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .icon-btn {
@@ -81,6 +82,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 /* --- FILTER BUTTON --- */
@@ -99,6 +101,7 @@ body {
   justify-content: center;
   width: 44px;
   height: 44px;
+  flex-shrink: 0;
 }
 
 .filter-btn:hover {
@@ -737,22 +740,6 @@ input:checked + .slider:before {
   text-decoration: underline;
 }
 
-@media (max-width: 768px) {
-  #bioSection {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-  
-  .bio-left {
-    align-items: center;
-  }
-  
-  .bio-stats {
-    justify-content: center;
-  }
-}
-
 #highRow {
   display: flex;
   gap: 20px;
@@ -842,28 +829,397 @@ input:checked + .slider:before {
   box-shadow: var(--shadow-lg);
 }
 
-/* --- RESPONSIVE --- */
+/* --- RESPONSIVE BREAKPOINTS --- */
+
+/* Large tablets and small desktops (768px - 935px) */
+@media (max-width: 935px) and (min-width: 769px) {
+  body {
+    padding: 15px;
+  }
+  
+  .top-bar {
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+  
+  #bioSection {
+    padding: 20px 15px 0 15px;
+  }
+  
+  #pfpImg {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .bio-stats {
+    gap: 30px;
+  }
+}
+
+/* Tablets (481px - 768px) */
 @media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+  
+  .top-bar {
+    padding: 12px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .left-controls {
+    gap: 8px;
+  }
+  
+  .icon-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+  
+  .icon-btn.settings {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  .filter-btn {
+    width: 40px;
+    height: 40px;
+  }
+  
+  /* Grid becomes 2 columns */
   #grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 3px;
+    padding: 3px;
   }
   
+  /* Adjust dropdowns and menus to be full-width */
   .filter-dropdown,
-  .filter-settings-menu,
-  .settings-menu {
-    width: calc(100% - 40px);
-    left: 20px !important;
-    right: 20px;
+  .filter-settings-menu {
+    width: calc(100vw - 40px);
+    left: 10px !important;
+    right: 10px;
   }
   
+  .settings-menu {
+    width: calc(100vw - 40px);
+    right: 10px;
+    left: 10px;
+    top: auto;
+    bottom: 10px;
+    max-height: 70vh;
+  }
+  
+  /* Bio section stacks vertically */
   #bioSection {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    padding: 15px 10px 0 10px;
+  }
+  
+  .bio-left {
+    align-items: center;
+  }
+  
+  .bio-right {
+    text-align: center;
+  }
+  
+  #pfpImg {
+    width: 100px;
+    height: 100px;
   }
   
   .bio-stats {
     justify-content: center;
+    gap: 25px;
+    font-size: 14px;
+  }
+  
+  #bioDisplay,
+  #bioDesc {
+    text-align: center;
+  }
+  
+  /* Highlights row */
+  .h-item {
+    width: 70px;
+  }
+  
+  .h-circle {
+    width: 60px;
+    height: 60px;
+  }
+  
+  /* Overlay text adjustments */
+  .item-overlay {
+    padding: 12px;
+  }
+  
+  .ov-pillar {
+    font-size: 9px;
+  }
+  
+  .ov-title {
+    font-size: 11px;
+  }
+  
+  .ov-date {
+    font-size: 10px;
+  }
+  
+  /* Carousel controls */
+  .carousel-nav {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+  
+  .carousel-nav.prev {
+    left: 6px;
+  }
+  
+  .carousel-nav.next {
+    right: 6px;
+  }
+  
+  /* Color palette in settings */
+  #colorList {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  
+  .color-swatch-wrapper {
+    width: 45px;
+    height: 45px;
+  }
+}
+
+/* Mobile phones (320px - 480px) */
+@media (max-width: 480px) {
+  body {
+    padding: 8px;
+  }
+  
+  .top-bar {
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+  
+  .icon-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  
+  .icon-btn.settings {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+  
+  .filter-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+  
+  /* Grid remains 2 columns but with tighter spacing */
+  #grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+    padding: 2px;
+    border-radius: 8px;
+  }
+  
+  .item {
+    border-radius: 4px;
+  }
+  
+  .empty-content-text {
+    font-size: 11px;
+  }
+  
+  /* Bio adjustments */
+  #bioSection {
+    padding: 12px 8px 0 8px;
+    gap: 15px;
+  }
+  
+  #pfpImg {
+    width: 85px;
+    height: 85px;
+  }
+  
+  #bioUser {
+    font-size: 18px;
+  }
+  
+  .bio-stats {
+    gap: 20px;
+    font-size: 13px;
+  }
+  
+  #bioDisplay,
+  #bioDesc,
+  #bioLink {
+    font-size: 13px;
+  }
+  
+  /* Highlights */
+  .h-item {
+    width: 65px;
+  }
+  
+  .h-circle {
+    width: 55px;
+    height: 55px;
+  }
+  
+  .h-name {
+    font-size: 11px;
+    margin-top: 6px;
+  }
+  
+  /* Settings menu */
+  .settings-menu {
+    padding: 16px;
+    width: calc(100vw - 20px);
+    right: 10px;
+    left: 10px;
+  }
+  
+  .setting-item {
+    padding: 12px 0;
+    font-size: 13px;
+  }
+  
+  .section-title {
+    font-size: 10px;
+  }
+  
+  /* Color palette - 3 columns on very small screens */
+  #colorList {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  
+  .color-swatch-wrapper {
+    width: 40px;
+    height: 40px;
+  }
+  
+  /* Lightbox adjustments */
+  .lb-content {
+    width: 95%;
+    max-width: none;
+  }
+  
+  /* Overlay text */
+  .item-overlay {
+    padding: 10px;
+  }
+  
+  .ov-pillar {
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+  
+  .ov-title {
+    font-size: 10px;
+  }
+  
+  .ov-date {
+    font-size: 9px;
+  }
+  
+  /* Carousel controls */
+  .carousel-nav {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+  
+  .carousel-nav.prev {
+    left: 4px;
+  }
+  
+  .carousel-nav.next {
+    right: 4px;
+  }
+  
+  .carousel-dot {
+    width: 5px;
+    height: 5px;
+  }
+  
+  .carousel-dot.active {
+    width: 7px;
+    height: 7px;
+  }
+}
+
+/* Extra small devices (max 320px) */
+@media (max-width: 320px) {
+  .top-bar {
+    padding: 8px;
+  }
+  
+  #grid {
+    gap: 1px;
+    padding: 1px;
+  }
+  
+  #bioSection {
+    padding: 10px 5px 0 5px;
+  }
+  
+  #pfpImg {
+    width: 75px;
+    height: 75px;
+  }
+  
+  .bio-stats {
+    gap: 15px;
+    font-size: 12px;
+  }
+  
+  #colorList {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  
+  .color-swatch-wrapper {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-width: 768px) and (orientation: landscape) {
+  #bioSection {
+    flex-direction: row;
+    text-align: left;
+  }
+  
+  .bio-left {
+    align-items: flex-start;
+  }
+  
+  .bio-right {
+    text-align: left;
+  }
+  
+  #bioDisplay,
+  #bioDesc {
+    text-align: left;
+  }
+  
+  .bio-stats {
+    justify-content: flex-start;
   }
 }
 
@@ -885,6 +1241,14 @@ input:checked + .slider:before {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #a0a0a0;
+}
+
+/* Thin scrollbars on mobile */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
 }
     </style>
 </head>
@@ -1230,8 +1594,11 @@ function doRender() {
         itemsToRender.push({ isEmpty: true });
     }
     
-    // Ensure the last row is full (multiples of 3)
-    while (itemsToRender.length % 3 !== 0) {
+    // Ensure the last row is full (multiples of 3 on desktop, 2 on mobile)
+    const isMobile = window.innerWidth <= 768;
+    const columnsPerRow = isMobile ? 2 : 3;
+    
+    while (itemsToRender.length % columnsPerRow !== 0) {
         itemsToRender.push({ isEmpty: true });
     }
 
@@ -1292,6 +1659,15 @@ function doRender() {
             </div>`;
     }).join('');
 }
+
+// Re-render on window resize to adjust grid columns
+let resizeTimeout;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        doRender();
+    }, 250);
+});
 
 // --- 5. DRAG & DROP ---
 window.handleDragStart = (e, index) => { 
